@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr, field_validator
 import re
@@ -14,50 +15,42 @@ from app.schemas.token import Token
 router = APIRouter()
 
 # -----------------------------
-# LOGIN (ORA ACCETTA JSON)
+# LOGIN (OAUTH2, FORM-DATA)
 # -----------------------------
-
-class LoginPayload(BaseModel):
-    email: EmailStr
-    password: str
 
 @router.post("/login", response_model=Token)
 def login_access_token(
-    data: LoginPayload,
-    db: Session = Depends(deps.get_db)
+    db: Session = Depends(deps.get_db),
+    form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
-    Login con JSON:
-    {
-        "email": "admin@example.com",
-        "password": "Admin123!"
-    }
+    OAuth2 compatible token login, get an access token for future requests.
+    Using email as username.
+    Accetta form-data:
+      username: email
+      password: password
     """
-    user = db.query(User).filter(User.email == data.email).first()
-
-    if not user or not security.verify_password(data.password, user.password_hash):
+    user = db.query(User).filter(User.email == form_data.username).first()
+    if not user or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user"
         )
-
+        
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         user.id, expires_delta=access_token_expires
     )
-
     return {
         "access_token": access_token,
         "token_type": "bearer",
     }
-
 
 # -----------------------------
 # FORGOT PASSWORD
@@ -79,7 +72,6 @@ def forgot_password(
         print(f"DEBUG: Reset password email sent to {user.email} with reset token: FAKE_RESET_TOKEN")
 
     return {"message": "If the email is registered, a password reset link has been sent."}
-
 
 # -----------------------------
 # RESET PASSWORD

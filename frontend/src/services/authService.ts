@@ -12,7 +12,7 @@ export const authService = {
     params.append('username', email); // OAuth2 expects 'username'
     params.append('password', password);
     
-    const response = await api.post<LoginResponse>('/api/v1/login', params, {
+    const response = await api.post<LoginResponse>('/api/v1/auth/login', params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
     return response.data;

@@ -18,6 +18,9 @@ export interface Site {
   name: string;
 }
 
+/* -------------------------
+   BOARD FILES
+------------------------- */
 export interface BoardFile {
   id: number;
   file_name: string;
@@ -28,14 +31,55 @@ export interface BoardFile {
   sites?: Site[];
 }
 
+/* -------------------------
+   COMMUNICATIONS
+------------------------- */
+export interface CommunicationType {
+  id: number;
+  name: string;
+  description?: string;
+  requires_attachment: boolean;
+  default_priority: string;
+}
+
+export interface CommunicationMessage {
+  id: number;
+  communication_id: number;
+  author_id: number;
+  content: string;
+  created_at: string;
+  author?: User;
+}
+
 export interface Communication {
   id: number;
   user_id: number;
   type_id: number;
   status: string;
   priority: string;
+  notes?: string;
   created_at: string;
   user?: User;
+  messages?: CommunicationMessage[];
+}
+
+/* -------------------------
+   TICKETS
+------------------------- */
+export interface TicketType {
+  id: number;
+  name: string;
+  description?: string;
+  default_priority: number;
+}
+
+export interface TicketMessage {
+  id: number;
+  ticket_id: number;
+  author_id: number;
+  content: string;
+  created_at: string;
+  author?: User;
 }
 
 export interface Ticket {
@@ -43,11 +87,15 @@ export interface Ticket {
   user_id: number;
   type_id: number;
   status: string;
-  priority: string;
+  priority: number;
   created_at: string;
   user?: User;
+  messages?: TicketMessage[];
 }
 
+/* -------------------------
+   LOGS
+------------------------- */
 export interface ActivityLog {
   id: number;
   user_id: number;

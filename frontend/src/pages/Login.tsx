@@ -1,9 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,6 +16,7 @@ export const Login: React.FC = () => {
     try {
       const response = await authService.login(email, password);
       login(response.access_token);
+      navigate('/dashboard');   // 👈 REDIRECT DOPO LOGIN
     } catch (err) {
       setError('Credenziali non valide.');
     }

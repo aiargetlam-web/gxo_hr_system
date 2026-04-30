@@ -4,7 +4,6 @@ sqlalchemy>=2.0.20
 pymysql>=1.1.0
 cryptography>=41.0.3
 python-dotenv>=1.0.0
-passlib[bcrypt]>=1.7.4
 python-jose[cryptography]>=3.3.0
 python-multipart>=0.0.6
 pydantic>=2.3.0
@@ -14,3 +13,5 @@ alembic
 python-jose
 email-validator
 requests
+bcrypt==4.0.1
+passlib[bcrypt]==1.7.4

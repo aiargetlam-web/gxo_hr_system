@@ -18,9 +18,7 @@ class Settings(BaseSettings):
     POWERBI_DATASET_ID: str = ""
     POWERBI_RLS_ROLE: str = "SiteRole"
 
-    class Config:
-        env_file = ".env"
-
+    
 settings = Settings()
 
 # Ensure upload directory exists

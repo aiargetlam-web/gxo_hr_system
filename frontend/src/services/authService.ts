@@ -19,7 +19,7 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.post<User>('/api/v1/test-token')
+    const response = await api.get<User>('/api/v1/user/me')
     // Mappiamo l'utente (il backend restituisce i dettagli completi, potremmo voler sistemare il first_name/last_name in un campo unico se serve)
     return response.data;
   }

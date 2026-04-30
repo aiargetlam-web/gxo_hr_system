@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = "super_secret_jwt_key_for_development_only_do_not_use_in_prod"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
-    SQLALCHEMY_DATABASE_URI: str = "mysql+pymysql://root:root@localhost:3306/gxo_hr_system"
+    SQLALCHEMY_DATABASE_URI: str = os.getenv("DATABASE_URL")
     UPLOAD_DIR: str = "uploads"
 
     # Power BI Configuration

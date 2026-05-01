@@ -382,96 +382,99 @@ const Board: React.FC = () => {
             </thead>
 
             <tbody>
-              {paginatedFiles.map(f => (
-                <tr
-                  key={f.id}
-                  style={{
-                    borderBottom: '1px solid #e5e5e5',
-                    transition: "background 0.2s"
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#f7f9fc"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                >
-                  <td style={{ padding: '0.75rem' }}>{f.id}</td>
-                  <td style={{ padding: '0.75rem' }}>{f.file_name}</td>
+              {paginatedFiles.map((f) => {
+  return (
+    <tr
+      key={f.id}
+      style={{
+        borderBottom: '1px solid #e5e5e5',
+        transition: "background 0.2s"
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = "#f7f9fc"}
+      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+    >
+      <td style={{ padding: '0.75rem' }}>{f.id}</td>
+      <td style={{ padding: '0.75rem' }}>{f.file_name}</td>
 
-                  {/* BADGE STATO */}
-                  <td style={{ padding: '0.75rem' }}>
-                    <span
-                      style={{
-                        padding: "0.3rem 0.6rem",
-                        borderRadius: "6px",
-                        color: "white",
-                        background: f.is_active ? "green" : "red",
-                        fontSize: "0.8rem"
-                      }}
-                    >
-                      {f.is_active ? "ATTIVO" : "DISATTIVATO"}
-                    </span>
-                  </td>
+      {/* BADGE STATO */}
+      <td style={{ padding: '0.75rem' }}>
+        <span
+          style={{
+            padding: "0.3rem 0.6rem",
+            borderRadius: "6px",
+            color: "white",
+            background: f.is_active ? "green" : "red",
+            fontSize: "0.8rem"
+          }}
+        >
+          {f.is_active ? "ATTIVO" : "DISATTIVATO"}
+        </span>
+      </td>
 
-                  {/* BADGE SITI */}
-                  {(user?.role === "hr" || user?.role === "admin") ? (
-                    <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-                      {f.sites?.length > 0 ? (
-                        f.sites.map(s => (
-                          <span
-                            key={s.id}
-                            style={{
-                              background: "#0050b3",
-                              color: "white",
-                              padding: "0.2rem 0.5rem",
-                              borderRadius: "6px",
-                              fontSize: "0.75rem"
-                            }}
-                          >
-                            {s.name}
-                          </span>
-                        ))
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  ) : null}
+      {/* BADGE SITI */}
+      {(user?.role === "hr" || user?.role === "admin") ? (
+        <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+          {f.sites?.length > 0 ? (
+            f.sites.map(s => (
+              <span
+                key={s.id}
+                style={{
+                  background: "#0050b3",
+                  color: "white",
+                  padding: "0.2rem 0.5rem",
+                  borderRadius: "6px",
+                  fontSize: "0.75rem"
+                }}
+              >
+                {s.name}
+              </span>
+            ))
+          ) : (
+            "-"
+          )}
+        </td>
+      ) : null}
 
-                  <td style={{ padding: '0.75rem' }}>
-                    {new Date(f.upload_date).toLocaleDateString()}
-                  </td>
+      <td style={{ padding: '0.75rem' }}>
+        {new Date(f.upload_date).toLocaleDateString()}
+      </td>
 
-                  <td style={{ padding: '0.75rem', display: "flex", gap: "0.5rem" }}>
-                    {/* Scarica */}
-                    <button
-                      onClick={() => window.open(boardService.downloadFileUrl(f.id))}
-                      className="btn btn-secondary"
-                      style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-                    >
-                      <DownloadIcon fontSize="small" />
-                    </button>
+      <td style={{ padding: '0.75rem', display: "flex", gap: "0.5rem" }}>
+        {/* Scarica */}
+        <button
+          onClick={() => window.open(boardService.downloadFileUrl(f.id))}
+          className="btn btn-secondary"
+          style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+        >
+          <DownloadIcon fontSize="small" />
+        </button>
 
-                    {/* Disattiva / Riattiva */}
-                    {(user?.role === "hr" || user?.role === "admin") ? (
-                      <button
-                        onClick={() => toggleStatus(f.id, !f.is_active)}
-                        className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
-                        style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-                      >
-                        {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
-                      </button>
-                    ) : null}
+        {/* Disattiva / Riattiva */}
+        {(user?.role === "hr" || user?.role === "admin") ? (
+          <button
+            onClick={() => toggleStatus(f.id, !f.is_active)}
+            className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
+            style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+          >
+            {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
+          </button>
+        ) : null}
 
-                    {/* Modifica siti */}
-                    {(user?.role === "hr" || user?.role === "admin") ? (
-                      <button
-                        onClick={() => openEditSitesModal(f)}
-                        className="btn btn-secondary"
-                        style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-                      >
-                        <EditLocationAltIcon fontSize="small" />
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
+        {/* Modifica siti */}
+        {(user?.role === "hr" || user?.role === "admin") ? (
+          <button
+            onClick={() => openEditSitesModal(f)}
+            className="btn btn-secondary"
+            style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+          >
+            <EditLocationAltIcon fontSize="small" />
+          </button>
+        ) : null}
+      </td>
+    </tr>
+  );
+})}
+
 
               {paginatedFiles.length === 0 && (
                 <tr>

@@ -1,5 +1,8 @@
-const Board = () => {
-  const [files, setFiles] = useState([]);
+import React, { useState, useEffect } from "react";
+import api from "../services/api"; // Assicurati che questo percorso sia corretto
+
+const Board: React.FC = () => {
+  const [files, setFiles] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState("upload_date");
   const [direction, setDirection] = useState<"asc" | "desc">("desc");
 
@@ -28,37 +31,59 @@ const Board = () => {
   };
 
   return (
-    <table className="table-auto w-full">
-      <thead>
-        <tr>
-          <th onClick={() => handleSort("file_name")} className="sortable">
-            Nome {sortBy === "file_name" && (direction === "asc" ? "▲" : "▼")}
-          </th>
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Bacheca Aziendale</h1>
 
-          <th onClick={() => handleSort("upload_date")} className="sortable">
-            Data {sortBy === "upload_date" && (direction === "asc" ? "▲" : "▼")}
-          </th>
+      <table className="table-auto w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-100">
+            <th
+              onClick={() => handleSort("file_name")}
+              className="cursor-pointer p-2"
+            >
+              Nome {sortBy === "file_name" && (direction === "asc" ? "▲" : "▼")}
+            </th>
 
-          <th onClick={() => handleSort("author")} className="sortable">
-            Autore {sortBy === "author" && (direction === "asc" ? "▲" : "▼")}
-          </th>
+            <th
+              onClick={() => handleSort("upload_date")}
+              className="cursor-pointer p-2"
+            >
+              Data {sortBy === "upload_date" && (direction === "asc" ? "▲" : "▼")}
+            </th>
 
-          <th onClick={() => handleSort("sites")} className="sortable">
-            Siti {sortBy === "sites" && (direction === "asc" ? "▲" : "▼")}
-          </th>
-        </tr>
-      </thead>
+            <th
+              onClick={() => handleSort("author")}
+              className="cursor-pointer p-2"
+            >
+              Autore {sortBy === "author" && (direction === "asc" ? "▲" : "▼")}
+            </th>
 
-      <tbody>
-        {files.map((f: any) => (
-          <tr key={f.id}>
-            <td>{f.file_name}</td>
-            <td>{new Date(f.upload_date).toLocaleString()}</td>
-            <td>{f.hr_author_id}</td>
-            <td>{f.sites.map((s: any) => s.name).join(", ")}</td>
+            <th
+              onClick={() => handleSort("sites")}
+              className="cursor-pointer p-2"
+            >
+              Siti {sortBy === "sites" && (direction === "asc" ? "▲" : "▼")}
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {files.map((f) => (
+            <tr key={f.id} className="border-b">
+              <td className="p-2">{f.file_name}</td>
+              <td className="p-2">
+                {new Date(f.upload_date).toLocaleString()}
+              </td>
+              <td className="p-2">{f.hr_author_id}</td>
+              <td className="p-2">
+                {f.sites.map((s: any) => s.name || s.id).join(", ")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
+
+export default Board;

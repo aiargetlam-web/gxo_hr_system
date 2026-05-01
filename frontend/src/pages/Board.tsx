@@ -457,7 +457,7 @@ const Board: React.FC = () => {
                       >
                         {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
                       </button>
-                    )}
+                    ):null}
 
                     {/* Modifica siti */}
                     {(user?.role === "hr" || user?.role === "admin") && (

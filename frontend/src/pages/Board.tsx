@@ -467,3 +467,5 @@ export const Board: React.FC = () => {
     </div>
   );
 };
+
+export default Board;

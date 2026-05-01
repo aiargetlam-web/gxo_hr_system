@@ -38,7 +38,9 @@ export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("site_ids", JSON.stringify(selectedSites));
+
+    // 🔥 FIX DEFINITIVO: formato corretto per il backend
+    formData.append("site_ids", selectedSites.join(","));
 
     try {
       await api.post("/api/v1/board/upload", formData, {

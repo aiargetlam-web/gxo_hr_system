@@ -412,28 +412,26 @@ const Board: React.FC = () => {
       </td>
 
       {/* BADGE SITI */}
-      {(user?.role === "hr" || user?.role === "admin") ? (
-        <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-          {f.sites?.length > 0 ? (
-            f.sites.map(s => (
-              <span
-                key={s.id}
-                style={{
-                  background: "#0050b3",
-                  color: "white",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: "6px",
-                  fontSize: "0.75rem"
-                }}
-              >
-                {s.name}
-              </span>
-            ))
-          ) : (
-            "-"
-          )}
-        </td>
-      ) : null}
+      <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+  {(user?.role === "hr" || user?.role === "admin") ? (
+    f.sites?.length > 0 ? (
+      f.sites.map(s => (
+        <span
+          key={s.id}
+          style={{
+            background: "#0050b3",
+            color: "white",
+            padding: "0.2rem 0.5rem",
+            borderRadius: "6px",
+            fontSize: "0.75rem"
+          }}
+        >
+          {s.name}
+        </span>
+      ))
+    ) : "-"
+  ) : "-"}
+</td>
 
       <td style={{ padding: '0.75rem' }}>
         {new Date(f.upload_date).toLocaleDateString()}

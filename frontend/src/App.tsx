@@ -9,7 +9,7 @@ import { Profile } from './pages/Profile';
 import { Users } from './pages/Users';
 import { Communications } from './pages/Communications';
 import { Tickets } from './pages/Tickets';
-import { Board } from './pages/Board';
+import Board from "./pages/Board";
 import { Admin } from './pages/Admin';
 import { ActivityLogs, UserHistory } from './pages/Audit';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';

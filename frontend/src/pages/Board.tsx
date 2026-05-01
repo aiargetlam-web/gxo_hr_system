@@ -250,6 +250,7 @@ const Board: React.FC = () => {
           </div>
         )}
       </div> {/* fine flex-wrap-mobile */}
+</div> {/* fine container principale */}
 
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>

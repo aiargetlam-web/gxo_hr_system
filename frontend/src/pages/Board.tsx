@@ -432,7 +432,7 @@ const Board: React.FC = () => {
                         "-"
                       )}
                     </td>
-                  )}
+                  ) : null}
 
                   <td style={{ padding: '0.75rem' }}>
                     {new Date(f.upload_date).toLocaleDateString()}

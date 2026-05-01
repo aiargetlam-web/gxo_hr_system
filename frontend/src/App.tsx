@@ -14,9 +14,25 @@ import { Admin } from './pages/Admin';
 import { ActivityLogs, UserHistory } from './pages/Audit';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';
 
+// 🔥 TOAST
+import { Toaster } from "react-hot-toast";
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
+      {/* 🔥 TOASTER GLOBALE */}
+      <Toaster 
+        position="bottom-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '8px'
+          }
+        }}
+      />
+
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />

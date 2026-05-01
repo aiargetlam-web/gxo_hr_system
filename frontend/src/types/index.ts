@@ -27,8 +27,9 @@ export interface BoardFile {
   file_path: string;
   hr_author_id: number;
   upload_date: string;
+  is_active: boolean;
   site_ids?: number[];
-  sites?: Site[];
+  sites?: Site[]
 }
 
 /* -------------------------

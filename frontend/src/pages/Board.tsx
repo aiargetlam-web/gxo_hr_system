@@ -411,7 +411,7 @@ const Board: React.FC = () => {
                   </td>
 
                   {/* BADGE SITI */}
-                  {(user?.role === "hr" || user?.role === "admin") && (
+                  {(user?.role === "hr" || user?.role === "admin") ? (
                     <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                       {f.sites?.length > 0 ? (
                         f.sites.map(s => (

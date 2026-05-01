@@ -482,7 +482,7 @@ const Board: React.FC = () => {
                     Nessun documento trovato.
                   </td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
         </div>

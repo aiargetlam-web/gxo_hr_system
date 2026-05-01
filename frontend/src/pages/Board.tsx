@@ -330,56 +330,54 @@ const Board: React.FC = () => {
               marginTop: '1rem' 
             }}
           >
-       <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 2 }}>
-  <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-    
-    <th style={{ padding: '0.75rem' }}>ID</th>
+            <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 2 }}>
+              <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
+                
+                <th style={{ padding: '0.75rem' }}>ID</th>
 
-    {/* ORDINAMENTO PER NOME */}
-    <th
-      style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
-      onClick={() => handleSort("file_name")}
-    >
-      Nome File{" "}
-      {sortBy !== "file_name" && <UnfoldMoreIcon fontSize="small" />}
-      {sortBy === "file_name" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-      {sortBy === "file_name" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
-    </th>
+                {/* ORDINAMENTO PER NOME */}
+                <th
+                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                  onClick={() => handleSort("file_name")}
+                >
+                  Nome File{" "}
+                  {sortBy !== "file_name" && <UnfoldMoreIcon fontSize="small" />}
+                  {sortBy === "file_name" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                  {sortBy === "file_name" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                </th>
 
-    <th style={{ padding: '0.75rem' }}>Stato</th>
+                <th style={{ padding: '0.75rem' }}>Stato</th>
 
-    {/* ORDINAMENTO PER SITI */}
-    {(user?.role === "hr" || user?.role === "admin") && (
-      <>
-        <th
-          style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
-          onClick={() => handleSort("sites")}
-        >
-          Siti associati{" "}
-          {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
-          {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-          {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
-        </th>
-      </>
-    )}
+                {/* ORDINAMENTO PER SITI */}
+                {(user?.role === "hr" || user?.role === "admin") && (
+                  <>
+                    <th
+                      style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                      onClick={() => handleSort("sites")}
+                    >
+                      Siti associati{" "}
+                      {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
+                      {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                      {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                    </th>
+                  </>
+                )}
 
-    {/* ORDINAMENTO PER DATA */}
-    <th
-      style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
-      onClick={() => handleSort("upload_date")}
-    >
-      Data Caricamento{" "}
-      {sortBy !== "upload_date" && <UnfoldMoreIcon fontSize="small" />}
-      {sortBy === "upload_date" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-      {sortBy === "upload_date" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
-    </th>
+                {/* ORDINAMENTO PER DATA */}
+                <th
+                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                  onClick={() => handleSort("upload_date")}
+                >
+                  Data Caricamento{" "}
+                  {sortBy !== "upload_date" && <UnfoldMoreIcon fontSize="small" />}
+                  {sortBy === "upload_date" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                  {sortBy === "upload_date" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                </th>
 
-    <th style={{ padding: '0.75rem' }}>Azione</th>
+                <th style={{ padding: '0.75rem' }}>Azione</th>
 
-  </tr>
-</thead>
-
-
+              </tr>
+            </thead>
             <tbody>
               {paginatedFiles.map(f => (
                 <tr 
@@ -473,6 +471,7 @@ const Board: React.FC = () => {
                   </td>
                 </tr>
               ))}
+
               {paginatedFiles.length === 0 && (
                 <tr>
                   <td colSpan={6} style={{ padding: '1rem', textAlign: 'center' }}>
@@ -480,6 +479,7 @@ const Board: React.FC = () => {
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>

@@ -28,6 +28,10 @@ export const Board: React.FC = () => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 20;
 
+  // filtro per sito
+  const [siteFilter, setSiteFilter] = useState<number | "all">("all");
+  const [sites, setSites] = useState<any[]>([]);
+
   // modifica siti
   const [showEditSites, setShowEditSites] = useState(false);
   const [editFile, setEditFile] = useState<BoardFile | null>(null);
@@ -36,6 +40,13 @@ export const Board: React.FC = () => {
 
   useEffect(() => {
     fetchFiles("true");
+    // carico i siti per filtro
+    api.get("/api/v1/sites")
+      .then(res => setSites(res.data))
+      .catch(err => {
+        console.error(err);
+        toast.error("Errore nel caricamento dei siti");
+      });
   }, []);
 
   const fetchFiles = async (active: "true" | "false") => {
@@ -115,9 +126,16 @@ export const Board: React.FC = () => {
   }
 
   // RICERCA
-  const filteredFiles = sortedFiles.filter(f =>
+  let filteredFiles = sortedFiles.filter(f =>
     f.file_name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // FILTRO PER SITO
+  if (siteFilter !== "all") {
+    filteredFiles = filteredFiles.filter(f =>
+      f.sites?.some(s => s.id === siteFilter)
+    );
+  }
 
   // PAGINAZIONE
   const start = (page - 1) * itemsPerPage;
@@ -171,6 +189,28 @@ export const Board: React.FC = () => {
             >
               <option value="date">Ordina per data</option>
               <option value="name">Ordina per nome</option>
+            </select>
+
+            {/* FILTRO PER SITO */}
+            <select
+              value={siteFilter}
+              onChange={(e) => {
+                const value = e.target.value === "all" ? "all" : Number(e.target.value);
+                setSiteFilter(value);
+                setPage(1);
+              }}
+              style={{
+                padding: "0.35rem 0.6rem",
+                borderRadius: "6px",
+                border: "1px solid var(--color-border)",
+                fontSize: "0.9rem",
+                width: "200px"
+              }}
+            >
+              <option value="all">Tutti i siti</option>
+              {sites.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
             </select>
 
             {/* RICERCA */}
@@ -348,4 +388,59 @@ export const Board: React.FC = () => {
                     </button>
 
                     {/* Disattiva / Riattiva */}
-                    {(user.role ===
+                    {(user.role === "hr" || user.role === "admin") && (
+                      <button
+                        onClick={() => toggleStatus(f.id, !f.is_active)}
+                        className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
+                      >
+                        {f.is_active ? "Disattiva" : "Riattiva"}
+                      </button>
+                    )}
+
+                    {/* Modifica siti */}
+                    {(user.role === "hr" || user.role === "admin") && (
+                      <button
+                        onClick={() => openEditSitesModal(f)}
+                        className="btn btn-secondary"
+                      >
+                        Modifica siti
+                      </button>
+                    )}
+
+                  </td>
+                </tr>
+              ))}
+              {paginatedFiles.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: '1rem', textAlign: 'center' }}>
+                    Nessun documento trovato.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PAGINAZIONE */}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem" }}>
+          <button
+            className="btn btn-outline"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            ← Precedente
+          </button>
+
+          <button
+            className="btn btn-outline"
+            disabled={end >= filteredFiles.length}
+            onClick={() => setPage(page + 1)}
+          >
+            Successiva →
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};

@@ -9,6 +9,14 @@ import toast from "react-hot-toast";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import DownloadIcon from "@mui/icons-material/Download";
+import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import BlockIcon from "@mui/icons-material/Block";
+
 const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
@@ -18,22 +26,17 @@ const Board: React.FC = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"true" | "false">("true");
 
-  // ricerca
   const [search, setSearch] = useState("");
 
-  // ordinamento dinamico (backend)
   const [sortBy, setSortBy] = useState("upload_date");
   const [direction, setDirection] = useState<"asc" | "desc">("desc");
 
-  // paginazione
   const [page, setPage] = useState(1);
   const itemsPerPage = 20;
 
-  // filtro per sito
   const [siteFilter, setSiteFilter] = useState<number | "all">("all");
   const [sites, setSites] = useState<any[]>([]);
 
-  // modifica siti
   const [showEditSites, setShowEditSites] = useState(false);
   const [editFile, setEditFile] = useState<BoardFile | null>(null);
   const [allSites, setAllSites] = useState<any[]>([]);
@@ -60,7 +63,6 @@ const Board: React.FC = () => {
     }
   };
 
-  // CAMBIO ORDINAMENTO
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setDirection(direction === "asc" ? "desc" : "asc");
@@ -120,19 +122,16 @@ const Board: React.FC = () => {
 
   if (loading) return <div>Caricamento...</div>;
 
-  // RICERCA
   let filteredFiles = files.filter(f =>
     f.file_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // FILTRO PER SITO
   if (siteFilter !== "all") {
     filteredFiles = filteredFiles.filter(f =>
       f.sites?.some(s => s.id === siteFilter)
     );
   }
 
-  // PAGINAZIONE
   const start = (page - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   const paginatedFiles = filteredFiles.slice(start, end);
@@ -144,7 +143,6 @@ const Board: React.FC = () => {
 
         {(user?.role === "hr" || user?.role === "admin") && (
           
-          // ⭐ NUOVA BARRA FILTRI ELEGANTE
           <div className="filters-bar" 
             style={{
               display: "flex",
@@ -158,7 +156,6 @@ const Board: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
             }}
           >
-
             {/* FILTRO STATO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
@@ -230,7 +227,7 @@ const Board: React.FC = () => {
                 onClick={() => setShowUpload(true)}
                 style={{
                   cursor: "pointer",
-                  color: "var(--color-primary)",
+                  color: "#0050b3",
                   fontWeight: 600,
                   fontSize: "0.95rem"
                 }}
@@ -242,7 +239,7 @@ const Board: React.FC = () => {
                 onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
                 style={{
                   cursor: "pointer",
-                  color: "var(--color-primary)",
+                  color: "#0050b3",
                   fontWeight: 600,
                   fontSize: "0.95rem"
                 }}
@@ -326,17 +323,25 @@ const Board: React.FC = () => {
       <div className="card">
         <h3>Documenti Recenti</h3>
         <div className="table-responsive">
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-            <thead>
+          <table 
+            style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse', 
+              marginTop: '1rem' 
+            }}
+          >
+            <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 2 }}>
               <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
                 <th style={{ padding: '0.75rem' }}>ID</th>
-
                 {/* ORDINAMENTO PER NOME */}
                 <th
-                  style={{ padding: '0.75rem', cursor: "pointer" }}
+                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
                   onClick={() => handleSort("file_name")}
                 >
-                  Nome File {sortBy === "file_name" && (direction === "asc" ? "▲" : "▼")}
+                  Nome File{" "}
+                  {sortBy !== "file_name" && <UnfoldMoreIcon fontSize="small" />}
+                  {sortBy === "file_name" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                  {sortBy === "file_name" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
                 </th>
 
                 <th style={{ padding: '0.75rem' }}>Stato</th>
@@ -344,19 +349,25 @@ const Board: React.FC = () => {
                 {/* ORDINAMENTO PER SITI */}
                 {(user?.role === "hr" || user?.role === "admin") && (
                   <th
-                    style={{ padding: '0.75rem', cursor: "pointer" }}
+                    style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
                     onClick={() => handleSort("sites")}
                   >
-                    Siti associati {sortBy === "sites" && (direction === "asc" ? "▲" : "▼")}
+                    Siti associati{" "}
+                    {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
+                    {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                    {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
                   </th>
                 )}
 
                 {/* ORDINAMENTO PER DATA */}
                 <th
-                  style={{ padding: '0.75rem', cursor: "pointer" }}
+                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
                   onClick={() => handleSort("upload_date")}
                 >
-                  Data Caricamento {sortBy === "upload_date" && (direction === "asc" ? "▲" : "▼")}
+                  Data Caricamento{" "}
+                  {sortBy !== "upload_date" && <UnfoldMoreIcon fontSize="small" />}
+                  {sortBy === "upload_date" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                  {sortBy === "upload_date" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
                 </th>
 
                 <th style={{ padding: '0.75rem' }}>Azione</th>
@@ -365,7 +376,15 @@ const Board: React.FC = () => {
 
             <tbody>
               {paginatedFiles.map(f => (
-                <tr key={f.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <tr 
+                  key={f.id} 
+                  style={{ 
+                    borderBottom: '1px solid #e5e5e5',
+                    transition: "background 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "#f7f9fc"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
                   <td style={{ padding: '0.75rem' }}>{f.id}</td>
                   <td style={{ padding: '0.75rem' }}>{f.file_name}</td>
 
@@ -384,10 +403,27 @@ const Board: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* COLONNA SITI ASSOCIATI */}
+                  {/* BADGE SITI */}
                   {(user?.role === "hr" || user?.role === "admin") && (
-                    <td style={{ padding: '0.75rem' }}>
-                      {f.sites?.map(s => s.name).join(", ") || "-"}
+                    <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                      {f.sites?.length > 0 ? (
+                        f.sites.map(s => (
+                          <span 
+                            key={s.id}
+                            style={{
+                              background: "#0050b3",
+                              color: "white",
+                              padding: "0.2rem 0.5rem",
+                              borderRadius: "6px",
+                              fontSize: "0.75rem"
+                            }}
+                          >
+                            {s.name}
+                          </span>
+                        ))
+                      ) : (
+                        "-"
+                      )}
                     </td>
                   )}
 
@@ -401,8 +437,9 @@ const Board: React.FC = () => {
                     <button
                       onClick={() => window.open(boardService.downloadFileUrl(f.id))}
                       className="btn btn-secondary"
+                      style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
                     >
-                      Scarica
+                      <DownloadIcon fontSize="small" />
                     </button>
 
                     {/* Disattiva / Riattiva */}
@@ -410,8 +447,9 @@ const Board: React.FC = () => {
                       <button
                         onClick={() => toggleStatus(f.id, !f.is_active)}
                         className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
+                        style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
                       >
-                        {f.is_active ? "Disattiva" : "Riattiva"}
+                        {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
                       </button>
                     )}
 
@@ -420,8 +458,9 @@ const Board: React.FC = () => {
                       <button
                         onClick={() => openEditSitesModal(f)}
                         className="btn btn-secondary"
+                        style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
                       >
-                        Modifica siti
+                        <EditLocationAltIcon fontSize="small" />
                       </button>
                     )}
 
@@ -440,7 +479,14 @@ const Board: React.FC = () => {
         </div>
 
         {/* PAGINAZIONE */}
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem" }}>
+        <div 
+          style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            marginTop: "1rem", 
+            gap: "1rem" 
+          }}
+        >
           <button
             className="btn btn-outline"
             disabled={page === 1}
@@ -458,8 +504,8 @@ const Board: React.FC = () => {
           </button>
         </div>
 
-      </div>
-    </div>
+      </div> {/* fine card */}
+    </div>   {/* fine container */}
   );
 };
 

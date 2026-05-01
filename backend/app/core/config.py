@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "super_secret_jwt_key_for_development_only_do_not_use_in_prod"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
-    SQLALCHEMY_DATABASE_URI: str = os.getenv("DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI: str = os.getenv("DATABASE_URL")
     UPLOAD_DIR: str = "uploads"
 
     # Power BI Configuration

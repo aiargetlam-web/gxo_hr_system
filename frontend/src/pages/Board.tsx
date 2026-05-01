@@ -246,7 +246,6 @@ const Board: React.FC = () => {
 
           </div>
         )}
-      </div>
 
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>

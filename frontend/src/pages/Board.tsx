@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 
-export const Board: React.FC = () => {
+const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
   const [files, setFiles] = useState<BoardFile[]>([]);
@@ -143,13 +143,25 @@ export const Board: React.FC = () => {
         <h1>Bacheca Aziendale</h1>
 
         {(user?.role === "hr" || user?.role === "admin") && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            
-            {/* FILTRO ATTIVI / DISATTIVATI */}
+          
+          // ⭐ NUOVA BARRA FILTRI ELEGANTE
+          <div className="filters-bar" 
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "1rem",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+              background: "white",
+              padding: "1rem",
+              borderRadius: "8px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+            }}
+          >
+
+            {/* FILTRO STATO */}
             <div>
-              <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>
-                Stato:
-              </label>
+              <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
               <select
                 value={activeFilter}
                 onChange={(e) => {
@@ -159,7 +171,7 @@ export const Board: React.FC = () => {
                   fetchFiles(value);
                 }}
                 style={{
-                  padding: "0.35rem 0.6rem",
+                  padding: "0.45rem 0.6rem",
                   borderRadius: "6px",
                   border: "1px solid var(--color-border)",
                   fontSize: "0.9rem"
@@ -170,47 +182,29 @@ export const Board: React.FC = () => {
               </select>
             </div>
 
-            {/* ORDINAMENTO (non più usato lato frontend) */}
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                fetchFiles(activeFilter);
-              }}
-              style={{
-                padding: "0.35rem 0.6rem",
-                borderRadius: "6px",
-                border: "1px solid var(--color-border)",
-                fontSize: "0.9rem",
-                width: "200px"
-              }}
-            >
-              <option value="upload_date">Ordina per data</option>
-              <option value="file_name">Ordina per nome</option>
-              <option value="sites">Ordina per sito</option>
-            </select>
-
             {/* FILTRO PER SITO */}
-            <select
-              value={siteFilter}
-              onChange={(e) => {
-                const value = e.target.value === "all" ? "all" : Number(e.target.value);
-                setSiteFilter(value);
-                setPage(1);
-              }}
-              style={{
-                padding: "0.35rem 0.6rem",
-                borderRadius: "6px",
-                border: "1px solid var(--color-border)",
-                fontSize: "0.9rem",
-                width: "200px"
-              }}
-            >
-              <option value="all">Tutti i siti</option>
-              {sites.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+            <div>
+              <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
+              <select
+                value={siteFilter}
+                onChange={(e) => {
+                  const value = e.target.value === "all" ? "all" : Number(e.target.value);
+                  setSiteFilter(value);
+                  setPage(1);
+                }}
+                style={{
+                  padding: "0.45rem 0.6rem",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-border)",
+                  fontSize: "0.9rem"
+                }}
+              >
+                <option value="all">Tutti i siti</option>
+                {sites.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
 
             {/* RICERCA */}
             <input
@@ -222,22 +216,23 @@ export const Board: React.FC = () => {
                 setPage(1);
               }}
               style={{
-                padding: "0.5rem",
+                padding: "0.45rem 0.6rem",
                 borderRadius: "6px",
                 border: "1px solid var(--color-border)",
-                width: "250px"
+                fontSize: "0.9rem",
+                width: "220px"
               }}
             />
 
             {/* AZIONI */}
-            <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+            <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
               <span
                 onClick={() => setShowUpload(true)}
                 style={{
                   cursor: "pointer",
                   color: "var(--color-primary)",
-                  fontWeight: 500,
-                  fontSize: "1rem"
+                  fontWeight: 600,
+                  fontSize: "0.95rem"
                 }}
               >
                 ➕ Carica nuovo documento
@@ -248,8 +243,8 @@ export const Board: React.FC = () => {
                 style={{
                   cursor: "pointer",
                   color: "var(--color-primary)",
-                  fontWeight: 500,
-                  fontSize: "1rem"
+                  fontWeight: 600,
+                  fontSize: "0.95rem"
                 }}
               >
                 ⬇️ Esporta CSV

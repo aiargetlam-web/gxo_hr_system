@@ -142,7 +142,8 @@ const Board: React.FC = () => {
         <h1>Bacheca Aziendale</h1>
 
         {(user?.role === "hr" || user?.role === "admin") && (
-          <div className="filters-bar" 
+          <div
+            className="filters-bar"
             style={{
               display: "flex",
               flexWrap: "wrap",
@@ -155,7 +156,7 @@ const Board: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
             }}
           >
-            {/* FILTRI */}
+            {/* FILTRO STATO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
               <select
@@ -178,6 +179,7 @@ const Board: React.FC = () => {
               </select>
             </div>
 
+            {/* FILTRO PER SITO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
               <select
@@ -201,6 +203,7 @@ const Board: React.FC = () => {
               </select>
             </div>
 
+            {/* RICERCA */}
             <input
               type="text"
               placeholder="Cerca per nome file..."
@@ -218,6 +221,7 @@ const Board: React.FC = () => {
               }}
             />
 
+            {/* AZIONI */}
             <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
               <span
                 onClick={() => setShowUpload(true)}
@@ -243,23 +247,25 @@ const Board: React.FC = () => {
                 ⬇️ Esporta CSV
               </span>
             </div>
-
           </div>
         )}
+      </div>
 
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 420,
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          borderRadius: 2,
-          p: 3,
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 420,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 3,
+          }}
+        >
           <BoardUpload
             onUploaded={() => {
               toast.success("File caricato con successo");
@@ -272,21 +278,26 @@ const Board: React.FC = () => {
 
       {/* MODAL MODIFICA SITI */}
       <Modal open={showEditSites} onClose={() => setShowEditSites(false)}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 420,
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          borderRadius: 2,
-          p: 3,
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 420,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 3,
+          }}
+        >
           <h3>Modifica siti</h3>
 
           {allSites.map(s => (
-            <label key={s.id} style={{ display: "flex", alignItems: "center", marginBottom: "0.4rem" }}>
+            <label
+              key={s.id}
+              style={{ display: "flex", alignItems: "center", marginBottom: "0.4rem" }}
+            >
               <input
                 type="checkbox"
                 checked={selectedSites.includes(s.id)}
@@ -318,16 +329,15 @@ const Board: React.FC = () => {
       <div className="card">
         <h3>Documenti Recenti</h3>
         <div className="table-responsive">
-          <table 
-            style={{ 
-              width: '100%', 
-              borderCollapse: 'collapse', 
-              marginTop: '1rem' 
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              marginTop: '1rem'
             }}
           >
             <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 2 }}>
               <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-                
                 <th style={{ padding: '0.75rem' }}>ID</th>
 
                 {/* ORDINAMENTO PER NOME */}
@@ -345,17 +355,15 @@ const Board: React.FC = () => {
 
                 {/* ORDINAMENTO PER SITI */}
                 {(user?.role === "hr" || user?.role === "admin") && (
-                  <>
-                    <th
-                      style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
-                      onClick={() => handleSort("sites")}
-                    >
-                      Siti associati{" "}
-                      {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
-                      {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-                      {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
-                    </th>
-                  </>
+                  <th
+                    style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                    onClick={() => handleSort("sites")}
+                  >
+                    Siti associati{" "}
+                    {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
+                    {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
+                    {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                  </th>
                 )}
 
                 {/* ORDINAMENTO PER DATA */}
@@ -370,15 +378,14 @@ const Board: React.FC = () => {
                 </th>
 
                 <th style={{ padding: '0.75rem' }}>Azione</th>
-
               </tr>
             </thead>
 
             <tbody>
               {paginatedFiles.map(f => (
-                <tr 
-                  key={f.id} 
-                  style={{ 
+                <tr
+                  key={f.id}
+                  style={{
                     borderBottom: '1px solid #e5e5e5',
                     transition: "background 0.2s"
                   }}
@@ -408,7 +415,7 @@ const Board: React.FC = () => {
                     <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                       {f.sites?.length > 0 ? (
                         f.sites.map(s => (
-                          <span 
+                          <span
                             key={s.id}
                             style={{
                               background: "#0050b3",
@@ -432,7 +439,6 @@ const Board: React.FC = () => {
                   </td>
 
                   <td style={{ padding: '0.75rem', display: "flex", gap: "0.5rem" }}>
-                    
                     {/* Scarica */}
                     <button
                       onClick={() => window.open(boardService.downloadFileUrl(f.id))}
@@ -463,7 +469,6 @@ const Board: React.FC = () => {
                         <EditLocationAltIcon fontSize="small" />
                       </button>
                     )}
-
                   </td>
                 </tr>
               ))}
@@ -475,18 +480,17 @@ const Board: React.FC = () => {
                   </td>
                 </tr>
               )}
-
             </tbody>
           </table>
         </div>
 
         {/* PAGINAZIONE */}
-        <div 
-          style={{ 
-            display: "flex", 
-            justifyContent: "center", 
-            marginTop: "1rem", 
-            gap: "1rem" 
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "1rem",
+            gap: "1rem"
           }}
         >
           <button
@@ -505,11 +509,9 @@ const Board: React.FC = () => {
             Successiva →
           </button>
         </div>
-
       </div> {/* fine card */}
     </div>   {/* fine container principale */}
   );
 };
 
 export default Board;
-

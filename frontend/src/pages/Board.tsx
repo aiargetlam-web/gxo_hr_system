@@ -40,21 +40,17 @@ export const Board: React.FC = () => {
 
   useEffect(() => {
     fetchFiles("true");
-    // carico i siti per filtro
+
     api.get("/api/v1/sites")
       .then(res => setSites(res.data))
-      .catch(err => {
-        console.error(err);
-        toast.error("Errore nel caricamento dei siti");
-      });
+      .catch(() => toast.error("Errore nel caricamento dei siti"));
   }, []);
 
   const fetchFiles = async (active: "true" | "false") => {
     try {
       const data = await boardService.getFiles(active);
       setFiles(data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Errore nel caricamento dei file");
     } finally {
       setLoading(false);
@@ -70,8 +66,7 @@ export const Board: React.FC = () => {
 
       toast.success(newStatus ? "File riattivato" : "File disattivato");
       fetchFiles(activeFilter);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Errore durante l'aggiornamento dello stato");
     }
   };
@@ -85,8 +80,7 @@ export const Board: React.FC = () => {
 
       const fileSites = await api.get(`/api/v1/board/${file.id}`);
       setSelectedSites(fileSites.data.sites || []);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Errore nel caricamento dei siti");
     }
 
@@ -105,8 +99,7 @@ export const Board: React.FC = () => {
       toast.success("Siti aggiornati");
       setShowEditSites(false);
       fetchFiles(activeFilter);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Errore durante il salvataggio dei siti");
     }
   };
@@ -338,7 +331,7 @@ export const Board: React.FC = () => {
                 <th style={{ padding: '0.75rem' }}>ID</th>
                 <th style={{ padding: '0.75rem' }}>Nome File</th>
                 <th style={{ padding: '0.75rem' }}>Stato</th>
-                {(user.role === "hr" || user.role === "admin") && (
+                {(user?.role === "hr" || user?.role === "admin") && (
                   <th style={{ padding: '0.75rem' }}>Siti associati</th>
                 )}
                 <th style={{ padding: '0.75rem' }}>Data Caricamento</th>
@@ -367,7 +360,7 @@ export const Board: React.FC = () => {
                   </td>
 
                   {/* COLONNA SITI ASSOCIATI */}
-                  {(user.role === "hr" || user.role === "admin") && (
+                  {(user?.role === "hr" || user?.role === "admin") && (
                     <td style={{ padding: '0.75rem' }}>
                       {f.sites?.map(s => s.name).join(", ") || "-"}
                     </td>
@@ -388,7 +381,7 @@ export const Board: React.FC = () => {
                     </button>
 
                     {/* Disattiva / Riattiva */}
-                    {(user.role === "hr" || user.role === "admin") && (
+                    {(user?.role === "hr" || user?.role === "admin") && (
                       <button
                         onClick={() => toggleStatus(f.id, !f.is_active)}
                         className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
@@ -398,7 +391,7 @@ export const Board: React.FC = () => {
                     )}
 
                     {/* Modifica siti */}
-                    {(user.role === "hr" || user.role === "admin") && (
+                    {(user?.role === "hr" || user?.role === "admin") && (
                       <button
                         onClick={() => openEditSitesModal(f)}
                         className="btn btn-secondary"

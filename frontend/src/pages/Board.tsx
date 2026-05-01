@@ -6,7 +6,6 @@ import { BoardUpload } from "../components/BoardUpload";
 
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 
 export const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
@@ -37,34 +36,37 @@ export const Board: React.FC = () => {
         <h1>Bacheca Aziendale</h1>
 
         {(user?.role === "hr" || user?.role === "admin") && (
-          <>
-            {/* Pulsante per aprire il modal */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setShowUpload(true)}
-              style={{ flex: 1 }}
-            >
-              Carica nuovo documento
-            </Button>
+          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
 
-            {/* Esporta CSV */}
-            <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
-              <button
-                onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
-                className="btn btn-outline"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  flex: 1,
-                  justifyContent: 'center'
-                }}
-              >
-                ⬇️ Esporta CSV
-              </button>
-            </div>
-          </>
+            {/* Link per aprire il modal */}
+            <span
+              onClick={() => setShowUpload(true)}
+              style={{
+                cursor: "pointer",
+                color: "var(--color-primary)",
+                textDecoration: "underline",
+                fontWeight: 500,
+                fontSize: "1rem"
+              }}
+            >
+              ➕ Carica nuovo documento
+            </span>
+
+            {/* Link per esportare CSV */}
+            <span
+              onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
+              style={{
+                cursor: "pointer",
+                color: "var(--color-primary)",
+                textDecoration: "underline",
+                fontWeight: 500,
+                fontSize: "1rem"
+              }}
+            >
+              ⬇️ Esporta CSV
+            </span>
+
+          </div>
         )}
       </div>
 

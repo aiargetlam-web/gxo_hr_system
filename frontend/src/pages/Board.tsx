@@ -9,7 +9,7 @@ const Board: React.FC = () => {
   const fetchFiles = async () => {
     try {
       const response = await api.get(
-        `/board?active=true&sort_by=${sortBy}&direction=${direction}`
+        `/api/v1/board?active=true&sort_by=${sortBy}&direction=${direction}`
       );
       setFiles(response.data);
     } catch (error) {

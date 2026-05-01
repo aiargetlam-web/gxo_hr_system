@@ -29,7 +29,7 @@ export interface BoardFile {
   upload_date: string;
   is_active: boolean;
   site_ids?: number[];
-  sites?: Site[]
+  sites?: Site[];
 }
 
 /* -------------------------

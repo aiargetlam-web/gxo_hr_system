@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 interface Props {
   onUploaded: () => void;
@@ -7,134 +8,142 @@ interface Props {
 
 export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [sites, setSites] = useState<any[]>([]);
-  const [selectedSites, setSelectedSites] = useState<number[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [siteIds, setSiteIds] = useState<number[]>([]);
+  const [dragActive, setDragActive] = useState(false);
 
-  useEffect(() => {
-    loadSites();
-  }, []);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const loadSites = async () => {
-    try {
-      const res = await api.get("/api/v1/sites");
-      setSites(res.data);
-    } catch (err) {
-      console.error("Errore caricamento siti:", err);
+  const handleFileSelect = (f: File) => {
+    if (!f) return;
+    setFile(f);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
   };
 
-  const handleUpload = async () => {
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
+  };
+
+  const upload = async () => {
     if (!file) {
-      alert("Seleziona un file");
+      toast.error("Seleziona un file");
       return;
     }
-    if (selectedSites.length === 0) {
-      alert("Seleziona almeno un sito");
+    if (siteIds.length === 0) {
+      toast.error("Seleziona almeno un sito");
       return;
     }
-
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    // 🔥 FIX DEFINITIVO: formato corretto per il backend
-    formData.append("site_ids", selectedSites.join(","));
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("site_ids", siteIds.join(","));
+
       await api.post("/api/v1/board/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      toast.success("File caricato con successo");
       onUploaded();
     } catch (err) {
       console.error(err);
-      alert("Errore durante il caricamento");
-    } finally {
-      setLoading(false);
+      toast.error("Errore durante il caricamento");
     }
   };
 
   return (
     <div>
-      <h2 style={{ marginBottom: "1rem" }}>Carica nuovo documento</h2>
+      <h2>Carica documento</h2>
 
-      {/* FILE */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label style={{ fontWeight: 600 }}>Seleziona file PDF</label>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          style={{
-            marginTop: "0.5rem",
-            padding: "0.6rem",
-            border: "1px solid var(--color-border)",
-            borderRadius: "6px",
-            width: "100%",
-            background: "var(--color-bg)",
-            cursor: "pointer"
-          }}
-        />
+      {/* AREA DRAG & DROP */}
+      <div
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        style={{
+          border: dragActive ? "3px dashed #007bff" : "3px dashed #ccc",
+          background: dragActive ? "#e8f1ff" : "#fafafa",
+          padding: "2rem",
+          borderRadius: "10px",
+          textAlign: "center",
+          cursor: "pointer",
+          transition: "0.2s",
+          marginBottom: "1rem",
+        }}
+      >
+        <p style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>
+          📄 Trascina qui il file
+        </p>
+        <p style={{ fontSize: "0.9rem", color: "#666" }}>
+          oppure clicca per selezionarlo
+        </p>
+
+        {file && (
+          <p style={{ marginTop: "1rem", fontWeight: "bold" }}>
+            File selezionato: {file.name}
+          </p>
+        )}
       </div>
 
-      {/* SITI */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label style={{ fontWeight: 600 }}>Siti disponibili</label>
-        <div style={{ marginTop: "0.5rem" }}>
-          {sites.map((s) => (
-            <label
-              key={s.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "0.4rem",
-                cursor: "pointer"
-              }}
-            >
-              <input
-                type="checkbox"
-                value={s.id}
-                onChange={(e) => {
-                  const id = Number(e.target.value);
-                  setSelectedSites((prev) =>
-                    prev.includes(id)
-                      ? prev.filter((x) => x !== id)
-                      : [...prev, id]
-                  );
-                }}
-                style={{ marginRight: "0.5rem" }}
-              />
-              {s.name}
-            </label>
-          ))}
-        </div>
-      </div>
+      {/* INPUT FILE NASCOSTO */}
+      <input
+        type="file"
+        ref={inputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileSelect(e.target.files[0]);
+          }
+        }}
+      />
 
-      {/* BOTTONI STILE GXO */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-        
-        {/* Annulla */}
-        <button
-          onClick={onUploaded}
-          className="btn btn-outline"
-          style={{ padding: "0.6rem 1.2rem", minWidth: "120px" }}
-        >
-          Annulla
-        </button>
+      {/* SELEZIONE SITI */}
+      <label style={{ fontWeight: 500 }}>Siti associati:</label>
+      <select
+        multiple
+        value={siteIds.map(String)}
+        onChange={(e) => {
+          const selected = Array.from(e.target.selectedOptions).map((o) =>
+            Number(o.value)
+          );
+          setSiteIds(selected);
+        }}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+          marginTop: "0.5rem",
+          marginBottom: "1rem",
+        }}
+      >
+        <option value="1">Sito 1</option>
+        <option value="2">Sito 2</option>
+        <option value="3">Sito 3</option>
+        {/* Qui puoi sostituire con i siti reali */}
+      </select>
 
-        {/* Carica */}
-        <button
-          onClick={handleUpload}
-          className="btn btn-primary"
-          disabled={loading}
-          style={{ padding: "0.6rem 1.2rem", minWidth: "120px" }}
-        >
-          {loading ? "Caricamento..." : "Carica"}
-        </button>
-
-      </div>
+      {/* BOTTONE CARICA */}
+      <button className="btn btn-primary" onClick={upload}>
+        Carica
+      </button>
     </div>
   );
 };

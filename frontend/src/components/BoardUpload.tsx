@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
 
-export const BoardUpload: React.FC = () => {
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import CircularProgress from "@mui/material/CircularProgress";
+
+interface Props {
+  onUploaded: () => void; // callback dal modal
+}
+
+export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
   const [file, setFile] = useState<File | null>(null);
   const [sites, setSites] = useState<any[]>([]);
   const [selectedSites, setSelectedSites] = useState<number[]>([]);
@@ -41,8 +50,8 @@ export const BoardUpload: React.FC = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("File caricato con successo!");
-      window.location.reload();
+      // chiude il modal e aggiorna la lista
+      onUploaded();
     } catch (err) {
       console.error(err);
       alert("Errore durante il caricamento");
@@ -52,42 +61,63 @@ export const BoardUpload: React.FC = () => {
   };
 
   return (
-    <div className="card" style={{ marginBottom: "1.5rem" }}>
-      <h3>Carica nuovo documento</h3>
+    <div>
+      <h2>Carica nuovo documento</h2>
 
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-        style={{ marginBottom: "1rem" }}
-      />
+      {/* FILE */}
+      <div style={{ marginTop: 20 }}>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+      </div>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <label><strong>Seleziona siti:</strong></label>
+      {/* SITI */}
+      <div style={{ marginTop: 20 }}>
+        <strong>Siti disponibili</strong>
         <div>
           {sites.map((s) => (
-            <label key={s.id} style={{ display: "block" }}>
-              <input
-                type="checkbox"
-                value={s.id}
-                onChange={(e) => {
-                  const id = Number(e.target.value);
-                  setSelectedSites((prev) =>
-                    prev.includes(id)
-                      ? prev.filter((x) => x !== id)
-                      : [...prev, id]
-                  );
-                }}
-              />
-              {s.name}
-            </label>
+            <FormControlLabel
+              key={s.id}
+              control={
+                <Checkbox
+                  checked={selectedSites.includes(s.id)}
+                  onChange={() =>
+                    setSelectedSites((prev) =>
+                      prev.includes(s.id)
+                        ? prev.filter((x) => x !== s.id)
+                        : [...prev, s.id]
+                    )
+                  }
+                />
+              }
+              label={s.name}
+            />
           ))}
         </div>
       </div>
 
-      <button className="btn btn-primary" onClick={handleUpload} disabled={loading}>
-        {loading ? "Caricamento..." : "Carica File"}
-      </button>
+      {/* BOTTONI */}
+      <div
+        style={{
+          marginTop: 30,
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button variant="outlined" onClick={onUploaded}>
+          Annulla
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={handleUpload}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={22} /> : "Carica"}
+        </Button>
+      </div>
     </div>
   );
 };

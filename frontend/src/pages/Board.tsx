@@ -476,7 +476,7 @@ const Board: React.FC = () => {
 })}
 
 
-              {paginatedFiles.length === 0 && (
+              {paginatedFiles.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '1rem', textAlign: 'center' }}>
                     Nessun documento trovato.

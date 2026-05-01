@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { BoardFile } from '../types';
 import { boardService } from '../services/boardService';
+import { BoardUpload } from "../components/BoardUpload";
 
 export const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
@@ -29,6 +30,7 @@ export const Board: React.FC = () => {
     <div>
       <div className="flex-wrap-mobile">
         <h1>Bacheca Aziendale</h1>
+	{(user?.role === "hr" || user?.role === "admin") && <BoardUpload />}
         {(user?.role === 'hr' || user?.role === 'admin') && (
           <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
             <button onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, justifyContent: 'center' }}>

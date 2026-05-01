@@ -10,7 +10,9 @@ export const boardService = {
   uploadFile: async (file: File, siteIds: number[]): Promise<BoardFile> => {
     const formData = new FormData();
     formData.append('file', file);
-    siteIds.forEach(id => formData.append('site_ids', id.toString()));
+
+    // 🔹 inviamo una stringa "1,2,3" come si aspetta il backend
+    formData.append('site_ids', siteIds.join(','));
 
     const response = await api.post<BoardFile>('/api/v1/board/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -22,3 +24,4 @@ export const boardService = {
     return `${api.defaults.baseURL}/api/v1/board/${id}/download`;
   }
 };
+

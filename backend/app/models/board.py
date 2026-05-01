@@ -17,6 +17,7 @@ class BoardFile(Base):
     file_path = Column(String(255), nullable=False)
     hr_author_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     upload_date = Column(DateTime(timezone=True), server_default=func.now())
+    is_active = Column(Boolean, default=True)
 
     author = relationship("User")
     sites = relationship("Site", secondary="board_file_sites")

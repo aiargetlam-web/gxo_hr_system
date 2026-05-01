@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
 
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import CircularProgress from "@mui/material/CircularProgress";
-
 interface Props {
-  onUploaded: () => void; // callback dal modal
+  onUploaded: () => void;
 }
 
 export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
@@ -50,7 +45,6 @@ export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // chiude il modal e aggiorna la lista
       onUploaded();
     } catch (err) {
       console.error(err);
@@ -62,61 +56,82 @@ export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
 
   return (
     <div>
-      <h2>Carica nuovo documento</h2>
+      <h2 style={{ marginBottom: "1rem" }}>Carica nuovo documento</h2>
 
       {/* FILE */}
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginBottom: "1rem" }}>
+        <label style={{ fontWeight: 600 }}>Seleziona file PDF</label>
         <input
           type="file"
           accept="application/pdf"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
+          style={{
+            marginTop: "0.5rem",
+            padding: "0.6rem",
+            border: "1px solid var(--color-border)",
+            borderRadius: "6px",
+            width: "100%",
+            background: "var(--color-bg)",
+            cursor: "pointer"
+          }}
         />
       </div>
 
       {/* SITI */}
-      <div style={{ marginTop: 20 }}>
-        <strong>Siti disponibili</strong>
-        <div>
+      <div style={{ marginBottom: "1rem" }}>
+        <label style={{ fontWeight: 600 }}>Siti disponibili</label>
+        <div style={{ marginTop: "0.5rem" }}>
           {sites.map((s) => (
-            <FormControlLabel
+            <label
               key={s.id}
-              control={
-                <Checkbox
-                  checked={selectedSites.includes(s.id)}
-                  onChange={() =>
-                    setSelectedSites((prev) =>
-                      prev.includes(s.id)
-                        ? prev.filter((x) => x !== s.id)
-                        : [...prev, s.id]
-                    )
-                  }
-                />
-              }
-              label={s.name}
-            />
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "0.4rem",
+                cursor: "pointer"
+              }}
+            >
+              <input
+                type="checkbox"
+                value={s.id}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedSites((prev) =>
+                    prev.includes(id)
+                      ? prev.filter((x) => x !== id)
+                      : [...prev, id]
+                  );
+                }}
+                style={{ marginRight: "0.5rem" }}
+              />
+              {s.name}
+            </label>
           ))}
         </div>
       </div>
 
-      {/* BOTTONI */}
-      <div
-        style={{
-          marginTop: 30,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button variant="outlined" onClick={onUploaded}>
-          Annulla
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleUpload}
-          disabled={loading}
+      {/* BOTTONI STILE GXO */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
+        
+        {/* Annulla */}
+        <button
+          onClick={onUploaded}
+          className="btn btn-outline"
+          style={{ padding: "0.6rem 1.2rem", minWidth: "120px" }}
         >
-          {loading ? <CircularProgress size={22} /> : "Carica"}
-        </Button>
+          Annulla
+        </button>
+
+        {/* Carica */}
+        <button
+          onClick={handleUpload}
+          className="btn btn-primary"
+          disabled={loading}
+          style={{ padding: "0.6rem 1.2rem", minWidth: "120px" }}
+        >
+          {loading ? "Caricamento..." : "Carica"}
+        </button>
+
       </div>
     </div>
   );

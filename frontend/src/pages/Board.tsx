@@ -249,7 +249,8 @@ const Board: React.FC = () => {
 
           </div>
         )}
-      </div> {/* <-- CHIUSURA CORRETTA flex-wrap-mobile */}
+      </div> {/* fine flex-wrap-mobile */}
+
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
         <Box sx={{
@@ -507,6 +508,7 @@ const Board: React.FC = () => {
             Successiva →
           </button>
         </div>
+</div> {/* fine container principale */}
 
       </div> {/* fine card */}
     </div>   {/* fine container */}

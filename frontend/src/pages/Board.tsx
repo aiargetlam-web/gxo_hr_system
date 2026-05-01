@@ -142,7 +142,6 @@ const Board: React.FC = () => {
         <h1>Bacheca Aziendale</h1>
 
         {(user?.role === "hr" || user?.role === "admin") && (
-          
           <div className="filters-bar" 
             style={{
               display: "flex",
@@ -250,8 +249,7 @@ const Board: React.FC = () => {
 
           </div>
         )}
-      </div>
-
+      </div> {/* <-- CHIUSURA CORRETTA flex-wrap-mobile */}
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
         <Box sx={{
@@ -318,7 +316,6 @@ const Board: React.FC = () => {
           </div>
         </Box>
       </Modal>
-
       {/* LISTA DOCUMENTI */}
       <div className="card">
         <h3>Documenti Recenti</h3>
@@ -378,6 +375,7 @@ const Board: React.FC = () => {
 
               </tr>
             </thead>
+
             <tbody>
               {paginatedFiles.map(f => (
                 <tr 
@@ -480,7 +478,7 @@ const Board: React.FC = () => {
                 </tr>
               )}
 
-            </tbody>
+                        </tbody>
           </table>
         </div>
 

@@ -70,7 +70,7 @@ export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
     <div>
       <h2>Carica documento</h2>
 
-      {/* AREA DRAG & DROP */}
+      {/* AREA DRAG & DROP PREMIUM */}
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -78,25 +78,44 @@ export const BoardUpload: React.FC<Props> = ({ onUploaded }) => {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         style={{
-          border: dragActive ? "3px dashed #007bff" : "3px dashed #ccc",
+          border: dragActive ? "3px solid #007bff" : "3px dashed #ccc",
           background: dragActive ? "#e8f1ff" : "#fafafa",
-          padding: "2rem",
-          borderRadius: "10px",
+          padding: "2.5rem",
+          borderRadius: "14px",
           textAlign: "center",
           cursor: "pointer",
-          transition: "0.2s",
+          transition: "0.25s",
           marginBottom: "1rem",
+          boxShadow: dragActive
+            ? "0 0 18px rgba(0, 123, 255, 0.5)"
+            : "0 0 0 rgba(0,0,0,0)",
         }}
       >
+        <div
+          style={{
+            fontSize: dragActive ? "3.2rem" : "2.8rem",
+            transition: "0.25s",
+            marginBottom: "0.5rem",
+          }}
+        >
+          📄
+        </div>
+
         <p style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>
-          📄 Trascina qui il file
+          Trascina qui il file
         </p>
         <p style={{ fontSize: "0.9rem", color: "#666" }}>
           oppure clicca per selezionarlo
         </p>
 
         {file && (
-          <p style={{ marginTop: "1rem", fontWeight: "bold" }}>
+          <p
+            style={{
+              marginTop: "1rem",
+              fontWeight: "bold",
+              color: "#007bff",
+            }}
+          >
             File selezionato: {file.name}
           </p>
         )}

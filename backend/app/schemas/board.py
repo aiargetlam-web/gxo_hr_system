@@ -1,16 +1,14 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
+from app.schemas.site import Site
 
-# Schema base (vuoto, ma utile per estensioni future)
 class BoardFileBase(BaseModel):
     pass
 
-# Schema per la creazione (upload)
 class BoardFileCreate(BoardFileBase):
     site_ids: List[int]
 
-# Schema restituito dal backend
 class BoardFile(BoardFileBase):
     id: int
     file_name: str
@@ -18,7 +16,7 @@ class BoardFile(BoardFileBase):
     hr_author_id: Optional[int] = None
     upload_date: datetime
     is_active: bool
-    sites: List[int] = []   # lista di ID dei siti, NON oggetti Site
+    sites: List[Site] = []   # ⭐ ORA CORRETTO
 
     class Config:
         from_attributes = True

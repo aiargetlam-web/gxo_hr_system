@@ -15,17 +15,17 @@ from app.core.audit import log_activity
 router = APIRouter()
 
 # ---------------------------------------------------------
-# GET LISTA FILE (con filtro attivi/disattivi)
+# GET LISTA FILE (con filtro attivi/disattivi + ordinamento dinamico)
 # ---------------------------------------------------------
 @router.get("/", response_model=List[BoardFileSchema])
 def get_board_files(
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user),
-    active: Optional[bool] = Query(default=True)
+    active: Optional[bool] = Query(default=True),
+    sort_by: str = Query(default="upload_date"),
+    direction: str = Query(default="desc")
 ) -> Any:
-    """
-    Ritorna i file filtrati per ruolo e stato attivo/disattivo.
-    """
+
     query = db.query(BoardFile).join(BoardFileSite)
 
     # filtro attivi/disattivi
@@ -47,13 +47,24 @@ def get_board_files(
             return []
         query = query.filter(BoardFileSite.site_id.in_(hr_site_ids))
 
-    # ADMIN → vede tutto
+    # colonne ordinabili
+    sortable_columns = {
+        "file_name": BoardFile.file_name,
+        "upload_date": BoardFile.upload_date,
+        "author": BoardFile.hr_author_id,
+        "sites": BoardFileSite.site_id,  # ⭐ ORDINAMENTO PER SITO
+    }
 
-    return (
-        query.group_by(BoardFile.id)
-        .order_by(BoardFile.upload_date.desc())
-        .all()
-    )
+    # colonna scelta o fallback
+    order_column = sortable_columns.get(sort_by, BoardFile.upload_date)
+
+    # direzione
+    if direction == "asc":
+        query = query.order_by(order_column.asc())
+    else:
+        query = query.order_by(order_column.desc())
+
+    return query.all()
 
 
 # ---------------------------------------------------------

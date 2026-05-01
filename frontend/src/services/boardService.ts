@@ -2,8 +2,9 @@ import api from './api';
 import { BoardFile } from '../types';
 
 export const boardService = {
-  getFiles: async (): Promise<BoardFile[]> => {
-    const response = await api.get<BoardFile[]>('/api/v1/board/');
+  // 🔹 Ora accetta il filtro active
+  getFiles: async (active: "true" | "false" = "true"): Promise<BoardFile[]> => {
+    const response = await api.get<BoardFile[]>(`/api/v1/board/?active=${active}`);
     return response.data;
   },
 
@@ -24,4 +25,3 @@ export const boardService = {
     return `${api.defaults.baseURL}/api/v1/board/${id}/download`;
   }
 };
-

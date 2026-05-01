@@ -449,7 +449,7 @@ const Board: React.FC = () => {
                     </button>
 
                     {/* Disattiva / Riattiva */}
-                    {(user?.role === "hr" || user?.role === "admin") && (
+                    {(user?.role === "hr" || user?.role === "admin") ? (
                       <button
                         onClick={() => toggleStatus(f.id, !f.is_active)}
                         className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
@@ -457,10 +457,10 @@ const Board: React.FC = () => {
                       >
                         {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
                       </button>
-                    ):null}
+                    ) : null}
 
                     {/* Modifica siti */}
-                    {(user?.role === "hr" || user?.role === "admin") && (
+                    {(user?.role === "hr" || user?.role === "admin") ? (
                       <button
                         onClick={() => openEditSitesModal(f)}
                         className="btn btn-secondary"
@@ -468,7 +468,7 @@ const Board: React.FC = () => {
                       >
                         <EditLocationAltIcon fontSize="small" />
                       </button>
-                    )}
+                    ) : null}
                   </td>
                 </tr>
               ))}

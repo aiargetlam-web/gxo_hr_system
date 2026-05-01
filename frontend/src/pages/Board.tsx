@@ -155,7 +155,7 @@ const Board: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
             }}
           >
-            {/* FILTRO STATO */}
+            {/* FILTRI */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
               <select
@@ -178,7 +178,6 @@ const Board: React.FC = () => {
               </select>
             </div>
 
-            {/* FILTRO PER SITO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
               <select
@@ -202,7 +201,6 @@ const Board: React.FC = () => {
               </select>
             </div>
 
-            {/* RICERCA */}
             <input
               type="text"
               placeholder="Cerca per nome file..."
@@ -220,7 +218,6 @@ const Board: React.FC = () => {
               }}
             />
 
-            {/* AZIONI */}
             <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
               <span
                 onClick={() => setShowUpload(true)}
@@ -249,8 +246,7 @@ const Board: React.FC = () => {
 
           </div>
         )}
-      </div> {/* fine flex-wrap-mobile */}
-</div> {/* fine container principale */}
+      </div>
 
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
@@ -318,6 +314,7 @@ const Board: React.FC = () => {
           </div>
         </Box>
       </Modal>
+
       {/* LISTA DOCUMENTI */}
       <div className="card">
         <h3>Documenti Recenti</h3>
@@ -480,7 +477,7 @@ const Board: React.FC = () => {
                 </tr>
               )}
 
-                        </tbody>
+            </tbody>
           </table>
         </div>
 
@@ -509,11 +506,11 @@ const Board: React.FC = () => {
             Successiva →
           </button>
         </div>
-</div> {/* fine container principale */}
 
       </div> {/* fine card */}
-    </div>   {/* fine container */}
+    </div>   {/* fine container principale */}
   );
 };
 
 export default Board;
+

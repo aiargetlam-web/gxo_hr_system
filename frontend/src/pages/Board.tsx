@@ -1,26 +1,66 @@
-import React, { useState, useEffect } from "react";
-import api from "../services/api"; // Assicurati che questo percorso sia corretto
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { BoardFile } from '../types';
+import { boardService } from '../services/boardService';
+import { BoardUpload } from "../components/BoardUpload";
+import api from "../services/api";
+import toast from "react-hot-toast";
 
-const Board: React.FC = () => {
-  const [files, setFiles] = useState<any[]>([]);
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+
+export const Board: React.FC = () => {
+  const { user } = useContext(AuthContext);
+
+  const [files, setFiles] = useState<BoardFile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showUpload, setShowUpload] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"true" | "false">("true");
+
+  // ricerca
+  const [search, setSearch] = useState("");
+
+  // ordinamento dinamico (backend)
   const [sortBy, setSortBy] = useState("upload_date");
   const [direction, setDirection] = useState<"asc" | "desc">("desc");
 
-  const fetchFiles = async () => {
+  // paginazione
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 20;
+
+  // filtro per sito
+  const [siteFilter, setSiteFilter] = useState<number | "all">("all");
+  const [sites, setSites] = useState<any[]>([]);
+
+  // modifica siti
+  const [showEditSites, setShowEditSites] = useState(false);
+  const [editFile, setEditFile] = useState<BoardFile | null>(null);
+  const [allSites, setAllSites] = useState<any[]>([]);
+  const [selectedSites, setSelectedSites] = useState<number[]>([]);
+
+  useEffect(() => {
+    fetchFiles(activeFilter);
+
+    api.get("/api/v1/sites")
+      .then(res => setSites(res.data))
+      .catch(() => toast.error("Errore nel caricamento dei siti"));
+  }, []);
+
+  const fetchFiles = async (active: "true" | "false") => {
     try {
-      const response = await api.get(
-        `/api/v1/board?active=true&sort_by=${sortBy}&direction=${direction}`
+      const res = await api.get(
+        `/api/v1/board?active=${active}&sort_by=${sortBy}&direction=${direction}`
       );
-      setFiles(response.data);
-    } catch (error) {
-      console.error("Errore nel caricamento dei file:", error);
+      setFiles(res.data);
+    } catch {
+      toast.error("Errore nel caricamento dei file");
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchFiles();
-  }, [sortBy, direction]);
-
+  // CAMBIO ORDINAMENTO
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setDirection(direction === "asc" ? "desc" : "asc");
@@ -28,62 +68,40 @@ const Board: React.FC = () => {
       setSortBy(column);
       setDirection("asc");
     }
+    fetchFiles(activeFilter);
   };
 
-  return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Bacheca Aziendale</h1>
+  const toggleStatus = async (id: number, newStatus: boolean) => {
+    try {
+      const formData = new FormData();
+      formData.append("is_active", String(newStatus));
 
-      <table className="table-auto w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100">
-            <th
-              onClick={() => handleSort("file_name")}
-              className="cursor-pointer p-2"
-            >
-              Nome {sortBy === "file_name" && (direction === "asc" ? "▲" : "▼")}
-            </th>
+      await api.patch(`/api/v1/board/${id}/status`, formData);
 
-            <th
-              onClick={() => handleSort("upload_date")}
-              className="cursor-pointer p-2"
-            >
-              Data {sortBy === "upload_date" && (direction === "asc" ? "▲" : "▼")}
-            </th>
+      toast.success(newStatus ? "File riattivato" : "File disattivato");
+      fetchFiles(activeFilter);
+    } catch {
+      toast.error("Errore durante l'aggiornamento dello stato");
+    }
+  };
 
-            <th
-              onClick={() => handleSort("author")}
-              className="cursor-pointer p-2"
-            >
-              Autore {sortBy === "author" && (direction === "asc" ? "▲" : "▼")}
-            </th>
+  const openEditSitesModal = async (file: BoardFile) => {
+    setEditFile(file);
 
-            <th
-              onClick={() => handleSort("sites")}
-              className="cursor-pointer p-2"
-            >
-              Siti {sortBy === "sites" && (direction === "asc" ? "▲" : "▼")}
-            </th>
-          </tr>
-        </thead>
+    try {
+      const res = await api.get("/api/v1/sites");
+      setAllSites(res.data);
 
-        <tbody>
-          {files.map((f) => (
-            <tr key={f.id} className="border-b">
-              <td className="p-2">{f.file_name}</td>
-              <td className="p-2">
-                {new Date(f.upload_date).toLocaleString()}
-              </td>
-              <td className="p-2">{f.hr_author_id}</td>
-              <td className="p-2">
-                {f.sites.map((s: any) => s.name || s.id).join(", ")}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+      const fileSites = await api.get(`/api/v1/board/${file.id}`);
+      setSelectedSites(fileSites.data.sites || []);
+    } catch {
+      toast.error("Errore nel caricamento dei siti");
+    }
 
-export default Board;
+    setShowEditSites(true);
+  };
+
+  const saveSites = async () => {
+    if (!editFile) return;
+
+    try

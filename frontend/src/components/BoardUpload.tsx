@@ -16,7 +16,7 @@ export const BoardUpload: React.FC<BoardUploadProps> = ({ onUploaded, onCancel }
 
   useEffect(() => {
     api
-      .get("/api/v1/sites")
+      .get("/sites")   // ✅ CORRETTO
       .then((res) => setSites(res.data))
       .catch(() => toast.error("Errore nel caricamento dei siti"));
   }, []);
@@ -37,13 +37,19 @@ export const BoardUpload: React.FC<BoardUploadProps> = ({ onUploaded, onCancel }
       return;
     }
 
+    if (selectedSites.length === 0) {
+      toast.error("Seleziona almeno un sito");
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("site_ids", selectedSites.join(","));
+      formData.append("site_ids", selectedSites.join(",")); // "1,2,3"
 
-      await api.post("/api/v1/board", formData);
+      await api.post("/board/upload", formData);  // ✅ CORRETTO
+
       toast.success("File caricato con successo");
       onUploaded();
     } catch {
@@ -144,7 +150,7 @@ export const BoardUpload: React.FC<BoardUploadProps> = ({ onUploaded, onCancel }
           onClick={() => {
             setFile(null);
             setSelectedSites([]);
-            onCancel(); // 🔥 chiude il popup
+            onCancel();
           }}
         >
           Annulla

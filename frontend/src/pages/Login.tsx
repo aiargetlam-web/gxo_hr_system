@@ -17,14 +17,20 @@ export const Login: React.FC = () => {
       const response = await authService.login(email, password);
 
       // 🔥 1) PRIMO ACCESSO → reindirizza a change-password
-      if (response.requires_password_change) {
+      if ("requires_password_change" in response && response.requires_password_change) {
         navigate('/change-password');
         return;
       }
 
       // 🔥 2) LOGIN NORMALE
-      login(response.access_token);
-      navigate('/Bacheca');
+      if ("access_token" in response) {
+        login(response.access_token);
+        navigate('/dashboard');
+        return;
+      }
+
+      // 🔥 Caso inatteso (non dovrebbe mai accadere)
+      setError("Risposta inattesa dal server.");
 
     } catch (err) {
       setError('Credenziali non valide.');

@@ -1,21 +1,32 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
-// Interceptor per aggiungere il JWT token ad ogni richiesta
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
+// --------------------------------------------------
+// 🔥 INTERCEPTOR REQUEST
+// Aggiunge automaticamente il token a tutte le richieste
+// --------------------------------------------------
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// --------------------------------------------------
+// 🔥 INTERCEPTOR RESPONSE
+// Se il token è scaduto → logout automatico
+// --------------------------------------------------
+api.interceptors.response.use(
+  (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access_token");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );

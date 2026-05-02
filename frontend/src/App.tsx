@@ -13,6 +13,7 @@ import Board from "./pages/Board";
 import { Admin } from './pages/Admin';
 import { ActivityLogs, UserHistory } from './pages/Audit';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';
+import { ChangePassword } from './pages/ChangePassword';   // ⭐ AGGIUNTO
 
 // 🔥 TOAST
 import { Toaster } from "react-hot-toast";
@@ -35,8 +36,14 @@ const App: React.FC = () => {
 
       <Router>
         <Routes>
+
+          {/* 🔥 LOGIN */}
           <Route path="/login" element={<Login />} />
-          
+
+          {/* 🔥 PRIMO ACCESSO → CAMBIO PASSWORD */}
+          <Route path="/change-password" element={<ChangePassword />} />
+
+          {/* 🔥 ROUTE PROTETTE */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Navigate to="/board" replace />} />
@@ -53,6 +60,7 @@ const App: React.FC = () => {
             </Route>
           </Route>
 
+          {/* 🔥 FALLBACK */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>

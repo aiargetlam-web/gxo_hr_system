@@ -12,7 +12,15 @@ export interface User {
   first_name: string;
   last_name: string;
   role: string;
+
   site_id: number | null;
+
+  // 🔥 AGGIUNTO: relazione completa con il sito
+  site?: {
+    id: number;
+    name: string;
+  } | null;
+
   id_lul?: string | null;
   is_active: boolean;
   phone?: string | null;
@@ -20,7 +28,6 @@ export interface User {
   created_at: string;
   updated_at: string;
 }
-
 /* ============================
    SITES
 ============================ */

@@ -4,6 +4,12 @@ import { userService } from "../services/userService";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
+// Material UI Icons
+import EditIcon from "@mui/icons-material/Edit";
+import BusinessIcon from "@mui/icons-material/Business";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+
 export const Users: React.FC = () => {
   const { user: currentUser } = useContext(AuthContext);
 
@@ -25,9 +31,11 @@ export const Users: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSiteModal, setShowSiteModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState<string>("");
 
   useEffect(() => {
     loadSites();
@@ -114,6 +122,23 @@ export const Users: React.FC = () => {
     }
   };
 
+  // (Opzionale) reset password via API dedicata, se la aggiungerai
+  const handleResetPassword = async () => {
+    if (!selectedUser) return;
+    try {
+      await userService.updateUser(selectedUser.id, {
+        password: resetPasswordValue || "Password123!",
+      });
+      toast.success("Password reimpostata");
+      setShowResetPasswordModal(false);
+      setSelectedUser(null);
+      setResetPasswordValue("");
+      loadUsers();
+    } catch (err) {
+      toast.error("Errore reset password");
+    }
+  };
+
   if (loading) return <div>Caricamento...</div>;
 
   return (
@@ -129,7 +154,10 @@ export const Users: React.FC = () => {
         </div>
 
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", width: "100%" }}>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          <button className="btn btn-primary" onClick={() => {
+            setSelectedUser({});
+            setShowCreateModal(true);
+          }}>
             ➕ Crea Utente
           </button>
 
@@ -232,7 +260,7 @@ export const Users: React.FC = () => {
                   )}
                 </td>
 
-                <td style={{ padding: "0.75rem", display: "flex", gap: "0.5rem" }}>
+                <td style={{ padding: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
@@ -240,7 +268,8 @@ export const Users: React.FC = () => {
                       setShowEditModal(true);
                     }}
                   >
-                    ✏️
+                    <EditIcon style={{ fontSize: "18px", marginRight: "4px" }} />
+                    Modifica
                   </button>
 
                   <button
@@ -250,7 +279,20 @@ export const Users: React.FC = () => {
                       setShowSiteModal(true);
                     }}
                   >
-                    🏷️
+                    <BusinessIcon style={{ fontSize: "18px", marginRight: "4px" }} />
+                    Cambia Sito
+                  </button>
+
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setSelectedUser(u);
+                      setResetPasswordValue("");
+                      setShowResetPasswordModal(true);
+                    }}
+                  >
+                    <VpnKeyIcon style={{ fontSize: "18px", marginRight: "4px" }} />
+                    Reset Password
                   </button>
 
                   <button
@@ -258,6 +300,7 @@ export const Users: React.FC = () => {
                     style={{ backgroundColor: u.is_active ? "#dc3545" : "#28a745" }}
                     onClick={() => handleToggleStatus(u.id, u.is_active)}
                   >
+                    <PowerSettingsNewIcon style={{ fontSize: "18px", marginRight: "4px" }} />
                     {u.is_active ? "Disattiva" : "Riattiva"}
                   </button>
                 </td>
@@ -314,210 +357,4 @@ export const Users: React.FC = () => {
 
             <select
               className="input"
-              onChange={(e) => setSelectedUser((u: any) => ({ ...u, site_id: Number(e.target.value) }))}
-            >
-              <option value="">Sito</option>
-              {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              className="input"
-              placeholder="ID LUL"
-              onChange={(e) => setSelectedUser((u: any) => ({ ...u, id_lul: e.target.value }))}
-            />
-
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.createUser({
-                      ...selectedUser,
-                      password: "Password123!",
-                    });
-                    toast.success("Utente creato");
-                    setShowCreateModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch (err) {
-                    toast.error("Errore creazione utente");
-                  }
-                }}
-              >
-                Salva
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODALE MODIFICA UTENTE */}
-      {showEditModal && selectedUser && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <h2>Modifica Utente</h2>
-
-            <input
-              className="input"
-              value={selectedUser.first_name}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, first_name: e.target.value })
-              }
-              placeholder="Nome"
-            />
-
-            <input
-              className="input"
-              value={selectedUser.last_name}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, last_name: e.target.value })
-              }
-              placeholder="Cognome"
-            />
-
-            <input
-              className="input"
-              value={selectedUser.email}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, email: e.target.value })
-              }
-              placeholder="Email"
-            />
-
-            <select
-              className="input"
-              value={selectedUser.role}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, role: e.target.value })
-              }
-            >
-              <option value="user">User</option>
-              <option value="hr">HR</option>
-              <option value="admin">Admin</option>
-            </select>
-
-            <select
-              className="input"
-              value={selectedUser.site_id}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, site_id: Number(e.target.value) })
-              }
-            >
-              {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              className="input"
-              value={selectedUser.id_lul || ""}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, id_lul: e.target.value })
-              }
-              placeholder="ID LUL"
-            />
-
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowEditModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.updateUser(selectedUser.id, selectedUser);
-                    toast.success("Utente aggiornato");
-                    setShowEditModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch {
-                    toast.error("Errore aggiornamento utente");
-                  }
-                }}
-              >
-                Salva
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODALE CAMBIA SITO */}
-      {showSiteModal && selectedUser && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <h2>Cambia Sito</h2>
-
-            <select
-              className="input"
-              value={selectedUser.site_id}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, site_id: Number(e.target.value) })
-              }
-            >
-              {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowSiteModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.updateUser(selectedUser.id, {
-                      site_id: selectedUser.site_id,
-                    });
-                    toast.success("Sito aggiornato");
-                    setShowSiteModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch {
-                    toast.error("Errore aggiornamento sito");
-                  }
-                }}
-              >
-                Salva
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+              onChange={(e) => setSelectedUser((u: any) => ({ ...u

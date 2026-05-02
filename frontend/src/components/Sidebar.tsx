@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
         <div style={{ padding: '0 1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: '1rem' }}>
           RUOLO: {user.role.toUpperCase()}<br/>
-          SITO: {user.site_name || 'Tutti'}
+          SITO: {user.site?.name || 'Tutti'}
         </div>
         <nav className="sidebar-nav">
           <Link to="/dashboard" className={`sidebar-link ${path === '/dashboard' ? 'active' : ''}`} onClick={onClose}>Dashboard</Link>

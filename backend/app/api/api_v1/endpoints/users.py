@@ -3,6 +3,8 @@ import io
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
+
 from app.api import deps
 from app.models.user import User
 from app.models.site import HRSite
@@ -10,9 +12,12 @@ from app.models.import_users_log import ImportUsersLog
 from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
 from app.core.security import get_password_hash
 from app.core.audit import log_activity, log_user_history
-from sqlalchemy import or_
 
 router = APIRouter()
+
+# ============================================================
+# GET CURRENT USER
+# ============================================================
 
 @router.get("/me", response_model=UserSchema)
 def read_user_me(
@@ -22,6 +27,10 @@ def read_user_me(
     return current_user
 
 
+# ============================================================
+# GET USERS
+# ============================================================
+
 @router.get("/", response_model=List[UserSchema])
 def get_users(
     db: Session = Depends(deps.get_db),
@@ -29,10 +38,14 @@ def get_users(
     search_string: Optional[str] = None,
     is_active: Optional[bool] = None
 ) -> Any:
+
     query = db.query(User)
 
+    # HR può vedere solo i propri siti
     if current_user.role == "hr":
-        hr_site_ids = [s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()]
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
         if not hr_site_ids:
             return []
         query = query.filter(User.site_id.in_(hr_site_ids))
@@ -53,6 +66,10 @@ def get_users(
     return query.all()
 
 
+# ============================================================
+# CREATE USER (first_access = True)
+# ============================================================
+
 @router.post("/", response_model=UserSchema)
 def create_user(
     *,
@@ -61,15 +78,20 @@ def create_user(
     current_user: User = Depends(deps.get_current_hr_user)
 ) -> Any:
 
+    # HR può creare utenti solo nei propri siti
     if current_user.role == "hr":
-        hr_site_ids = [s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()]
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
         if user_in.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non puoi creare utenti in siti che non gestisci.")
 
+    # Email duplicata
     existing_user = db.query(User).filter(User.email == user_in.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="The user with this email already exists in the system.")
 
+    # Creazione utente
     db_obj = User(
         email=user_in.email,
         password_hash=get_password_hash(user_in.password),
@@ -78,8 +100,10 @@ def create_user(
         role=user_in.role or "user",
         site_id=user_in.site_id,
         id_lul=user_in.id_lul,
-        is_active=True
+        is_active=True,
+        first_access=True   # 👈 OBBLIGATORIO
     )
+
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -88,6 +112,10 @@ def create_user(
 
     return db_obj
 
+
+# ============================================================
+# TOGGLE STATUS
+# ============================================================
 
 @router.patch("/{id}/toggle-status", response_model=UserSchema)
 def toggle_user_status(
@@ -102,13 +130,17 @@ def toggle_user_status(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # HR può gestire solo i propri siti
     if current_user.role == "hr":
-        hr_site_ids = [s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()]
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
         if user.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non hai i permessi per gestire questo utente.")
 
     old_status = user.is_active
     user.is_active = is_active
+
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -118,6 +150,51 @@ def toggle_user_status(
 
     return user
 
+
+# ============================================================
+# RESET PASSWORD (first_access = True)
+# ============================================================
+
+@router.patch("/{id}/reset-password", response_model=UserSchema)
+def reset_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    current_user: User = Depends(deps.get_current_hr_user)
+):
+
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # HR può resettare solo utenti dei propri siti
+    if current_user.role == "hr":
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
+        if user.site_id not in hr_site_ids:
+            raise HTTPException(status_code=403, detail="Non hai i permessi per questo utente.")
+
+    # Reset password
+    new_password = "Password123!"
+    user.password_hash = get_password_hash(new_password)
+
+    # Forza primo accesso
+    user.first_access = True
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    log_activity(db, current_user, "Reset Password", "User", user.id)
+    log_user_history(db, user.id, current_user.id, "password_reset", None, "Password123!")
+
+    return user
+
+
+# ============================================================
+# IMPORT CSV
+# ============================================================
 
 @router.post("/import")
 def import_users(
@@ -136,7 +213,9 @@ def import_users(
 
     hr_site_ids = []
     if current_user.role == "hr":
-        hr_site_ids = [s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()]
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
 
     for row in csv_reader:
         try:
@@ -153,10 +232,12 @@ def import_users(
                 role=row.get('role', 'user'),
                 site_id=site_id,
                 id_lul=row.get('id_lul'),
-                is_active=True
+                is_active=True,
+                first_access=True   # 👈 IMPORT CSV = primo accesso obbligatorio
             )
             db.add(db_obj)
             rows_processed += 1
+
         except Exception as e:
             rows_failed += 1
             error_details.append(f"Errore su riga {row.get('email', 'Sconosciuto')}: {str(e)}")
@@ -185,7 +266,9 @@ def import_users(
     }
 
 
-# ⭐⭐⭐ AGGIUNTA: ENDPOINT UPDATE UTENTE ⭐⭐⭐
+# ============================================================
+# UPDATE USER (gestisce anche password)
+# ============================================================
 
 @router.patch("/{id}", response_model=UserSchema)
 def update_user(
@@ -200,8 +283,11 @@ def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # HR può modificare solo utenti dei propri siti
     if current_user.role == "hr":
-        hr_site_ids = [s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()]
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
         if user.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non hai i permessi per modificare questo utente.")
 
@@ -223,6 +309,11 @@ def update_user(
 
     if user_in.id_lul is not None:
         user.id_lul = user_in.id_lul
+
+    # Gestione password
+    if user_in.password is not None:
+        user.password_hash = get_password_hash(user_in.password)
+        user.first_access = True  # 👈 obbligo cambio password
 
     db.add(user)
     db.commit()

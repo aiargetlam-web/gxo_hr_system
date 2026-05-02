@@ -236,7 +236,7 @@ const Board: React.FC = () => {
               </span>
             </div>
           </div>
-        )}
+        )}   {/* ← ← ← QUESTA PARENTESI MANCAVA */}
       </div>
 
       {/* MODAL UPLOAD */}

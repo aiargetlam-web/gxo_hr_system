@@ -14,7 +14,7 @@ export const PowerBIDashboard: React.FC = () => {
     if (user?.role === 'hr' || user?.role === 'admin') {
       api.get('/powerbi/embed-token')
         .then(res => setTokenConfig(res.data))
-        .catch(err => setError('Errore nel recupero del token PowerBI.'));
+        .catch(() => setError('Errore nel recupero del token PowerBI.'));
     }
   }, [user]);
 
@@ -26,8 +26,12 @@ export const PowerBIDashboard: React.FC = () => {
     <div>
       <div className="flex-wrap-mobile">
         <h1>Dashboard KPI</h1>
+
         <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
-          {user?.role === 'admin' ? 'Vista Globale (Nessun Filtro)' : `Filtro RLS attivo su: ${user?.site_name}`}
+          {user?.role === 'admin'
+            ? 'Vista Globale (Nessun Filtro)'
+            : `Filtro RLS attivo su: ${user?.site?.name || 'Non assegnato'}`
+          }
         </div>
       </div>
 
@@ -47,28 +51,28 @@ export const PowerBIDashboard: React.FC = () => {
         )}
 
         {tokenConfig && (
-           <div style={{ flex: 1, border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
-             <PowerBIEmbed
-                embedConfig={{
-                  type: 'report',
-                  id: tokenConfig.reportId,
-                  embedUrl: tokenConfig.embedUrl,
-                  accessToken: tokenConfig.embedToken,
-                  tokenType: models.TokenType.Embed,
-                  settings: {
-                    panes: {
-                      filters: { expanded: false, visible: true },
-                      pageNavigation: { visible: false }
-                    },
-                  }
-                }}
-                cssClassName={"powerbi-container"}
-                getEmbeddedComponent={(embeddedReport) => {
-                  console.log("Report embedded:", embeddedReport);
-                }}
-             />
-             <style>{`.powerbi-container { width: 100%; height: 600px; border: none; }`}</style>
-           </div>
+          <div style={{ flex: 1, border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
+            <PowerBIEmbed
+              embedConfig={{
+                type: 'report',
+                id: tokenConfig.reportId,
+                embedUrl: tokenConfig.embedUrl,
+                accessToken: tokenConfig.embedToken,
+                tokenType: models.TokenType.Embed,
+                settings: {
+                  panes: {
+                    filters: { expanded: false, visible: true },
+                    pageNavigation: { visible: false }
+                  },
+                }
+              }}
+              cssClassName={"powerbi-container"}
+              getEmbeddedComponent={(embeddedReport) => {
+                console.log("Report embedded:", embeddedReport);
+              }}
+            />
+            <style>{`.powerbi-container { width: 100%; height: 600px; border: none; }`}</style>
+          </div>
         )}
       </div>
     </div>

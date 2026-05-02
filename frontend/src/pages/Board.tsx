@@ -239,6 +239,247 @@ const Board: React.FC = () => {
         )}
       </div>
 
+  // --- Board.tsx CORRETTO ---
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { BoardFile } from '../types';
+import { boardService } from '../services/boardService';
+import { BoardUpload } from "../components/BoardUpload";
+import api from "../services/api";
+import toast from "react-hot-toast";
+
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+
+const Board: React.FC = () => {
+  const { user } = useContext(AuthContext);
+
+  const [files, setFiles] = useState<BoardFile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showUpload, setShowUpload] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"true" | "false">("true");
+
+  const [search, setSearch] = useState("");
+
+  const [sortBy, setSortBy] = useState("upload_date");
+  const [direction, setDirection] = useState<"asc" | "desc">("desc");
+
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const [siteFilter, setSiteFilter] = useState<number | "all">("all");
+  const [sites, setSites] = useState<any[]>([]);
+
+  const [showEditSites, setShowEditSites] = useState(false);
+  const [editFile, setEditFile] = useState<BoardFile | null>(null);
+  const [allSites, setAllSites] = useState<any[]>([]);
+  const [selectedSites, setSelectedSites] = useState<number[]>([]);
+
+  useEffect(() => {
+    fetchFiles(activeFilter);
+
+    api.get("/sites")
+      .then(res => setSites(res.data))
+      .catch(() => toast.error("Errore nel caricamento dei siti"));
+  }, []);
+
+  const fetchFiles = async (active: "true" | "false") => {
+    try {
+      const res = await api.get(
+        `/board?active=${active}&sort_by=${sortBy}&direction=${direction}`
+      );
+      setFiles(res.data);
+    } catch {
+      toast.error("Errore nel caricamento dei file");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setDirection(direction === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setDirection("asc");
+    }
+    fetchFiles(activeFilter);
+  };
+
+  const toggleStatus = async (id: number, newStatus: boolean) => {
+    try {
+      const formData = new FormData();
+      formData.append("is_active", String(newStatus));
+
+      await api.patch(`/board/${id}/status`, formData);
+
+      toast.success(newStatus ? "File riattivato" : "File disattivato");
+      fetchFiles(activeFilter);
+    } catch {
+      toast.error("Errore durante l'aggiornamento dello stato");
+    }
+  };
+
+  const openEditSitesModal = async (file: BoardFile) => {
+    setEditFile(file);
+
+    try {
+      const res = await api.get("/sites");
+      setAllSites(res.data);
+
+      const fileSites = await api.get(`/board/${file.id}`);
+      setSelectedSites(fileSites.data.sites || []);
+    } catch {
+      toast.error("Errore nel caricamento dei siti");
+    }
+
+    setShowEditSites(true);
+  };
+
+  const saveSites = async () => {
+    if (!editFile) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("site_ids", selectedSites.join(","));
+
+      await api.patch(`/board/${editFile.id}/sites`, formData);
+
+      toast.success("Siti aggiornati");
+      setShowEditSites(false);
+      fetchFiles(activeFilter);
+    } catch {
+      toast.error("Errore durante il salvataggio dei siti");
+    }
+  };
+
+  if (loading) return <div>Caricamento...</div>;
+
+  let filteredFiles = files.filter(f =>
+    f.file_name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (siteFilter !== "all") {
+    filteredFiles = filteredFiles.filter(f =>
+      f.sites?.some(s => s.id === siteFilter)
+    );
+  }
+
+  const start = (page - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedFiles = filteredFiles.slice(start, end);
+
+  return (
+    <div>
+      <div className="flex-wrap-mobile">
+        <h1>Bacheca Aziendale</h1>
+
+        {(user?.role === "hr" || user?.role === "admin") && (
+          <div className="filters-bar"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "1rem",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+              background: "white",
+              padding: "1rem",
+              borderRadius: "8px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+            }}
+          >
+            <div>
+              <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
+              <select
+                value={activeFilter}
+                onChange={(e) => {
+                  const value = e.target.value as "true" | "false";
+                  setActiveFilter(value);
+                  setPage(1);
+                  fetchFiles(value);
+                }}
+                style={{
+                  padding: "0.45rem 0.6rem",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-border)",
+                  fontSize: "0.9rem"
+                }}
+              >
+                <option value="true">File attivi</option>
+                <option value="false">File disattivati</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
+              <select
+                value={siteFilter}
+                onChange={(e) => {
+                  const value = e.target.value === "all" ? "all" : Number(e.target.value);
+                  setSiteFilter(value);
+                  setPage(1);
+                }}
+                style={{
+                  padding: "0.45rem 0.6rem",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-border)",
+                  fontSize: "0.9rem"
+                }}
+              >
+                <option value="all">Tutti i siti</option>
+                {sites.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <input
+              type="text"
+              placeholder="Cerca per nome file..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              style={{
+                padding: "0.45rem 0.6rem",
+                borderRadius: "6px",
+                border: "1px solid var(--color-border)",
+                fontSize: "0.9rem",
+                width: "220px"
+              }}
+            />
+
+            <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
+              <span
+                onClick={() => setShowUpload(true)}
+                style={{
+                  cursor: "pointer",
+                  color: "var(--color-primary)",
+                  fontWeight: 600,
+                  fontSize: "0.95rem"
+                }}
+              >
+                ➕ Carica nuovo documento
+              </span>
+
+              <span
+                onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
+                style={{
+                  cursor: "pointer",
+                  color: "var(--color-primary)",
+                  fontWeight: 600,
+                  fontSize: "0.95rem"
+                }}
+              >
+                ⬇️ Esporta CSV
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
         <Box sx={{
@@ -258,7 +499,7 @@ const Board: React.FC = () => {
               setShowUpload(false);
               fetchFiles(activeFilter);
             }}
-		onCancel={() => setShowUpload(false)}
+            onCancel={() => setShowUpload(false)}
           />
         </Box>
       </Modal>
@@ -464,3 +705,4 @@ const Board: React.FC = () => {
 };
 
 export default Board;
+

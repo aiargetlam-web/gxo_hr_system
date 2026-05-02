@@ -9,14 +9,6 @@ import toast from "react-hot-toast";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import DownloadIcon from "@mui/icons-material/Download";
-import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import BlockIcon from "@mui/icons-material/Block";
-
 const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
@@ -142,8 +134,7 @@ const Board: React.FC = () => {
         <h1>Bacheca Aziendale</h1>
 
         {(user?.role === "hr" || user?.role === "admin") && (
-          <div
-            className="filters-bar"
+          <div className="filters-bar"
             style={{
               display: "flex",
               flexWrap: "wrap",
@@ -156,7 +147,6 @@ const Board: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
             }}
           >
-            {/* FILTRO STATO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
               <select
@@ -179,7 +169,6 @@ const Board: React.FC = () => {
               </select>
             </div>
 
-            {/* FILTRO PER SITO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
               <select
@@ -203,7 +192,6 @@ const Board: React.FC = () => {
               </select>
             </div>
 
-            {/* RICERCA */}
             <input
               type="text"
               placeholder="Cerca per nome file..."
@@ -221,13 +209,12 @@ const Board: React.FC = () => {
               }}
             />
 
-            {/* AZIONI */}
             <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
               <span
                 onClick={() => setShowUpload(true)}
                 style={{
                   cursor: "pointer",
-                  color: "#0050b3",
+                  color: "var(--color-primary)",
                   fontWeight: 600,
                   fontSize: "0.95rem"
                 }}
@@ -239,7 +226,7 @@ const Board: React.FC = () => {
                 onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
                 style={{
                   cursor: "pointer",
-                  color: "#0050b3",
+                  color: "var(--color-primary)",
                   fontWeight: 600,
                   fontSize: "0.95rem"
                 }}
@@ -253,19 +240,17 @@ const Board: React.FC = () => {
 
       {/* MODAL UPLOAD */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 420,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <Box sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 420,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          borderRadius: 2,
+          p: 3,
+        }}>
           <BoardUpload
             onUploaded={() => {
               toast.success("File caricato con successo");
@@ -278,44 +263,49 @@ const Board: React.FC = () => {
 
       {/* MODAL MODIFICA SITI */}
       <Modal open={showEditSites} onClose={() => setShowEditSites(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 420,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <Box sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 420,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          borderRadius: 2,
+          p: 3,
+        }}>
           <h3>Modifica siti</h3>
 
-          {allSites.map(s => {
-  return (
-    <label
-      key={s.id}
-      style={{ display: "flex", alignItems: "center", marginBottom: "0.4rem" }}
-    >
-      <input
-        type="checkbox"
-        checked={selectedSites.includes(s.id)}
-        onChange={() => {
-          setSelectedSites(prev =>
-            prev.includes(s.id)
-              ? prev.filter(x => x !== s.id)
-              : [...prev, s.id]
-          );
-        }}
-        style={{ marginRight: "0.5rem" }}
-      />
-      {s.name}
-    </label>
-  );
-})}
-
+          {allSites.map(s => (
+            <label
+              key={s.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "0.4rem"
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selectedSites.includes(s.id)}
+                onChange={() => {
+                  setSelectedSites(prev =>
+                    prev.includes(s.id)
+                      ? prev.filter(x => x !== s.id)
+                      : [...prev, s.id]
+                  );
+                }}
+                style={{
+                  marginRight: "0.5rem",
+                  width: "16px",
+                  height: "16px",
+                  cursor: "pointer",
+                  accentColor: "#0050b3"
+                }}
+              />
+              {s.name}
+            </label>
+          ))}
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
             <button className="btn btn-outline" onClick={() => setShowEditSites(false)}>
@@ -332,52 +322,34 @@ const Board: React.FC = () => {
       <div className="card">
         <h3>Documenti Recenti</h3>
         <div className="table-responsive">
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              marginTop: '1rem'
-            }}
-          >
-            <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 2 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+            <thead>
               <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
                 <th style={{ padding: '0.75rem' }}>ID</th>
 
-                {/* ORDINAMENTO PER NOME */}
                 <th
-                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                  style={{ padding: '0.75rem', cursor: "pointer" }}
                   onClick={() => handleSort("file_name")}
                 >
-                  Nome File{" "}
-                  {sortBy !== "file_name" && <UnfoldMoreIcon fontSize="small" />}
-                  {sortBy === "file_name" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-                  {sortBy === "file_name" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                  Nome File {sortBy === "file_name" && (direction === "asc" ? "▲" : "▼")}
                 </th>
 
                 <th style={{ padding: '0.75rem' }}>Stato</th>
 
-                {/* ORDINAMENTO PER SITI */}
                 {(user?.role === "hr" || user?.role === "admin") && (
                   <th
-                    style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                    style={{ padding: '0.75rem', cursor: "pointer" }}
                     onClick={() => handleSort("sites")}
                   >
-                    Siti associati{" "}
-                    {sortBy !== "sites" && <UnfoldMoreIcon fontSize="small" />}
-                    {sortBy === "sites" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-                    {sortBy === "sites" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                    Siti associati {sortBy === "sites" && (direction === "asc" ? "▲" : "▼")}
                   </th>
                 )}
 
-                {/* ORDINAMENTO PER DATA */}
                 <th
-                  style={{ padding: '0.75rem', cursor: "pointer", userSelect: "none" }}
+                  style={{ padding: '0.75rem', cursor: "pointer" }}
                   onClick={() => handleSort("upload_date")}
                 >
-                  Data Caricamento{" "}
-                  {sortBy !== "upload_date" && <UnfoldMoreIcon fontSize="small" />}
-                  {sortBy === "upload_date" && direction === "asc" && <ArrowUpwardIcon fontSize="small" />}
-                  {sortBy === "upload_date" && direction === "desc" && <ArrowDownwardIcon fontSize="small" />}
+                  Data Caricamento {sortBy === "upload_date" && (direction === "asc" ? "▲" : "▼")}
                 </th>
 
                 <th style={{ padding: '0.75rem' }}>Azione</th>
@@ -385,121 +357,106 @@ const Board: React.FC = () => {
             </thead>
 
             <tbody>
-              {paginatedFiles.map((f) => {
-  return (
-    <tr
-      key={f.id}
-      style={{
-        borderBottom: '1px solid #e5e5e5',
-        transition: "background 0.2s"
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = "#f7f9fc"}
-      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-    >
-      <td style={{ padding: '0.75rem' }}>{f.id}</td>
-      <td style={{ padding: '0.75rem' }}>{f.file_name}</td>
+              {paginatedFiles.map(f => (
+                <tr
+                  key={f.id}
+                  style={{
+                    borderBottom: '1px solid var(--color-border)',
+                    transition: "background 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "#f7f9fc"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
+                  <td style={{ padding: '0.75rem' }}>{f.id}</td>
+                  <td style={{ padding: '0.75rem' }}>{f.file_name}</td>
 
-      {/* BADGE STATO */}
-      <td style={{ padding: '0.75rem' }}>
-        <span
-          style={{
-            padding: "0.3rem 0.6rem",
-            borderRadius: "6px",
-            color: "white",
-            background: f.is_active ? "green" : "red",
-            fontSize: "0.8rem"
-          }}
-        >
-          {f.is_active ? "ATTIVO" : "DISATTIVATO"}
-        </span>
-      </td>
+                  <td style={{ padding: '0.75rem' }}>
+                    <span
+                      style={{
+                        padding: "0.25rem 0.55rem",
+                        borderRadius: "6px",
+                        fontWeight: 600,
+                        color: f.is_active ? "#0f5132" : "#842029",
+                        background: f.is_active ? "#d1e7dd" : "#f8d7da",
+                        border: `1px solid ${f.is_active ? "#badbcc" : "#f5c2c7"}`,
+                        fontSize: "0.75rem"
+                      }}
+                    >
+                      {f.is_active ? "ATTIVO" : "DISATTIVATO"}
+                    </span>
+                  </td>
 
-      {/* BADGE SITI */}
-      <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-  {(user?.role === "hr" || user?.role === "admin") ? (
-    f.sites?.length > 0 ? (
-      f.sites.map(s => (
-        <span
-          key={s.id}
-          style={{
-            background: "#0050b3",
-            color: "white",
-            padding: "0.2rem 0.5rem",
-            borderRadius: "6px",
-            fontSize: "0.75rem"
-          }}
-        >
-          {s.name}
-        </span>
-      ))
-    ) : "-"
-  ) : "-"}
-</td>
+                  {(user?.role === "hr" || user?.role === "admin") && (
+                    <td style={{ padding: '0.75rem', display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                      {f.sites?.length > 0 ? (
+                        f.sites.map(s => (
+                          <span
+                            key={s.id}
+                            style={{
+                              background: "#0050b3",
+                              color: "white",
+                              padding: "0.2rem 0.5rem",
+                              borderRadius: "6px",
+                              fontSize: "0.75rem"
+                            }}
+                          >
+                            {s.name}
+                          </span>
+                        ))
+                      ) : "-"}
+                    </td>
+                  )}
 
-      <td style={{ padding: '0.75rem' }}>
-        {new Date(f.upload_date).toLocaleDateString()}
-      </td>
+                  <td style={{ padding: '0.75rem' }}>
+                    {new Date(f.upload_date).toLocaleDateString()}
+                  </td>
 
-      <td style={{ padding: '0.75rem', display: "flex", gap: "0.5rem" }}>
-        {/* Scarica */}
-        <button
-          onClick={() => window.open(boardService.downloadFileUrl(f.id))}
-          className="btn btn-secondary"
-          style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-        >
-          <DownloadIcon fontSize="small" />
-        </button>
+                  <td style={{ padding: '0.75rem', display: "flex", gap: "0.5rem" }}>
+                    <button
+                      onClick={() => window.open(boardService.downloadFileUrl(f.id))}
+                      className="btn btn-secondary"
+                    >
+                      Scarica
+                    </button>
 
-        {/* Disattiva / Riattiva */}
-        {(user?.role === "hr" || user?.role === "admin") ? (
-          <button
-            onClick={() => toggleStatus(f.id, !f.is_active)}
-            className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
-            style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-          >
-            {f.is_active ? <BlockIcon fontSize="small" /> : <RestartAltIcon fontSize="small" />}
-          </button>
-        ) : null}
+                    {(user?.role === "hr" || user?.role === "admin") && (
+                      <button
+                        onClick={() => toggleStatus(f.id, !f.is_active)}
+                        className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
+                      >
+                        {f.is_active ? "Disattiva" : "Riattiva"}
+                      </button>
+                    )}
 
-        {/* Modifica siti */}
-        {(user?.role === "hr" || user?.role === "admin") ? (
-          <button
-            onClick={() => openEditSitesModal(f)}
-            className="btn btn-secondary"
-            style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-          >
-            <EditLocationAltIcon fontSize="small" />
-          </button>
-        ) : null}
-      </td>
-    </tr>
-  );
-})}
+                    {(user?.role === "hr" || user?.role === "admin") && (
+                      <button
+                        onClick={() => openEditSitesModal(f)}
+                        className="btn btn-secondary"
+                      >
+                        Modifica siti
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
 
-
-              {paginatedFiles.length === 0 ? (
+              {paginatedFiles.length === 0 && (
                 <tr>
                   <td colSpan={6} style={{ padding: '1rem', textAlign: 'center' }}>
                     Nessun documento trovato.
                   </td>
                 </tr>
-              ) : null}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* PAGINAZIONE */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "1rem",
-            gap: "1rem"
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem" }}>
           <button
             className="btn btn-outline"
             disabled={page === 1}
+            style={{ opacity: page === 1 ? 0.5 : 1 }}
             onClick={() => setPage(page - 1)}
           >
             ← Precedente
@@ -508,13 +465,15 @@ const Board: React.FC = () => {
           <button
             className="btn btn-outline"
             disabled={end >= filteredFiles.length}
+            style={{ opacity: end >= filteredFiles.length ? 0.5 : 1 }}
             onClick={() => setPage(page + 1)}
           >
             Successiva →
           </button>
         </div>
-      </div> {/* fine card */}
-    </div>   {/* fine container principale */}
+
+      </div>
+    </div>
   );
 };
 

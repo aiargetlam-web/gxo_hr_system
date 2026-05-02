@@ -4,6 +4,17 @@ import re
 from datetime import datetime
 
 # -------------------------
+# SITE OUTPUT
+# -------------------------
+class SiteOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
 # BASE (solo per lettura)
 # -------------------------
 class UserBase(BaseModel):
@@ -15,7 +26,6 @@ class UserBase(BaseModel):
     id_lul: Optional[str] = None
     is_active: Optional[bool] = True
     first_access: Optional[bool] = False
-
 
 
 # -------------------------
@@ -83,6 +93,7 @@ class UserInDBBase(UserBase):
     id: int
     role: str
     site_id: Optional[int] = None
+    site: Optional[SiteOut] = None   # 🔥 AGGIUNTO QUI
     id_lul: Optional[str] = None
     is_active: bool
     created_at: datetime

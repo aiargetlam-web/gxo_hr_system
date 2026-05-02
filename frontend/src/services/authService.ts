@@ -19,17 +19,17 @@ export const authService = {
     params.append('username', email); // OAuth2 expects 'username'
     params.append('password', password);
     
-    const response = await api.post('/api/v1/auth/login', params, {
+    // ❗ NON aggiungere /api/v1 qui
+    const response = await api.post('/auth/login', params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
-    // 🔥 Restituiamo SEMPRE response.data
-    // può contenere access_token oppure requires_password_change
     return response.data;
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<User>('/api/v1/users/me');
+    // ❗ NON aggiungere /api/v1 qui
+    const response = await api.get<User>('/users/me');
     return response.data;
   }
 };

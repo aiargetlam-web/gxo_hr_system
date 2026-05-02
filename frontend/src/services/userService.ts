@@ -13,13 +13,17 @@ export const userService = {
     if (params?.is_active !== undefined && params?.is_active !== null)
       query.append("is_active", String(params.is_active));
 
-    const response = await api.get<User[]>(`/users/?${query.toString()}`);
+    const url = query.toString()
+      ? `/users?${query.toString()}`
+      : `/users`;
+
+    const response = await api.get<User[]>(url);
     return response.data;
   },
 
   // CREATE utente
   createUser: async (userData: any): Promise<User> => {
-    const response = await api.post<User>('/users/', userData);
+    const response = await api.post<User>('/users', userData);
     return response.data;
   },
 

@@ -8,15 +8,17 @@ export type Role = "user" | "hr" | "admin";
 ============================ */
 export interface User {
   id: number;
+  email: string;
   first_name: string;
   last_name: string;
-  email: string;
-  role: Role;
-  site_id?: number;
-  site_name?: string;
-  id_lul?: string;
+  role: string;
+  site_id: number | null;
+  id_lul?: string | null;
   is_active: boolean;
-  created_at?: string;
+  phone?: string | null;
+  address?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 /* ============================

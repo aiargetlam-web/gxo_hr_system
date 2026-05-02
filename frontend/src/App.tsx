@@ -6,7 +6,7 @@ import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Profile } from './pages/Profile';
-import Users from './pages/Users';
+import Users from "./pages/Users";
 import { Communications } from './pages/Communications';
 import { Tickets } from './pages/Tickets';
 import Board from "./pages/Board";

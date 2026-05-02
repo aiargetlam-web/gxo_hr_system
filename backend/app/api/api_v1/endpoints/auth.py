@@ -18,7 +18,7 @@ router = APIRouter()
 # LOGIN (OAUTH2, FORM-DATA)
 # -----------------------------
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Any)  # <-- CAMBIATO: ora può restituire token o richiesta cambio password
 def login_access_token(
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
@@ -31,22 +31,33 @@ def login_access_token(
       password: password
     """
     user = db.query(User).filter(User.email == form_data.username).first()
+
     if not user or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user"
         )
-        
+
+    # 🔥 PRIMO ACCESSO → obbligo cambio password
+    if getattr(user, "first_access", False):
+        return {
+            "requires_password_change": True,
+            "message": "Primo accesso: è necessario cambiare la password."
+        }
+
+    # Login normale
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         user.id, expires_delta=access_token_expires
     )
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -114,3 +125,53 @@ def reset_password(
         return {"message": "Password updated successfully"}
 
     raise HTTPException(status_code=404, detail="User not found")
+
+# -----------------------------
+# CHANGE PASSWORD (PRIMO ACCESSO)
+# -----------------------------
+
+class ChangePassword(BaseModel):
+    email: EmailStr
+    old_password: str
+    new_password: str
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('La password deve contenere almeno 8 caratteri')
+        if not re.search(r"[A-Z]", v):
+            raise ValueError('La password deve contenere almeno una lettera maiuscola')
+        if not re.search(r"[a-z]", v):
+            raise ValueError('La password deve contenere almeno una lettera minuscola')
+        if not re.search(r"\d", v):
+            raise ValueError('La password deve contenere almeno un numero')
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
+            raise ValueError('La password deve contenere almeno un carattere speciale')
+        return v
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePassword,
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    """
+    Cambio password obbligatorio al primo accesso.
+    """
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # verifica vecchia password
+    if not security.verify_password(data.old_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Old password is incorrect")
+
+    # aggiorna password e sblocca primo accesso
+    user.password_hash = security.get_password_hash(data.new_password)
+    user.first_access = False
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "Password changed successfully"}

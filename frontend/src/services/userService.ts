@@ -33,6 +33,14 @@ export const userService = {
     return response.data;
   },
 
+  // RESET PASSWORD (nuovo metodo)
+  resetPassword: async (userId: number, password?: string): Promise<User> => {
+    const response = await api.patch<User>(`/users/${userId}`, {
+      password: password || "Password123!"
+    });
+    return response.data;
+  },
+
   // TOGGLE STATUS (attiva/disattiva)
   toggleStatus: async (userId: number, isActive: boolean): Promise<User> => {
     const response = await api.patch<User>(

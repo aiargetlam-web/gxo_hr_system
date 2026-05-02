@@ -1,5 +1,11 @@
-export type Role = 'user' | 'hr' | 'admin';
+/* ============================
+   ROLES
+============================ */
+export type Role = "user" | "hr" | "admin";
 
+/* ============================
+   USER
+============================ */
 export interface User {
   id: number;
   first_name: string;
@@ -13,14 +19,17 @@ export interface User {
   created_at?: string;
 }
 
+/* ============================
+   SITES
+============================ */
 export interface Site {
   id: number;
   name: string;
 }
 
-/* -------------------------
+/* ============================
    BOARD FILES
-------------------------- */
+============================ */
 export interface BoardFile {
   id: number;
   file_name: string;
@@ -28,13 +37,15 @@ export interface BoardFile {
   hr_author_id: number;
   upload_date: string;
   is_active: boolean;
+
+  // Per la visibilità multi-sito
   site_ids?: number[];
   sites?: Site[];
 }
 
-/* -------------------------
+/* ============================
    COMMUNICATIONS
-------------------------- */
+============================ */
 export interface CommunicationType {
   id: number;
   name: string;
@@ -60,13 +71,14 @@ export interface Communication {
   priority: string;
   notes?: string;
   created_at: string;
+
   user?: User;
   messages?: CommunicationMessage[];
 }
 
-/* -------------------------
+/* ============================
    TICKETS
-------------------------- */
+============================ */
 export interface TicketType {
   id: number;
   name: string;
@@ -90,13 +102,14 @@ export interface Ticket {
   status: string;
   priority: number;
   created_at: string;
+
   user?: User;
   messages?: TicketMessage[];
 }
 
-/* -------------------------
+/* ============================
    LOGS
-------------------------- */
+============================ */
 export interface ActivityLog {
   id: number;
   user_id: number;

@@ -27,17 +27,15 @@ export const userService = {
     return response.data;
   },
 
-  // UPDATE utente (modifica dati + cambio sito)
+  // UPDATE utente (modifica dati + cambio sito + cambio password)
   updateUser: async (userId: number, data: any): Promise<User> => {
     const response = await api.patch<User>(`/users/${userId}`, data);
     return response.data;
   },
 
-  // RESET PASSWORD (nuovo metodo)
-  resetPassword: async (userId: number, password?: string): Promise<User> => {
-    const response = await api.patch<User>(`/users/${userId}`, {
-      password: password || "Password123!"
-    });
+  // RESET PASSWORD (nuovo endpoint corretto)
+  resetPassword: async (userId: number): Promise<User> => {
+    const response = await api.patch<User>(`/users/${userId}/reset-password`);
     return response.data;
   },
 

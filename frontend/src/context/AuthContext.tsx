@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(newToken);
 
     try {
-      // 🔥 Aggiorna SUBITO l’utente dopo il login
       const userData = await authService.getCurrentUser();
       setUser(userData);
     } catch (error) {

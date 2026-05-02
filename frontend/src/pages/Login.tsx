@@ -15,8 +15,17 @@ export const Login: React.FC = () => {
     e.preventDefault();
     try {
       const response = await authService.login(email, password);
+
+      // 🔥 1) PRIMO ACCESSO → reindirizza a change-password
+      if (response.requires_password_change) {
+        navigate('/change-password');
+        return;
+      }
+
+      // 🔥 2) LOGIN NORMALE
       login(response.access_token);
-      navigate('/dashboard');   // 👈 REDIRECT DOPO LOGIN
+      navigate('/Bacheca');
+
     } catch (err) {
       setError('Credenziali non valide.');
     }

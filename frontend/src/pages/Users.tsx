@@ -4,11 +4,8 @@ import { userService } from "../services/userService";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
-// Material UI Icons
-import EditIcon from "@mui/icons-material/Edit";
-import BusinessIcon from "@mui/icons-material/Business";
-import VpnKeyIcon from "@mui/icons-material/VpnKey";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+// Icona menu ⋮
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useContext(AuthContext);
@@ -36,6 +33,8 @@ export const Users: React.FC = () => {
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [resetPasswordValue, setResetPasswordValue] = useState<string>("");
+
+  const [openMenuUserId, setOpenMenuUserId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSites();
@@ -126,6 +125,8 @@ export const Users: React.FC = () => {
 
   return (
     <div className="card">
+
+      {/* HEADER + LINK AZIONI */}
       <div className="flex-wrap-mobile">
         <div>
           <h1>Gestione Utenti</h1>
@@ -136,26 +137,29 @@ export const Users: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", width: "100%" }}>
-          <button className="btn btn-primary" onClick={() => {
-            setSelectedUser({});
-            setShowCreateModal(true);
-          }}>
-            ➕ Crea Utente
-          </button>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <span
+            className="link-action"
+            onClick={() => {
+              setSelectedUser({});
+              setShowCreateModal(true);
+            }}
+          >
+            ➕ Crea nuovo utente
+          </span>
 
-          <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>
+          <span className="link-action" onClick={() => setShowImportModal(true)}>
             ⬆️ Importa CSV
-          </button>
+          </span>
 
-          <button
+          <span
+            className="link-action"
             onClick={() =>
               window.open(`${import.meta.env.VITE_API_URL}/export/users`)
             }
-            className="btn btn-outline"
           >
             ⬇️ Esporta CSV
-          </button>
+          </span>
         </div>
       </div>
 
@@ -243,55 +247,79 @@ export const Users: React.FC = () => {
                   )}
                 </td>
 
-                <td style={{ padding: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setSelectedUser(u);
-                      setShowEditModal(true);
-                    }}
+                {/* MENU ⋮ */}
+                <td style={{ padding: "0.75rem", position: "relative" }}>
+                  <div
+                    className="action-menu-trigger"
+                    onClick={() =>
+                      setOpenMenuUserId(openMenuUserId === u.id ? null : u.id)
+                    }
                   >
-                    <EditIcon style={{ fontSize: "18px", marginRight: "4px" }} />
-                    Modifica
-                  </button>
+                    <MoreVertIcon style={{ cursor: "pointer" }} />
+                  </div>
 
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setSelectedUser(u);
-                      setShowSiteModal(true);
-                    }}
-                  >
-                    <BusinessIcon style={{ fontSize: "18px", marginRight: "4px" }} />
-                    Cambia Sito
-                  </button>
+                  {openMenuUserId === u.id && (
+                    <div className="action-menu">
+                      <div
+                        onClick={() => {
+                          setSelectedUser(u);
+                          setShowEditModal(true);
+                          setOpenMenuUserId(null);
+                        }}
+                      >
+                        ✏️ Modifica
+                      </div>
 
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setSelectedUser(u);
-                      setResetPasswordValue("");
-                      setShowResetPasswordModal(true);
-                    }}
-                  >
-                    <VpnKeyIcon style={{ fontSize: "18px", marginRight: "4px" }} />
-                    Reset Password
-                  </button>
+                      <div
+                        onClick={() => {
+                          setSelectedUser(u);
+                          setShowSiteModal(true);
+                          setOpenMenuUserId(null);
+                        }}
+                      >
+                        🏢 Cambia sito
+                      </div>
 
-                  <button
-                    className="btn btn-secondary"
-                    style={{ backgroundColor: u.is_active ? "#dc3545" : "#28a745" }}
-                    onClick={() => handleToggleStatus(u.id, u.is_active)}
-                  >
-                    <PowerSettingsNewIcon style={{ fontSize: "18px", marginRight: "4px" }} />
-                    {u.is_active ? "Disattiva" : "Riattiva"}
-                  </button>
+                      <div
+                        onClick={() => {
+                          setSelectedUser(u);
+                          setResetPasswordValue("");
+                          setShowResetPasswordModal(true);
+                          setOpenMenuUserId(null);
+                        }}
+                      >
+                        🔐 Reset password
+                      </div>
+
+                      <div
+                        onClick={() => {
+                          handleToggleStatus(u.id, u.is_active);
+                          setOpenMenuUserId(null);
+                        }}
+                        style={{ color: u.is_active ? "#d9534f" : "#28a745" }}
+                      >
+                        {u.is_active ? "🔄 Disattiva" : "🔄 Riattiva"}
+                      </div>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* PAGINAZIONE */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
+        <button className="btn btn-outline" onClick={prevPage}>
+          ← Precedente
+        </button>
+
+        <button className="btn btn-outline" onClick={nextPage}>
+          Successiva →
+        </button>
+      </div>
+
       {/* MODALE CREA UTENTE */}
       {showCreateModal && (
         <div className="modal-backdrop">
@@ -393,6 +421,7 @@ export const Users: React.FC = () => {
           </div>
         </div>
       )}
+
       {/* MODALE MODIFICA UTENTE */}
       {showEditModal && selectedUser && (
         <div className="modal-backdrop">
@@ -502,7 +531,8 @@ export const Users: React.FC = () => {
           </div>
         </div>
       )}
-      {/* MODALE CAMBIA SITO */}
+
+            {/* MODALE CAMBIA SITO */}
       {showSiteModal && selectedUser && (
         <div className="modal-backdrop">
           <div className="modal">

@@ -1,307 +1,207 @@
-import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import React, { useEffect, useState } from "react";
 import { userService } from "../services/userService";
-import api from "../services/api";
-import toast from "react-hot-toast";
+import { siteService } from "../services/siteService";
+import { User, Site } from "../types";
+import { toast } from "react-toastify";
 
-// Icona menu ⋮
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-export const Users: React.FC = () => {
-  const { user: currentUser } = useContext(AuthContext);
-
-  const [users, setUsers] = useState<any[]>([]);
-  const [sites, setSites] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [search, setSearch] = useState("");
-  const [filterRole, setFilterRole] = useState("");
-  const [filterSite, setFilterSite] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-
-  const [sortColumn, setSortColumn] = useState<string>("first_name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
-  const [page, setPage] = useState(1);
-  const pageSize = 12;
+const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showSiteModal, setShowSiteModal] = useState(false);
-  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
+  const [showChangeSiteModal, setShowChangeSiteModal] = useState(false);
 
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [resetPasswordValue, setResetPasswordValue] = useState<string>("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const [openMenuUserId, setOpenMenuUserId] = useState<number | null>(null);
-
-  useEffect(() => {
-    loadSites();
-    loadUsers();
-  }, []);
-
-  const loadSites = async () => {
-    try {
-      const res = await api.get("/sites");
-      setSites(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Campi form creazione/modifica
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("user");
+  const [siteId, setSiteId] = useState<number | null>(null);
+  const [idLul, setIdLul] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
   const loadUsers = async () => {
     try {
       const data = await userService.getUsers();
       setUsers(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    } catch {
+      toast.error("Errore caricamento utenti");
     }
   };
 
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
-  const sortedUsers = [...users].sort((a, b) => {
-    const valA = a[sortColumn] ?? "";
-    const valB = b[sortColumn] ?? "";
-
-    if (typeof valA === "string") {
-      return sortDirection === "asc"
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    }
-    return sortDirection === "asc" ? valA - valB : valB - valA;
-  });
-
-  const filteredUsers = sortedUsers.filter((u) => {
-    const matchSearch =
-      search === "" ||
-      u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-      u.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      (u.id_lul ?? "").toLowerCase().includes(search.toLowerCase());
-
-    const matchRole = filterRole === "" || u.role === filterRole;
-    const matchSite = filterSite === "" || String(u.site_id) === filterSite;
-    const matchStatus =
-      filterStatus === "" ||
-      (filterStatus === "active" && u.is_active) ||
-      (filterStatus === "inactive" && !u.is_active);
-
-    return matchSearch && matchRole && matchSite && matchStatus;
-  });
-
-  const startIndex = (page - 1) * pageSize;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
-
-  const nextPage = () => {
-    if (startIndex + pageSize < filteredUsers.length) setPage(page + 1);
-  };
-
-  const prevPage = () => {
-    if (page > 1) setPage(page - 1);
-  };
-
-  const handleToggleStatus = async (userId: number, currentStatus: boolean) => {
+  const loadSites = async () => {
     try {
-      await userService.toggleStatus(userId, !currentStatus);
-      toast.success("Stato aggiornato");
-      loadUsers();
-    } catch (err) {
-      toast.error("Errore aggiornamento stato");
+      const data = await siteService.getSites();
+      setSites(data);
+    } catch {
+      toast.error("Errore caricamento siti");
     }
   };
 
-  if (loading) return <div>Caricamento...</div>;
+  useEffect(() => {
+    loadUsers();
+    loadSites();
+  }, []);
+
+  // Apri modale modifica
+  const openEditModal = (user: User) => {
+    setSelectedUser(user);
+    setFirstName(user.first_name);
+    setLastName(user.last_name);
+    setEmail(user.email);
+    setRole(user.role);
+    setSiteId(user.site_id);
+    setIdLul(user.id_lul || "");
+    setPhone(user.phone || "");
+    setAddress(user.address || "");
+    setShowEditModal(true);
+  };
+
+  // Apri modale cambio sito
+  const openChangeSiteModal = (user: User) => {
+    setSelectedUser(user);
+    setSiteId(user.site_id);
+    setShowChangeSiteModal(true);
+  };
+
+  // Reset campi form
+  const resetForm = () => {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setRole("user");
+    setSiteId(null);
+    setIdLul("");
+    setPhone("");
+    setAddress("");
+  };
+
+  // CREA UTENTE
+  const handleCreateUser = async () => {
+    try {
+      await userService.createUser({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        role,
+        site_id: siteId,
+        id_lul: idLul,
+        phone,
+        address,
+        password: "Password123!"
+      });
+
+      toast.success("Utente creato");
+      setShowCreateModal(false);
+      resetForm();
+      loadUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Errore creazione utente");
+    }
+  };
+
+  // MODIFICA UTENTE
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await userService.updateUser(selectedUser.id, {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        role,
+        site_id: siteId,
+        id_lul: idLul,
+        phone,
+        address
+      });
+
+      toast.success("Utente aggiornato");
+      setShowEditModal(false);
+      loadUsers();
+    } catch {
+      toast.error("Errore aggiornamento utente");
+    }
+  };
+
+  // CAMBIA SITO
+  const handleChangeSite = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await userService.updateUser(selectedUser.id, {
+        site_id: siteId
+      });
+
+      toast.success("Sito aggiornato");
+      setShowChangeSiteModal(false);
+      loadUsers();
+    } catch {
+      toast.error("Errore cambio sito");
+    }
+  };
+
+  // RESET PASSWORD
+  const handleResetPassword = async (userId: number) => {
+    try {
+      await userService.resetPassword(userId);
+      toast.success("Password resettata");
+    } catch {
+      toast.error("Errore reset password");
+    }
+  };
 
   return (
-    <div className="card">
+    <div className="container">
+      <h1>Gestione Utenti</h1>
 
-      {/* HEADER + LINK AZIONI */}
-      <div className="flex-wrap-mobile">
-        <div>
-          <h1>Gestione Utenti</h1>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
-            {currentUser?.role === "admin"
-              ? "Vista Globale"
-              : `Vista limitata al sito: ${currentUser?.site_name}`}
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <span
-            className="link-action"
-            onClick={() => {
-              setSelectedUser({});
-              setShowCreateModal(true);
-            }}
-          >
-            ➕ Crea nuovo utente
-          </span>
-
-          <span className="link-action" onClick={() => setShowImportModal(true)}>
-            ⬆️ Importa CSV
-          </span>
-
-          <span
-            className="link-action"
-            onClick={() =>
-              window.open(`${import.meta.env.VITE_API_URL}/export/users`)
-            }
-          >
-            ⬇️ Esporta CSV
-          </span>
-        </div>
+      <div style={{ marginBottom: "1rem" }}>
+        <span className="link-action" onClick={() => setShowCreateModal(true)}>
+          ➕ Crea nuovo utente
+        </span>
       </div>
 
-      {/* FILTRI */}
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", flexWrap: "wrap" }}>
-        <input
-          className="input"
-          placeholder="Cerca nome, email, ID LUL..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ flex: "1 1 200px" }}
-        />
-
-        <select className="input" value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
-          <option value="">Ruolo</option>
-          <option value="user">User</option>
-          <option value="hr">HR</option>
-          <option value="admin">Admin</option>
-        </select>
-
-        <select className="input" value={filterSite} onChange={(e) => setFilterSite(e.target.value)}>
-          <option value="">Sito</option>
-          {sites.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-
-        <select className="input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="">Stato</option>
-          <option value="active">Attivi</option>
-          <option value="inactive">Disattivi</option>
-        </select>
-      </div>
-
-      {/* TABELLA */}
-      <div className="table-responsive" style={{ marginTop: "1rem" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      {/* TABELLA UTENTI */}
+      <div className="card">
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom: "2px solid var(--color-border)" }}>
-              {[
-                { key: "id_lul", label: "ID LUL" },
-                { key: "first_name", label: "Nome Completo" },
-                { key: "email", label: "Email" },
-                { key: "site_id", label: "Sito" },
-                { key: "is_active", label: "Stato" },
-              ].map((col) => (
-                <th
-                  key={col.key}
-                  style={{ padding: "0.75rem", cursor: "pointer", userSelect: "none" }}
-                  onClick={() => handleSort(col.key)}
-                >
-                  {col.label} {sortColumn === col.key && (sortDirection === "asc" ? "▲" : "▼")}
-                </th>
-              ))}
-              <th style={{ padding: "0.75rem" }}>Azioni</th>
+            <tr>
+              <th>ID LUL</th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Sito</th>
+              <th>Telefono</th>
+              <th>Indirizzo</th>
+              <th>Azioni</th>
             </tr>
           </thead>
 
           <tbody>
-            {paginatedUsers.map((u) => (
-              <tr
-                key={u.id}
-                style={{
-                  borderBottom: "1px solid var(--color-border)",
-                  backgroundColor: !u.is_active ? "#f8f9fa" : "transparent",
-                  color: !u.is_active ? "#999" : "inherit",
-                }}
-              >
-                <td style={{ padding: "0.75rem" }}>{u.id_lul}</td>
-                <td style={{ padding: "0.75rem" }}>
-                  {u.first_name} {u.last_name}
-                </td>
-                <td style={{ padding: "0.75rem" }}>{u.email}</td>
-                <td style={{ padding: "0.75rem" }}>
-                  {sites.find((s) => s.id === u.site_id)?.name || "N/D"}
-                </td>
+            {users.map((u) => (
+              <tr key={u.id}>
+                <td>{u.id_lul}</td>
+                <td>{u.first_name} {u.last_name}</td>
+                <td>{u.email}</td>
+                <td>{sites.find(s => s.id === u.site_id)?.name || "-"}</td>
+                <td>{u.phone || "-"}</td>
+                <td>{u.address || "-"}</td>
 
-                <td style={{ padding: "0.75rem" }}>
-                  {u.is_active ? (
-                    <span className="badge badge-closed">Attivo</span>
-                  ) : (
-                    <span className="badge badge-unread">Disattivo</span>
-                  )}
-                </td>
-
-                {/* MENU ⋮ */}
-                <td style={{ padding: "0.75rem", position: "relative" }}>
-                  <div
-                    className="action-menu-trigger"
-                    onClick={() =>
-                      setOpenMenuUserId(openMenuUserId === u.id ? null : u.id)
-                    }
-                  >
-                    <MoreVertIcon style={{ cursor: "pointer" }} />
-                  </div>
-
-                  {openMenuUserId === u.id && (
-                    <div className="action-menu">
-                      <div
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setShowEditModal(true);
-                          setOpenMenuUserId(null);
-                        }}
-                      >
-                        ✏️ Modifica
-                      </div>
-
-                      <div
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setShowSiteModal(true);
-                          setOpenMenuUserId(null);
-                        }}
-                      >
-                        🏢 Cambia sito
-                      </div>
-
-                      <div
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setResetPasswordValue("");
-                          setShowResetPasswordModal(true);
-                          setOpenMenuUserId(null);
-                        }}
-                      >
-                        🔐 Reset password
-                      </div>
-
-                      <div
-                        onClick={() => {
-                          handleToggleStatus(u.id, u.is_active);
-                          setOpenMenuUserId(null);
-                        }}
-                        style={{ color: u.is_active ? "#d9534f" : "#28a745" }}
-                      >
-                        {u.is_active ? "🔄 Disattiva" : "🔄 Riattiva"}
-                      </div>
-                    </div>
-                  )}
+                <td>
+                  <span className="link-action" onClick={() => openEditModal(u)}>
+                    Modifica
+                  </span>{" "}
+                  |{" "}
+                  <span className="link-action" onClick={() => openChangeSiteModal(u)}>
+                    Cambia sito
+                  </span>{" "}
+                  |{" "}
+                  <span className="link-action" onClick={() => handleResetPassword(u.id)}>
+                    Reset password
+                  </span>
                 </td>
               </tr>
             ))}
@@ -309,335 +209,87 @@ export const Users: React.FC = () => {
         </table>
       </div>
 
-      {/* PAGINAZIONE */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
-        <button className="btn btn-outline" onClick={prevPage}>
-          ← Precedente
-        </button>
-
-        <button className="btn btn-outline" onClick={nextPage}>
-          Successiva →
-        </button>
-      </div>
-
-      {/* MODALE CREA UTENTE */}
+      {/* ====================== MODALE CREA UTENTE ====================== */}
       {showCreateModal && (
         <div className="modal-backdrop">
           <div className="modal">
             <h2>Crea Nuovo Utente</h2>
 
-            <input
-              className="input"
-              placeholder="Nome"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({ ...u, first_name: e.target.value }))
-              }
-            />
+            <input className="input" placeholder="Nome" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            <input className="input" placeholder="Cognome" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-            <input
-              className="input"
-              placeholder="Cognome"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({ ...u, last_name: e.target.value }))
-              }
-            />
+            <input className="input" placeholder="Telefono" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <input className="input" placeholder="Indirizzo" value={address} onChange={(e) => setAddress(e.target.value)} />
 
-            <input
-              className="input"
-              placeholder="Email"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({ ...u, email: e.target.value }))
-              }
-            />
-
-            <select
-              className="input"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({ ...u, role: e.target.value }))
-              }
-            >
-              <option value="">Ruolo</option>
+            <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
               <option value="hr">HR</option>
               <option value="admin">Admin</option>
             </select>
 
-            <select
-              className="input"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({
-                  ...u,
-                  site_id: Number(e.target.value),
-                }))
-              }
-            >
-              <option value="">Sito</option>
+            <select className="input" value={siteId || ""} onChange={(e) => setSiteId(Number(e.target.value))}>
+              <option value="">Seleziona sito</option>
               {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
 
-            <input
-              className="input"
-              placeholder="ID LUL"
-              onChange={(e) =>
-                setSelectedUser((u: any) => ({ ...u, id_lul: e.target.value }))
-              }
-            />
+            <input className="input" placeholder="ID LUL" value={idLul} onChange={(e) => setIdLul(e.target.value)} />
 
             <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.createUser({
-                      ...selectedUser,
-                      password: "Password123!",
-                    });
-                    toast.success("Utente creato");
-                    setShowCreateModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch (err) {
-                    toast.error("Errore creazione utente");
-                  }
-                }}
-              >
-                Salva
-              </button>
+              <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>Annulla</button>
+              <button className="btn btn-primary" onClick={handleCreateUser}>Salva</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODALE MODIFICA UTENTE */}
-      {showEditModal && selectedUser && (
+      {/* ====================== MODALE MODIFICA UTENTE ====================== */}
+      {showEditModal && (
         <div className="modal-backdrop">
           <div className="modal">
             <h2>Modifica Utente</h2>
 
-            <input
-              className="input"
-              value={selectedUser.first_name}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, first_name: e.target.value })
-              }
-              placeholder="Nome"
-            />
+            <input className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            <input className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            <input className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-            <input
-              className="input"
-              value={selectedUser.last_name}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, last_name: e.target.value })
-              }
-              placeholder="Cognome"
-            />
+            <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <input className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
 
-            <input
-              className="input"
-              value={selectedUser.email}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, email: e.target.value })
-              }
-              placeholder="Email"
-            />
-
-            <select
-              className="input"
-              value={selectedUser.role}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, role: e.target.value })
-              }
-            >
+            <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
               <option value="hr">HR</option>
               <option value="admin">Admin</option>
             </select>
 
-            <select
-              className="input"
-              value={selectedUser.site_id}
-              onChange={(e) =>
-                setSelectedUser({
-                  ...selectedUser,
-                  site_id: Number(e.target.value),
-                })
-              }
-            >
-              {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              className="input"
-              value={selectedUser.id_lul || ""}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, id_lul: e.target.value })
-              }
-              placeholder="ID LUL"
-            />
+            <input className="input" value={idLul} onChange={(e) => setIdLul(e.target.value)} />
 
             <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowEditModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.updateUser(selectedUser.id, {
-                      first_name: selectedUser.first_name,
-                      last_name: selectedUser.last_name,
-                      email: selectedUser.email,
-                      role: selectedUser.role,
-                      site_id: selectedUser.site_id,
-                      id_lul: selectedUser.id_lul,
-                    });
-                    toast.success("Utente aggiornato");
-                    setShowEditModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch {
-                    toast.error("Errore aggiornamento utente");
-                  }
-                }}
-              >
-                Salva
-              </button>
+              <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Annulla</button>
+              <button className="btn btn-primary" onClick={handleEditUser}>Salva</button>
             </div>
           </div>
         </div>
       )}
 
-            {/* MODALE CAMBIA SITO */}
-      {showSiteModal && selectedUser && (
+      {/* ====================== MODALE CAMBIA SITO ====================== */}
+      {showChangeSiteModal && (
         <div className="modal-backdrop">
           <div className="modal">
             <h2>Cambia Sito</h2>
 
-            <select
-              className="input"
-              value={selectedUser.site_id}
-              onChange={(e) =>
-                setSelectedUser({
-                  ...selectedUser,
-                  site_id: Number(e.target.value),
-                })
-              }
-            >
+            <select className="input" value={siteId || ""} onChange={(e) => setSiteId(Number(e.target.value))}>
+              <option value="">Seleziona sito</option>
               {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
 
             <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowSiteModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.updateUser(selectedUser.id, {
-                      site_id: selectedUser.site_id,
-                    });
-                    toast.success("Sito aggiornato");
-                    setShowSiteModal(false);
-                    setSelectedUser(null);
-                    loadUsers();
-                  } catch {
-                    toast.error("Errore aggiornamento sito");
-                  }
-                }}
-              >
-                Salva
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODALE RESET PASSWORD */}
-      {showResetPasswordModal && selectedUser && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <h2>Reset Password</h2>
-
-            <p style={{ marginBottom: "0.5rem", fontSize: "0.9rem" }}>
-              Lascia vuoto per usare la password di default <b>Password123!</b>
-            </p>
-
-            <input
-              className="input"
-              type="text"
-              placeholder="Nuova password (opzionale)"
-              value={resetPasswordValue}
-              onChange={(e) => setResetPasswordValue(e.target.value)}
-            />
-
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowResetPasswordModal(false);
-                  setSelectedUser(null);
-                  setResetPasswordValue("");
-                }}
-              >
-                Annulla
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await userService.updateUser(selectedUser.id, {
-                      password: resetPasswordValue || "Password123!",
-                    });
-                    toast.success("Password reimpostata");
-                    setShowResetPasswordModal(false);
-                    setSelectedUser(null);
-                    setResetPasswordValue("");
-                    loadUsers();
-                  } catch {
-                    toast.error("Errore reset password");
-                  }
-                }}
-              >
-                Conferma
-              </button>
+              <button className="btn btn-secondary" onClick={() => setShowChangeSiteModal(false)}>Annulla</button>
+              <button className="btn btn-primary" onClick={handleChangeSite}>Salva</button>
             </div>
           </div>
         </div>
@@ -646,3 +298,5 @@ export const Users: React.FC = () => {
     </div>
   );
 };
+
+export default Users;

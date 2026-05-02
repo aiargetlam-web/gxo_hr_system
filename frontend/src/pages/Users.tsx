@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { userService } from "../services/userService";
 import { siteService } from "../services/siteService";
 import { User, Site } from "../types";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";   // ✅ CORRETTO
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -54,7 +54,7 @@ const Users: React.FC = () => {
     setLastName(user.last_name);
     setEmail(user.email);
     setRole(user.role);
-    setSiteId(user.site_id);
+    setSiteId(user.site_id ?? null);   // ✅ CORRETTO
     setIdLul(user.id_lul || "");
     setPhone(user.phone || "");
     setAddress(user.address || "");
@@ -64,7 +64,7 @@ const Users: React.FC = () => {
   // Apri modale cambio sito
   const openChangeSiteModal = (user: User) => {
     setSelectedUser(user);
-    setSiteId(user.site_id);
+    setSiteId(user.site_id ?? null);   // ✅ CORRETTO
     setShowChangeSiteModal(true);
   };
 

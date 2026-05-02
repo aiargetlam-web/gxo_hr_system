@@ -1,25 +1,15 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL + "/api/v1",
 });
 
-// --------------------------------------------------
-// 🔥 INTERCEPTOR REQUEST
-// Aggiunge automaticamente il token a tutte le richieste
-// --------------------------------------------------
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// --------------------------------------------------
-// 🔥 INTERCEPTOR RESPONSE
-// Se il token è scaduto → logout automatico
-// --------------------------------------------------
 api.interceptors.response.use(
   (response) => response,
   (error) => {

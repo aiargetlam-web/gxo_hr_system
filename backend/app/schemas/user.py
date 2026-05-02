@@ -11,6 +11,7 @@ class UserBase(BaseModel):
     address: Optional[str] = None
     id_lul: Optional[str] = None
     is_active: Optional[bool] = True
+    first_access: bool
 
 class UserCreate(UserBase):
     password: str

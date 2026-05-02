@@ -3,6 +3,9 @@ from pydantic import BaseModel, EmailStr, field_validator
 import re
 from datetime import datetime
 
+# -------------------------
+# BASE (solo per lettura)
+# -------------------------
 class UserBase(BaseModel):
     email: EmailStr
     first_name: str
@@ -13,6 +16,10 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     first_access: bool
 
+
+# -------------------------
+# CREATE (tutti obbligatori)
+# -------------------------
 class UserCreate(UserBase):
     password: str
     role: Optional[str] = 'user'
@@ -33,9 +40,22 @@ class UserCreate(UserBase):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
 
-class UserUpdate(UserBase):
-    password: Optional[str] = None
+
+# -------------------------
+# UPDATE (tutti opzionali)
+# -------------------------
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    id_lul: Optional[str] = None
+    is_active: Optional[bool] = None
+    first_access: Optional[bool] = None
+    role: Optional[str] = None
     site_id: Optional[int] = None
+    password: Optional[str] = None
 
     @field_validator('password')
     @classmethod
@@ -54,6 +74,10 @@ class UserUpdate(UserBase):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
 
+
+# -------------------------
+# OUTPUT (lettura)
+# -------------------------
 class UserInDBBase(UserBase):
     id: int
     role: str
@@ -65,6 +89,7 @@ class UserInDBBase(UserBase):
 
     class Config:
         from_attributes = True
+
 
 class User(UserInDBBase):
     pass

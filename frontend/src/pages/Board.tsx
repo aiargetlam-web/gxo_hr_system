@@ -293,26 +293,29 @@ const Board: React.FC = () => {
         >
           <h3>Modifica siti</h3>
 
-          {allSites.map(s => (
-            <label
-              key={s.id}
-              style={{ display: "flex", alignItems: "center", marginBottom: "0.4rem" }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedSites.includes(s.id)}
-                onChange={() => {
-                  setSelectedSites(prev =>
-                    prev.includes(s.id)
-                      ? prev.filter(x => x !== s.id)
-                      : [...prev, s.id]
-                  );
-                }}
-                style={{ marginRight: "0.5rem" }}
-              />
-              {s.name}
-            </label>
-          ))}
+          {allSites.map(s => {
+  return (
+    <label
+      key={s.id}
+      style={{ display: "flex", alignItems: "center", marginBottom: "0.4rem" }}
+    >
+      <input
+        type="checkbox"
+        checked={selectedSites.includes(s.id)}
+        onChange={() => {
+          setSelectedSites(prev =>
+            prev.includes(s.id)
+              ? prev.filter(x => x !== s.id)
+              : [...prev, s.id]
+          );
+        }}
+        style={{ marginRight: "0.5rem" }}
+      />
+      {s.name}
+    </label>
+  );
+})}
+
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
             <button className="btn btn-outline" onClick={() => setShowEditSites(false)}>

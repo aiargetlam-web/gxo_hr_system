@@ -93,16 +93,19 @@ def create_user(
 
     # Creazione utente
     db_obj = User(
-        email=user_in.email,
-        password_hash=get_password_hash(user_in.password),
-        first_name=user_in.first_name,
-        last_name=user_in.last_name,
-        role=user_in.role or "user",
-        site_id=user_in.site_id,
-        id_lul=user_in.id_lul,
-        is_active=True,
-        first_access=True   # 👈 OBBLIGATORIO
-    )
+    email=user_in.email,
+    password_hash=get_password_hash(user_in.password),
+    first_name=user_in.first_name,
+    last_name=user_in.last_name,
+    phone=user_in.phone,
+    address=user_in.address,
+    role=user_in.role or "user",
+    site_id=user_in.site_id,
+    id_lul=user_in.id_lul,
+    is_active=True,
+    first_access=True
+)
+
 
     db.add(db_obj)
     db.commit()
@@ -309,6 +312,12 @@ def update_user(
 
     if user_in.id_lul is not None:
         user.id_lul = user_in.id_lul
+    if user_in.phone is not None:
+       user.phone = user_in.phone
+
+    if user_in.address is not None:
+       user.address = user_in.address
+
 
     # Gestione password
     if user_in.password is not None:

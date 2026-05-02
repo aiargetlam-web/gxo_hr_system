@@ -36,7 +36,7 @@ export const Users: React.FC = () => {
 
   const loadSites = async () => {
     try {
-      const res = await api.get("/sites"); // CORRETTO
+      const res = await api.get("/sites");
       setSites(res.data);
     } catch (err) {
       console.error(err);
@@ -45,7 +45,7 @@ export const Users: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const data = await userService.getUsers(); // CORRETTO
+      const data = await userService.getUsers();
       setUsers(data);
     } catch (err) {
       console.error(err);
@@ -139,7 +139,7 @@ export const Users: React.FC = () => {
 
           <button
             onClick={() =>
-              window.open(`${import.meta.env.VITE_API_URL}/api/v1/export/users`)
+              window.open(`${import.meta.env.VITE_API_URL}/export/users`)
             }
             className="btn btn-outline"
           >
@@ -364,7 +364,160 @@ export const Users: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* MODALE MODIFICA UTENTE */}
+      {showEditModal && selectedUser && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h2>Modifica Utente</h2>
+
+            <input
+              className="input"
+              value={selectedUser.first_name}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, first_name: e.target.value })
+              }
+              placeholder="Nome"
+            />
+
+            <input
+              className="input"
+              value={selectedUser.last_name}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, last_name: e.target.value })
+              }
+              placeholder="Cognome"
+            />
+
+            <input
+              className="input"
+              value={selectedUser.email}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, email: e.target.value })
+              }
+              placeholder="Email"
+            />
+
+            <select
+              className="input"
+              value={selectedUser.role}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, role: e.target.value })
+              }
+            >
+              <option value="user">User</option>
+              <option value="hr">HR</option>
+              <option value="admin">Admin</option>
+            </select>
+
+            <select
+              className="input"
+              value={selectedUser.site_id}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, site_id: Number(e.target.value) })
+              }
+            >
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              className="input"
+              value={selectedUser.id_lul || ""}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, id_lul: e.target.value })
+              }
+              placeholder="ID LUL"
+            />
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Annulla
+              </button>
+
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await userService.updateUser(selectedUser.id, selectedUser);
+                    toast.success("Utente aggiornato");
+                    setShowEditModal(false);
+                    setSelectedUser(null);
+                    loadUsers();
+                  } catch {
+                    toast.error("Errore aggiornamento utente");
+                  }
+                }}
+              >
+                Salva
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE CAMBIA SITO */}
+      {showSiteModal && selectedUser && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h2>Cambia Sito</h2>
+
+            <select
+              className="input"
+              value={selectedUser.site_id}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, site_id: Number(e.target.value) })
+              }
+            >
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowSiteModal(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Annulla
+              </button>
+
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await userService.updateUser(selectedUser.id, {
+                      site_id: selectedUser.site_id,
+                    });
+                    toast.success("Sito aggiornato");
+                    setShowSiteModal(false);
+                    setSelectedUser(null);
+                    loadUsers();
+                  } catch {
+                    toast.error("Errore aggiornamento sito");
+                  }
+                }}
+              >
+                Salva
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-

@@ -5,7 +5,7 @@ import { authService } from '../services/authService';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -13,7 +13,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  login: () => {},
+  login: async () => {},
   logout: () => {},
   isLoading: true,
 });
@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // -----------------------------
+  // INIZIALIZZAZIONE (token → user)
+  // -----------------------------
   useEffect(() => {
     const initAuth = async () => {
       if (token) {
@@ -40,11 +43,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, [token]);
 
-  const login = (newToken: string) => {
+  // -----------------------------
+  // LOGIN MIGLIORATO
+  // -----------------------------
+  const login = async (newToken: string) => {
     localStorage.setItem('access_token', newToken);
     setToken(newToken);
+
+    try {
+      // 🔥 Aggiorna SUBITO l’utente dopo il login
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error("Errore caricamento utente dopo login", error);
+      logout();
+    }
   };
 
+  // -----------------------------
+  // LOGOUT
+  // -----------------------------
   const logout = () => {
     localStorage.removeItem('access_token');
     setToken(null);

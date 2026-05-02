@@ -258,6 +258,7 @@ const Board: React.FC = () => {
               setShowUpload(false);
               fetchFiles(activeFilter);
             }}
+		onCancel={() => setShowUpload(false)}
           />
         </Box>
       </Modal>

@@ -13,5 +13,11 @@ class Site(SiteBase):
     class Config:
         from_attributes = True
 
+class SiteOut(SiteBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 class HRSiteAssign(BaseModel):
     site_ids: list[int]

@@ -94,7 +94,7 @@ export default function UsersPage() {
         <CircularProgress />
       </Box>
     );
-    }
+  }
 
   const filteredUsers = users.filter((u) => {
     const s = search.toLowerCase();
@@ -193,7 +193,7 @@ export default function UsersPage() {
 
               <Box flex={1}>
                 <Chip
-                  label={u.role?.name.toUpperCase() || "-"}
+                  label={u.role?.name?.toUpperCase() || "-"}
                   color={
                     u.role?.name === "admin"
                       ? "secondary"

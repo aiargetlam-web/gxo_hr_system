@@ -47,7 +47,19 @@ export const userService = {
     return response.data;
   },
 
-  // IMPORT CSV
+  // IMPORT CSV (usato da UserImportCsvModal)
+  importCsv: async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/api/v1/users/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    return response.data;
+  },
+
+  // (OPZIONALE) vecchio metodo, lo lascio se ti serve ancora
   importUsers: async (file: File): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);

@@ -17,30 +17,14 @@ const Users: React.FC = () => {
   const [sites, setSites] = useState<Site[]>([]);
   const [search, setSearch] = useState("");
 
-  // Sorting
   const [orderBy, setOrderBy] = useState<keyof User>("last_name");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
-  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Menu ⋮
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-  // Modali
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showChangeSiteModal, setShowChangeSiteModal] = useState(false);
-
-  // Form
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("user");
-  const [siteId, setSiteId] = useState<number | null>(null);
-  const [idLul, setIdLul] = useState("");
 
   const loadUsers = async () => {
     try {
@@ -65,26 +49,24 @@ const Users: React.FC = () => {
     loadSites();
   }, []);
 
-  // Sorting handler
   const handleSort = (property: keyof User) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-  const sortedUsers = [...users]
-    .filter((u) =>
-      `${u.first_name} ${u.last_name} ${u.email}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-    .sort((a, b) => {
-      const valA = (a[orderBy] ?? "").toString().toLowerCase();
-      const valB = (b[orderBy] ?? "").toString().toLowerCase();
-      return order === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
-    });
+  const filteredUsers = users.filter((u) =>
+    `${u.first_name} ${u.last_name} ${u.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
-  // Menu ⋮
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const valA = (a[orderBy] ?? "").toString().toLowerCase();
+    const valB = (b[orderBy] ?? "").toString().toLowerCase();
+    return order === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+  });
+
   const openMenu = (event: React.MouseEvent<HTMLButtonElement>, user: User) => {
     setAnchorEl(event.currentTarget);
     setSelectedUser(user);
@@ -94,7 +76,6 @@ const Users: React.FC = () => {
     setAnchorEl(null);
   };
 
-  // Reset password
   const handleResetPassword = async () => {
     if (!selectedUser) return;
     try {
@@ -107,13 +88,12 @@ const Users: React.FC = () => {
   };
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
         Gestione Utenti
       </Typography>
 
-      {/* Barra superiore */}
-      <Box display="flex" justifyContent="space-between" mb={2}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <TextField
           label="Cerca utente"
           variant="outlined"
@@ -126,13 +106,12 @@ const Users: React.FC = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => alert("Apri modale crea utente")}
         >
           Crea nuovo utente
         </Button>
       </Box>
 
-      {/* Tabella */}
       <Paper elevation={3}>
         <TableContainer>
           <Table>
@@ -180,7 +159,13 @@ const Users: React.FC = () => {
                     <TableCell>
                       <Chip
                         label={u.role.toUpperCase()}
-                        color={u.role === "admin" ? "error" : u.role === "hr" ? "warning" : "default"}
+                        color={
+                          u.role === "admin"
+                            ? "error"
+                            : u.role === "hr"
+                            ? "warning"
+                            : "default"
+                        }
                       />
                     </TableCell>
 
@@ -194,7 +179,6 @@ const Users: React.FC = () => {
             </TableBody>
           </Table>
 
-          {/* Pagination */}
           <TablePagination
             component="div"
             count={sortedUsers.length}
@@ -209,18 +193,11 @@ const Users: React.FC = () => {
         </TableContainer>
       </Paper>
 
-      {/* Menu ⋮ */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-        <MenuItem onClick={() => { setShowEditModal(true); closeMenu(); }}>Modifica</MenuItem>
-        <MenuItem onClick={() => { setShowChangeSiteModal(true); closeMenu(); }}>Cambia sito</MenuItem>
+        <MenuItem onClick={() => alert("Apri modale modifica")}>Modifica</MenuItem>
+        <MenuItem onClick={() => alert("Apri modale cambio sito")}>Cambia sito</MenuItem>
         <MenuItem onClick={handleResetPassword}>Reset password</MenuItem>
       </Menu>
-
-      {/* Qui sotto restano i tuoi modali originali */}
-      {/* (li mantengo identici per compatibilità con il backend) */}
-
-      {/* ... I tuoi modali esistenti ... */}
-
     </Box>
   );
 };

@@ -3,18 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.api_v1.api import api_router
-from app.db.base_class import Base
-from app.db.session import engine
 
-# Automatically create all tables (not recommended for production, use Alembic instead)
-# Base.metadata.create_all(bind=engine)
+# IMPORTANTE: registra i modelli (User, Role, Site)
+# NON popola nulla, serve solo per evitare errori SQLAlchemy
+from app.db import base
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Set all CORS enabled origins
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -23,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ROUTES
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")

@@ -40,8 +40,8 @@ export default function UserEditModal({
         phone: user.phone,
         address: user.address,
         id_lul: user.id_lul,
-        role_id: user.role_id,
-        site_id: user.site_id,
+        role_id: user.role_id ?? undefined,
+        site_id: user.site_id ?? undefined,   // 🔥 FIX IMPORTANTE
       });
     }
   }, [user]);
@@ -69,13 +69,13 @@ export default function UserEditModal({
             <TextField
               label="Nome"
               fullWidth
-              value={form.first_name || ""}
+              value={form.first_name ?? ""}
               onChange={(e) => handleChange("first_name", e.target.value)}
             />
             <TextField
               label="Cognome"
               fullWidth
-              value={form.last_name || ""}
+              value={form.last_name ?? ""}
               onChange={(e) => handleChange("last_name", e.target.value)}
             />
           </Stack>
@@ -83,7 +83,7 @@ export default function UserEditModal({
           <TextField
             label="Email"
             fullWidth
-            value={form.email || ""}
+            value={form.email ?? ""}
             onChange={(e) => handleChange("email", e.target.value)}
           />
 
@@ -91,13 +91,13 @@ export default function UserEditModal({
             <TextField
               label="Telefono"
               fullWidth
-              value={form.phone || ""}
+              value={form.phone ?? ""}
               onChange={(e) => handleChange("phone", e.target.value)}
             />
             <TextField
               label="ID LUL"
               fullWidth
-              value={form.id_lul || ""}
+              value={form.id_lul ?? ""}
               onChange={(e) => handleChange("id_lul", e.target.value)}
             />
           </Stack>
@@ -105,7 +105,7 @@ export default function UserEditModal({
           <TextField
             label="Indirizzo"
             fullWidth
-            value={form.address || ""}
+            value={form.address ?? ""}
             onChange={(e) => handleChange("address", e.target.value)}
           />
 
@@ -113,7 +113,7 @@ export default function UserEditModal({
             select
             label="Ruolo"
             fullWidth
-            value={form.role_id || ""}
+            value={form.role_id ?? ""}
             onChange={(e) => handleChange("role_id", Number(e.target.value))}
           >
             {roles.map((r) => (
@@ -127,7 +127,7 @@ export default function UserEditModal({
             select
             label="Sito"
             fullWidth
-            value={form.site_id || ""}
+            value={form.site_id ?? ""}
             onChange={(e) => handleChange("site_id", Number(e.target.value))}
           >
             {sites.map((s) => (
@@ -140,7 +140,7 @@ export default function UserEditModal({
           <TextField
             label="Nuova Password (opzionale)"
             fullWidth
-            value={form.password || ""}
+            value={form.password ?? ""}
             onChange={(e) => handleChange("password", e.target.value)}
           />
         </Stack>

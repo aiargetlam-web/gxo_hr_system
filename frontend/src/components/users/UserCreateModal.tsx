@@ -103,7 +103,7 @@ export default function UserCreateModal({
             select
             label="Ruolo"
             fullWidth
-            value={form.role_id}
+            value={form.role_id ?? ""}
             onChange={(e) => handleChange("role_id", Number(e.target.value))}
           >
             {roles.map((r) => (
@@ -117,7 +117,7 @@ export default function UserCreateModal({
             select
             label="Sito"
             fullWidth
-            value={form.site_id}
+            value={form.site_id ?? ""}
             onChange={(e) => handleChange("site_id", Number(e.target.value))}
           >
             {sites.map((s) => (

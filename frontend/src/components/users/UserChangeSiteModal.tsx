@@ -27,14 +27,14 @@ export default function UserChangeSiteModal({
   onUpdated,
   sites,
 }: Props) {
-  const [siteId, setSiteId] = useState<number | null>(null);
+  const [siteId, setSiteId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    if (user) setSiteId(user.site_id);
+    if (user) setSiteId(user.site_id ?? undefined);
   }, [user]);
 
   const handleSubmit = async () => {
-    if (!user || siteId === null) return;
+    if (!user || siteId === undefined) return;
     await userService.updateUser(user.id, { site_id: siteId });
     onUpdated();
     onClose();
@@ -52,7 +52,7 @@ export default function UserChangeSiteModal({
             select
             label="Sito"
             fullWidth
-            value={siteId || ""}
+            value={siteId ?? ""}
             onChange={(e) => setSiteId(Number(e.target.value))}
           >
             {sites.map((s) => (

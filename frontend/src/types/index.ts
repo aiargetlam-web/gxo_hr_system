@@ -1,33 +1,78 @@
 /* ============================
-   ROLES
+   ROLES (oggetto completo)
 ============================ */
-export type Role = "user" | "hr" | "admin";
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 /* ============================
    USER
 ============================ */
 export interface User {
   id: number;
+
   email: string;
   first_name: string;
   last_name: string;
-  role: string;
 
+  // 🔥 NUOVO: ruolo tramite FK
+  role_id: number;
+  role?: Role | null;
+
+  // 🔥 Sito
   site_id: number | null;
-
-  // 🔥 AGGIUNTO: relazione completa con il sito
   site?: {
     id: number;
     name: string;
   } | null;
 
-  id_lul?: string | null;
+  id_lul: string;
+  phone: string;
+  address: string;
+
   is_active: boolean;
-  phone?: string | null;
-  address?: string | null;
+  first_access: boolean;
+
   created_at: string;
   updated_at: string;
 }
+
+/* ============================
+   USER CREATE
+============================ */
+export interface UserCreate {
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  address: string;
+  id_lul: string;
+
+  role_id: number;
+  site_id: number;
+
+  password?: string; // default: Password123!
+}
+
+/* ============================
+   USER UPDATE
+============================ */
+export interface UserUpdate {
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  address?: string;
+  id_lul?: string;
+
+  role_id?: number;
+  site_id?: number;
+
+  password?: string;
+}
+
 /* ============================
    SITES
 ============================ */
@@ -47,7 +92,6 @@ export interface BoardFile {
   upload_date: string;
   is_active: boolean;
 
-  // Per la visibilità multi-sito
   site_ids?: number[];
   sites?: Site[];
 }

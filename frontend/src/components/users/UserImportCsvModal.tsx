@@ -1,10 +1,10 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -36,7 +36,7 @@ export default function UserImportCsvModal({
       <DialogTitle>Importa Utenti da CSV</DialogTitle>
 
       <DialogContent>
-        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
+        <Stack spacing={2} sx={{ mt: 1 }}>
           <Typography>
             Carica un file CSV con i campi: email, first_name, last_name, id_lul, site_id, role, phone, address
           </Typography>
@@ -52,7 +52,7 @@ export default function UserImportCsvModal({
           </Button>
 
           {file && <Typography>File selezionato: {file.name}</Typography>}
-        </Box>
+        </Stack>
       </DialogContent>
 
       <DialogActions>

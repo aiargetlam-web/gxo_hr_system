@@ -1,11 +1,11 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   MenuItem,
+  Stack,
   TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -47,7 +47,7 @@ export default function UserEditModal({
   }, [user]);
 
   const handleChange = (field: keyof UserUpdate, value: any) => {
-    setForm((prev: UserUpdate) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -64,8 +64,8 @@ export default function UserEditModal({
       <DialogTitle>Modifica Utente</DialogTitle>
 
       <DialogContent>
-        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
-          <Box display="flex" style={{ gap: 16 }}>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack direction="row" spacing={2}>
             <TextField
               label="Nome"
               fullWidth
@@ -78,7 +78,7 @@ export default function UserEditModal({
               value={form.last_name || ""}
               onChange={(e) => handleChange("last_name", e.target.value)}
             />
-          </Box>
+          </Stack>
 
           <TextField
             label="Email"
@@ -87,7 +87,7 @@ export default function UserEditModal({
             onChange={(e) => handleChange("email", e.target.value)}
           />
 
-          <Box display="flex" style={{ gap: 16 }}>
+          <Stack direction="row" spacing={2}>
             <TextField
               label="Telefono"
               fullWidth
@@ -100,7 +100,7 @@ export default function UserEditModal({
               value={form.id_lul || ""}
               onChange={(e) => handleChange("id_lul", e.target.value)}
             />
-          </Box>
+          </Stack>
 
           <TextField
             label="Indirizzo"
@@ -143,7 +143,7 @@ export default function UserEditModal({
             value={form.password || ""}
             onChange={(e) => handleChange("password", e.target.value)}
           />
-        </Box>
+        </Stack>
       </DialogContent>
 
       <DialogActions>

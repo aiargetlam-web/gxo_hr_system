@@ -28,3 +28,10 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.get("/")
 def root():
     return {"message": "Welcome to GXO HR System API"}
+
+@app.get("/debug-cors")
+def debug_cors():
+    return {
+        "raw": settings.CORS_ORIGINS,
+        "list": settings.cors_origin_list
+    }

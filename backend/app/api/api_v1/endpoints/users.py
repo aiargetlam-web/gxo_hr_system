@@ -2,7 +2,7 @@ import csv
 import io
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 
 from app.api import deps
@@ -39,10 +39,16 @@ def get_users(
     is_active: Optional[bool] = None
 ) -> Any:
 
-    query = db.query(User)
+    query = (
+        db.query(User)
+        .options(
+            joinedload(User.role),
+            joinedload(User.site)
+        )
+    )
 
     # HR può vedere solo i propri siti
-    if current_user.role == "hr":
+    if current_user.role_id and current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -79,7 +85,7 @@ def create_user(
 ) -> Any:
 
     # HR può creare utenti solo nei propri siti
-    if current_user.role == "hr":
+    if current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -93,19 +99,18 @@ def create_user(
 
     # Creazione utente
     db_obj = User(
-    email=user_in.email,
-    password_hash=get_password_hash(user_in.password),
-    first_name=user_in.first_name,
-    last_name=user_in.last_name,
-    phone=user_in.phone,
-    address=user_in.address,
-    role=user_in.role or "user",
-    site_id=user_in.site_id,
-    id_lul=user_in.id_lul,
-    is_active=True,
-    first_access=True
-)
-
+        email=user_in.email,
+        password_hash=get_password_hash(user_in.password or "Password123!"),
+        first_name=user_in.first_name,
+        last_name=user_in.last_name,
+        phone=user_in.phone,
+        address=user_in.address,
+        role_id=user_in.role_id,
+        site_id=user_in.site_id,
+        id_lul=user_in.id_lul,
+        is_active=True,
+        first_access=True
+    )
 
     db.add(db_obj)
     db.commit()
@@ -134,7 +139,7 @@ def toggle_user_status(
         raise HTTPException(status_code=404, detail="User not found")
 
     # HR può gestire solo i propri siti
-    if current_user.role == "hr":
+    if current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -171,7 +176,7 @@ def reset_password(
         raise HTTPException(status_code=404, detail="User not found")
 
     # HR può resettare solo utenti dei propri siti
-    if current_user.role == "hr":
+    if current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -215,7 +220,7 @@ def import_users(
     error_details = []
 
     hr_site_ids = []
-    if current_user.role == "hr":
+    if current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -224,19 +229,21 @@ def import_users(
         try:
             site_id = int(row.get('site_id')) if row.get('site_id') else None
 
-            if current_user.role == "hr" and site_id not in hr_site_ids:
+            if current_user.role and current_user.role.name == "hr" and site_id not in hr_site_ids:
                 raise ValueError(f"Sito {site_id} non autorizzato.")
 
+            # TODO: se vuoi usare role_id anche da CSV, qui dovresti mappare il nome ruolo → id
             db_obj = User(
                 email=row.get('email'),
                 password_hash=get_password_hash(row.get('password', 'Password123!')),
                 first_name=row.get('first_name'),
                 last_name=row.get('last_name'),
-                role=row.get('role', 'user'),
+                # per ora manteniamo compatibilità: da CSV usi ancora role string → da migrare dopo
+                role_id=None,
                 site_id=site_id,
                 id_lul=row.get('id_lul'),
                 is_active=True,
-                first_access=True   # 👈 IMPORT CSV = primo accesso obbligatorio
+                first_access=True
             )
             db.add(db_obj)
             rows_processed += 1
@@ -270,7 +277,7 @@ def import_users(
 
 
 # ============================================================
-# UPDATE USER (gestisce anche password)
+# UPDATE USER
 # ============================================================
 
 @router.patch("/{id}", response_model=UserSchema)
@@ -287,7 +294,7 @@ def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     # HR può modificare solo utenti dei propri siti
-    if current_user.role == "hr":
+    if current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
@@ -304,25 +311,25 @@ def update_user(
     if user_in.email is not None:
         user.email = user_in.email
 
-    if user_in.role is not None:
-        user.role = user_in.role
+    if user_in.role_id is not None:
+        user.role_id = user_in.role_id
 
     if user_in.site_id is not None:
         user.site_id = user_in.site_id
 
     if user_in.id_lul is not None:
         user.id_lul = user_in.id_lul
+
     if user_in.phone is not None:
-       user.phone = user_in.phone
+        user.phone = user_in.phone
 
     if user_in.address is not None:
-       user.address = user_in.address
-
+        user.address = user_in.address
 
     # Gestione password
     if user_in.password is not None:
         user.password_hash = get_password_hash(user_in.password)
-        user.first_access = True  # 👈 obbligo cambio password
+        user.first_access = True  # obbligo cambio password
 
     db.add(user)
     db.commit()

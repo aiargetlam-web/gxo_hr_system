@@ -1,205 +1,300 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, IconButton, Menu, MenuItem, TableSortLabel, TablePagination,
-  Chip, TextField, Box, Typography, Button
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
+
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
+import UploadIcon from "@mui/icons-material/Upload";
+import DownloadIcon from "@mui/icons-material/Download";
 
 import { userService } from "../services/userService";
+import { roleService } from "../services/roleService";
 import { siteService } from "../services/siteService";
-import { User, Site } from "../types";
-import { toast } from "react-hot-toast";
 
-const Users: React.FC = () => {
+import { User, Role, Site } from "../types";
+
+import UserCreateModal from "../components/users/UserCreateModal";
+import UserEditModal from "../components/users/UserEditModal";
+import UserChangeSiteModal from "../components/users/UserChangeSiteModal";
+import UserImportCsvModal from "../components/users/UserImportCsvModal";
+
+export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
 
-  const [orderBy, setOrderBy] = useState<keyof User>("last_name");
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState<User | null>(null);
+  const [openChangeSite, setOpenChangeSite] = useState<User | null>(null);
+  const [openImport, setOpenImport] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const loadUsers = async () => {
-    try {
-      const data = await userService.getUsers();
-      setUsers(data);
-    } catch {
-      toast.error("Errore caricamento utenti");
-    }
-  };
+  const openMenu = Boolean(anchorEl);
 
-  const loadSites = async () => {
-    try {
-      const data = await siteService.getSites();
-      setSites(data);
-    } catch {
-      toast.error("Errore caricamento siti");
-    }
-  };
-
-  useEffect(() => {
-    loadUsers();
-    loadSites();
-  }, []);
-
-  const handleSort = (property: keyof User) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const filteredUsers = users.filter((u) =>
-    `${u.first_name} ${u.last_name} ${u.email}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
-
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    const valA = (a[orderBy] ?? "").toString().toLowerCase();
-    const valB = (b[orderBy] ?? "").toString().toLowerCase();
-    return order === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
-  });
-
-  const openMenu = (event: React.MouseEvent<HTMLButtonElement>, user: User) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, user: User) => {
     setAnchorEl(event.currentTarget);
     setSelectedUser(user);
   };
 
-  const closeMenu = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
+    setSelectedUser(null);
   };
 
-  const handleResetPassword = async () => {
-    if (!selectedUser) return;
+  const loadData = async () => {
+    setLoading(true);
     try {
-      await userService.resetPassword(selectedUser.id);
-      toast.success("Password resettata");
-    } catch {
-      toast.error("Errore reset password");
+      const [u, r, s] = await Promise.all([
+        userService.getUsers(),
+        roleService.getRoles(),
+        siteService.getSites(),
+      ]);
+      setUsers(u);
+      setRoles(r);
+      setSites(s);
+    } finally {
+      setLoading(false);
     }
-    closeMenu();
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleToggleStatus = async (user: User) => {
+    await userService.toggleStatus(user.id, !user.is_active);
+    loadData();
+  };
+
+  const handleResetPassword = async (user: User) => {
+    await userService.resetPassword(user.id);
+    loadData();
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" sx={{ mt: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+    }
+
+  const filteredUsers = users.filter((u) => {
+    const s = search.toLowerCase();
+    return (
+      u.first_name.toLowerCase().includes(s) ||
+      u.last_name.toLowerCase().includes(s) ||
+      u.email.toLowerCase().includes(s) ||
+      (u.id_lul || "").toLowerCase().includes(s)
+    );
+  });
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
-        Gestione Utenti
-      </Typography>
+    <Box p={3}>
+      {/* HEADER */}
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 3 }}
+      >
+        <Typography variant="h4" fontWeight={700}>
+          Gestione Utenti
+        </Typography>
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-        <TextField
-          label="Cerca utente"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 250 }}
-        />
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            onClick={() => setOpenImport(true)}
+          >
+            Importa CSV
+          </Button>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => alert("Apri modale crea utente")}
-        >
-          Crea nuovo utente
-        </Button>
-      </Box>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => alert("TODO: export CSV")}
+          >
+            Esporta CSV
+          </Button>
 
-      <Paper elevation={3}>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {[
-                  { id: "id_lul", label: "ID LUL" },
-                  { id: "last_name", label: "Nome" },
-                  { id: "email", label: "Email" },
-                  { id: "site_id", label: "Sito" },
-                  { id: "role", label: "Ruolo" },
-                ].map((col) => (
-                  <TableCell key={col.id}>
-                    <TableSortLabel
-                      active={orderBy === col.id}
-                      direction={order}
-                      onClick={() => handleSort(col.id as keyof User)}
-                    >
-                      {col.label}
-                    </TableSortLabel>
-                  </TableCell>
-                ))}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenCreate(true)}
+          >
+            Nuovo Utente
+          </Button>
+        </Stack>
+      </Stack>
 
-                <TableCell>Azioni</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {sortedUsers
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((u) => (
-                  <TableRow key={u.id} hover>
-                    <TableCell>{u.id_lul}</TableCell>
-                    <TableCell>{u.first_name} {u.last_name}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-
-                    <TableCell>
-                      <Chip
-                        label={sites.find((s) => s.id === u.site_id)?.name || "-"}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    <TableCell>
-                      <Chip
-                        label={u.role.toUpperCase()}
-                        color={
-                          u.role === "admin"
-                            ? "error"
-                            : u.role === "hr"
-                            ? "warning"
-                            : "default"
-                        }
-                      />
-                    </TableCell>
-
-                    <TableCell>
-                      <IconButton onClick={(e) => openMenu(e, u)}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-
-          <TablePagination
-            component="div"
-            count={sortedUsers.length}
-            page={page}
-            onPageChange={(e, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
+      {/* FILTRI */}
+      <Card sx={{ p: 2, mb: 3 }}>
+        <Stack direction="row" spacing={2}>
+          <TextField
+            label="Cerca"
+            fullWidth
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-        </TableContainer>
-      </Paper>
+        </Stack>
+      </Card>
 
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-        <MenuItem onClick={() => alert("Apri modale modifica")}>Modifica</MenuItem>
-        <MenuItem onClick={() => alert("Apri modale cambio sito")}>Cambia sito</MenuItem>
-        <MenuItem onClick={handleResetPassword}>Reset password</MenuItem>
+      {/* TABELLA */}
+      <Card>
+        <Box p={2}>
+          {/* HEADER TABELLA */}
+          <Stack direction="row" sx={{ fontWeight: 600, mb: 1 }}>
+            <Box flex={1}>Nome</Box>
+            <Box flex={1}>Email</Box>
+            <Box flex={1}>Ruolo</Box>
+            <Box flex={1}>Sito</Box>
+            <Box flex={1}>ID LUL</Box>
+            <Box width={120}>Stato</Box>
+            <Box width={50}></Box>
+          </Stack>
+
+          <Divider sx={{ mb: 2 }} />
+
+          {/* RIGHE */}
+          {filteredUsers.map((u) => (
+            <Stack
+              key={u.id}
+              direction="row"
+              alignItems="center"
+              sx={{
+                py: 1.5,
+                borderBottom: "1px solid #eee",
+              }}
+            >
+              <Box flex={1}>
+                {u.first_name} {u.last_name}
+              </Box>
+
+              <Box flex={1}>{u.email}</Box>
+
+              <Box flex={1}>
+                <Chip
+                  label={u.role?.name.toUpperCase() || "-"}
+                  color={
+                    u.role?.name === "admin"
+                      ? "secondary"
+                      : u.role?.name === "hr"
+                      ? "primary"
+                      : "default"
+                  }
+                />
+              </Box>
+
+              <Box flex={1}>{u.site?.name || "-"}</Box>
+
+              <Box flex={1}>{u.id_lul || "-"}</Box>
+
+              <Box width={120}>
+                <Chip
+                  label={u.is_active ? "Attivo" : "Disattivo"}
+                  color={u.is_active ? "primary" : "default"}
+                />
+              </Box>
+
+              <Box width={50} textAlign="right">
+                <IconButton onClick={(e) => handleMenuOpen(e, u)}>
+                  <MoreVertIcon />
+                </IconButton>
+              </Box>
+            </Stack>
+          ))}
+        </Box>
+      </Card>
+
+      {/* MENU ⋮ */}
+      <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
+        <MenuItem
+          onClick={() => {
+            setOpenEdit(selectedUser);
+            handleMenuClose();
+          }}
+        >
+          Modifica
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setOpenChangeSite(selectedUser);
+            handleMenuClose();
+          }}
+        >
+          Cambia Sito
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            handleToggleStatus(selectedUser!);
+            handleMenuClose();
+          }}
+        >
+          {selectedUser?.is_active ? "Disattiva" : "Attiva"}
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            handleResetPassword(selectedUser!);
+            handleMenuClose();
+          }}
+        >
+          Reset Password
+        </MenuItem>
       </Menu>
+
+      {/* MODALI */}
+      <UserCreateModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={loadData}
+        roles={roles}
+        sites={sites}
+      />
+
+      <UserEditModal
+        open={!!openEdit}
+        onClose={() => setOpenEdit(null)}
+        user={openEdit}
+        onUpdated={loadData}
+        roles={roles}
+        sites={sites}
+      />
+
+      <UserChangeSiteModal
+        open={!!openChangeSite}
+        onClose={() => setOpenChangeSite(null)}
+        user={openChangeSite}
+        onUpdated={loadData}
+        sites={sites}
+      />
+
+      <UserImportCsvModal
+        open={openImport}
+        onClose={() => setOpenImport(false)}
+        onImported={loadData}
+      />
     </Box>
   );
-};
-
-export default Users;
+}

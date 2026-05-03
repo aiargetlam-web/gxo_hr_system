@@ -28,34 +28,49 @@ def read_user_me(
 
 
 # ============================================================
-# GET USERS
+# GET USERS (ADMIN = totale, HR = solo i propri siti)
 # ============================================================
 
 @router.get("/", response_model=List[UserSchema])
 def get_users(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_hr_user),
+    current_user: User = Depends(deps.get_current_active_user),
     search_string: Optional[str] = None,
     is_active: Optional[bool] = None
 ) -> Any:
 
-    query = (
-        db.query(User)
-        .options(
-            joinedload(User.role),
-            joinedload(User.site)
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        query = (
+            db.query(User)
+            .options(
+                joinedload(User.role),
+                joinedload(User.site)
+            )
         )
-    )
 
-    # HR può vedere solo i propri siti
-    if current_user.role_id and current_user.role and current_user.role.name == "hr":
+    # HR → accesso limitato ai propri siti
+    elif current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
         if not hr_site_ids:
             return []
-        query = query.filter(User.site_id.in_(hr_site_ids))
 
+        query = (
+            db.query(User)
+            .options(
+                joinedload(User.role),
+                joinedload(User.site)
+            )
+            .filter(User.site_id.in_(hr_site_ids))
+        )
+
+    # ALTRI RUOLI → vietato
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
+
+    # Filtri opzionali
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
 
@@ -73,7 +88,7 @@ def get_users(
 
 
 # ============================================================
-# CREATE USER (first_access = True)
+# CREATE USER
 # ============================================================
 
 @router.post("/", response_model=UserSchema)
@@ -81,16 +96,23 @@ def create_user(
     *,
     db: Session = Depends(deps.get_db),
     user_in: UserCreate,
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: User = Depends(deps.get_current_active_user)
 ) -> Any:
 
-    # HR può creare utenti solo nei propri siti
-    if current_user.role and current_user.role.name == "hr":
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        pass
+
+    # HR → solo i propri siti
+    elif current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
         if user_in.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non puoi creare utenti in siti che non gestisci.")
+
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
 
     # Email duplicata
     existing_user = db.query(User).filter(User.email == user_in.email).first()
@@ -131,20 +153,27 @@ def toggle_user_status(
     db: Session = Depends(deps.get_db),
     id: int,
     is_active: bool = Query(...),
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: User = Depends(deps.get_current_active_user)
 ) -> Any:
 
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # HR può gestire solo i propri siti
-    if current_user.role and current_user.role.name == "hr":
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        pass
+
+    # HR → solo i propri siti
+    elif current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
         if user.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non hai i permessi per gestire questo utente.")
+
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
 
     old_status = user.is_active
     user.is_active = is_active
@@ -160,7 +189,7 @@ def toggle_user_status(
 
 
 # ============================================================
-# RESET PASSWORD (first_access = True)
+# RESET PASSWORD
 # ============================================================
 
 @router.patch("/{id}/reset-password", response_model=UserSchema)
@@ -168,26 +197,30 @@ def reset_password(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: User = Depends(deps.get_current_active_user)
 ):
 
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # HR può resettare solo utenti dei propri siti
-    if current_user.role and current_user.role.name == "hr":
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        pass
+
+    # HR → solo i propri siti
+    elif current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
         if user.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non hai i permessi per questo utente.")
 
-    # Reset password
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
+
     new_password = "Password123!"
     user.password_hash = get_password_hash(new_password)
-
-    # Forza primo accesso
     user.first_access = True
 
     db.add(user)
@@ -209,8 +242,20 @@ def import_users(
     *,
     db: Session = Depends(deps.get_db),
     file: UploadFile = File(...),
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: User = Depends(deps.get_current_active_user)
 ) -> Any:
+
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        pass
+
+    # HR → solo i propri siti
+    elif current_user.role and current_user.role.name == "hr":
+        hr_site_ids = [
+            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+        ]
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
 
     content = file.file.read().decode('utf-8')
     csv_reader = csv.DictReader(io.StringIO(content))
@@ -219,26 +264,18 @@ def import_users(
     rows_failed = 0
     error_details = []
 
-    hr_site_ids = []
-    if current_user.role and current_user.role.name == "hr":
-        hr_site_ids = [
-            s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
-        ]
-
     for row in csv_reader:
         try:
             site_id = int(row.get('site_id')) if row.get('site_id') else None
 
-            if current_user.role and current_user.role.name == "hr" and site_id not in hr_site_ids:
+            if current_user.role.name == "hr" and site_id not in hr_site_ids:
                 raise ValueError(f"Sito {site_id} non autorizzato.")
 
-            # TODO: se vuoi usare role_id anche da CSV, qui dovresti mappare il nome ruolo → id
             db_obj = User(
                 email=row.get('email'),
                 password_hash=get_password_hash(row.get('password', 'Password123!')),
                 first_name=row.get('first_name'),
                 last_name=row.get('last_name'),
-                # per ora manteniamo compatibilità: da CSV usi ancora role string → da migrare dopo
                 role_id=None,
                 site_id=site_id,
                 id_lul=row.get('id_lul'),
@@ -286,27 +323,34 @@ def update_user(
     db: Session = Depends(deps.get_db),
     id: int,
     user_in: UserUpdate,
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: User = Depends(deps.get_current_active_user)
 ) -> Any:
 
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # HR può modificare solo utenti dei propri siti
-    if current_user.role and current_user.role.name == "hr":
+    # ADMIN → accesso totale
+    if current_user.role and current_user.role.name == "admin":
+        pass
+
+    # HR → solo i propri siti
+    elif current_user.role and current_user.role.name == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         ]
         if user.site_id not in hr_site_ids:
             raise HTTPException(status_code=403, detail="Non hai i permessi per modificare questo utente.")
 
+    else:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
+
     # Aggiorna i campi
     if user_in.first_name is not None:
         user.first_name = user_in.first_name
 
     if user_in.last_name is not None:
-        user.last_name = user_in.last_name
+        user.last_lastname = user_in.last_name
 
     if user_in.email is not None:
         user.email = user_in.email
@@ -326,10 +370,9 @@ def update_user(
     if user_in.address is not None:
         user.address = user_in.address
 
-    # Gestione password
     if user_in.password is not None:
         user.password_hash = get_password_hash(user_in.password)
-        user.first_access = True  # obbligo cambio password
+        user.first_access = True
 
     db.add(user)
     db.commit()

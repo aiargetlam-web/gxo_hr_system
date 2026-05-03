@@ -5,12 +5,17 @@ import { AuthContext } from '../context/AuthContext';
 export const Admin: React.FC = () => {
   const { user } = useContext(AuthContext);
 
-  if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  // 🔥 Estraggo il nome del ruolo in modo sicuro
+  const roleName = user?.role?.name ?? "";
+
+  if (roleName !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return (
     <div>
       <h1>Gestione HR e Siti</h1>
-      <p style={{ marginBottom: '1.5rem' }}>Assegna i siti di competenza ai referenti HR.</p>
+      <p style={{ marginBottom: '1.5rem' }}>
+        Assegna i siti di competenza ai referenti HR.
+      </p>
       
       <div className="card">
         <div className="table-responsive">
@@ -23,6 +28,7 @@ export const Admin: React.FC = () => {
                 <th style={{ padding: '0.75rem' }}>Azioni</th>
               </tr>
             </thead>
+
             <tbody>
               <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <td style={{ padding: '0.75rem' }}>Laura Bianchi</td>
@@ -32,10 +38,16 @@ export const Admin: React.FC = () => {
                   <span className="badge badge-inprogress">Roma</span>
                 </td>
                 <td style={{ padding: '0.75rem' }}>
-                  <button className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}>Modifica</button>
+                  <button
+                    className="btn btn-primary"
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                  >
+                    Modifica
+                  </button>
                 </td>
               </tr>
             </tbody>
+
           </table>
         </div>
       </div>

@@ -13,6 +13,9 @@ import Box from "@mui/material/Box";
 const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
+  // ruolo corretto
+  const roleName = user?.role?.name ?? "";
+
   const [files, setFiles] = useState<BoardFile[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -134,8 +137,9 @@ const Board: React.FC = () => {
       <div className="flex-wrap-mobile">
         <h1>Bacheca Aziendale</h1>
 
-        {(user?.role === "hr" || user?.role === "admin") && (
-          <div className="filters-bar"
+        {(roleName === "hr" || roleName === "admin") && (
+          <div
+            className="filters-bar"
             style={{
               display: "flex",
               flexWrap: "wrap",
@@ -236,7 +240,7 @@ const Board: React.FC = () => {
               </span>
             </div>
           </div>
-        )}   {/* ← ← ← QUESTA PARENTESI MANCAVA */}
+        )}
       </div>
 
       {/* MODAL UPLOAD */}
@@ -338,7 +342,7 @@ const Board: React.FC = () => {
 
                 <th style={{ padding: '0.75rem' }}>Stato</th>
 
-                {(user?.role === "hr" || user?.role === "admin") && (
+                {(roleName === "hr" || roleName === "admin") && (
                   <th
                     style={{ padding: '0.75rem', cursor: "pointer" }}
                     onClick={() => handleSort("sites")}
@@ -388,7 +392,7 @@ const Board: React.FC = () => {
                     </span>
                   </td>
 
-                  {(user?.role === "hr" || user?.role === "admin") && (
+                  {(roleName === "hr" || roleName === "admin") && (
                     <td style={{ padding: '0.75rem' }}>
                       {f.sites?.map(s => s.name).join(", ") || "-"}
                     </td>
@@ -406,7 +410,7 @@ const Board: React.FC = () => {
                       Scarica
                     </button>
 
-                    {(user?.role === "hr" || user?.role === "admin") && (
+                    {(roleName === "hr" || roleName === "admin") && (
                       <button
                         onClick={() => toggleStatus(f.id, !f.is_active)}
                         className={f.is_active ? "btn btn-outline" : "btn btn-primary"}
@@ -415,7 +419,7 @@ const Board: React.FC = () => {
                       </button>
                     )}
 
-                    {(user?.role === "hr" || user?.role === "admin") && (
+                    {(roleName === "hr" || roleName === "admin") && (
                       <button
                         onClick={() => openEditSitesModal(f)}
                         className="btn btn-secondary"

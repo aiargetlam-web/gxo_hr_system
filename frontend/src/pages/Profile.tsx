@@ -6,9 +6,13 @@ export const Profile: React.FC = () => {
 
   if (!user) return null;
 
+  // 🔥 Estraggo il nome del ruolo in modo sicuro
+  const roleName = user.role?.name ?? "";
+
   return (
     <div className="card">
       <h2>Profilo Utente</h2>
+
       <div className="grid-2-col" style={{ marginTop: '1.5rem' }}>
         
         <strong>Nome:</strong> 
@@ -21,12 +25,14 @@ export const Profile: React.FC = () => {
         <span>{user.id_lul || 'N/D'}</span>
 
         <strong>Ruolo:</strong> 
-        <span style={{ textTransform: 'capitalize' }}>{user.role}</span>
+        <span style={{ textTransform: 'capitalize' }}>
+          {roleName || "N/D"}
+        </span>
 
         <strong>Sito:</strong> 
-        <span>{user.site?.name || 'Non assegnato / Globale'}</span> {/* ✅ CORRETTO */}
+        <span>{user.site?.name || 'Non assegnato / Globale'}</span>
 
-        {(user.role === 'hr' || user.role === 'admin') && (
+        {(roleName === 'hr' || roleName === 'admin') && (
           <>
             <strong>Stato Account:</strong>
             <span>

@@ -4,7 +4,7 @@ import { BoardFile } from '../types';
 export const boardService = {
   // GET files con filtro active
   getFiles: async (active: "true" | "false" = "true"): Promise<BoardFile[]> => {
-    const response = await api.get<BoardFile[]>(`/board?active=${active}`);
+    const response = await api.get<BoardFile[]>(`/api/v1/board?active=${active}`);
     return response.data;
   },
 
@@ -14,7 +14,7 @@ export const boardService = {
     formData.append('file', file);
     formData.append('site_ids', siteIds.join(',')); // "1,2,3"
 
-    const response = await api.post<BoardFile>('/board/upload', formData, {
+    const response = await api.post<BoardFile>('/api/v1/board/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
@@ -22,6 +22,6 @@ export const boardService = {
 
   // URL per il download
   downloadFileUrl: (id: number): string => {
-    return `${api.defaults.baseURL}/board/${id}/download`;
+    return `${api.defaults.baseURL}/api/v1/board/${id}/download`;
   }
 };

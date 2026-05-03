@@ -14,8 +14,8 @@ export const userService = {
       query.append("is_active", String(params.is_active));
 
     const url = query.toString()
-      ? `/users?${query.toString()}`
-      : `/users`;
+      ? `/api/v1/users?${query.toString()}`
+      : `/api/v1/users`;
 
     const response = await api.get<User[]>(url);
     return response.data;
@@ -23,26 +23,26 @@ export const userService = {
 
   // CREATE utente
   createUser: async (userData: any): Promise<User> => {
-    const response = await api.post<User>('/users', userData);
+    const response = await api.post<User>('/api/v1/users', userData);
     return response.data;
   },
 
   // UPDATE utente (modifica dati + cambio sito + cambio password)
   updateUser: async (userId: number, data: any): Promise<User> => {
-    const response = await api.patch<User>(`/users/${userId}`, data);
+    const response = await api.patch<User>(`/api/v1/users/${userId}`, data);
     return response.data;
   },
 
-  // RESET PASSWORD (nuovo endpoint corretto)
+  // RESET PASSWORD
   resetPassword: async (userId: number): Promise<User> => {
-    const response = await api.patch<User>(`/users/${userId}/reset-password`);
+    const response = await api.patch<User>(`/api/v1/users/${userId}/reset-password`);
     return response.data;
   },
 
   // TOGGLE STATUS (attiva/disattiva)
   toggleStatus: async (userId: number, isActive: boolean): Promise<User> => {
     const response = await api.patch<User>(
-      `/users/${userId}/toggle-status?is_active=${isActive}`
+      `/api/v1/users/${userId}/toggle-status?is_active=${isActive}`
     );
     return response.data;
   },
@@ -52,7 +52,7 @@ export const userService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await api.post('/users/import', formData, {
+    const response = await api.post('/api/v1/users/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
 

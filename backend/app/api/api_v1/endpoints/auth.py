@@ -25,29 +25,40 @@ def login_access_token(
     password: str = Body(None),
     form_data: OAuth2PasswordRequestForm = Depends(None)
 ) -> Any:
-    """
-    Login compatibile sia con JSON che con form-data.
-    Il frontend React invia JSON → username/password
-    OAuth2 invia form-data → form_data.username/form_data.password
-    """
+    print("DEBUG: LOGIN STARTED")
 
     # JSON
     if username and password:
         email = username
         pwd = password
+        print("DEBUG: JSON LOGIN", email, pwd)
 
-    # FORM-DATA (OAuth2)
+    # FORM-DATA
     elif form_data:
         email = form_data.username
         pwd = form_data.password
+        print("DEBUG: FORM LOGIN", email, pwd)
 
     else:
+        print("DEBUG: INVALID PAYLOAD")
         raise HTTPException(status_code=400, detail="Invalid login payload")
 
     # Recupero utente
     user = db.query(User).filter(User.email == email).first()
+    print("DEBUG: USER FOUND:", user)
 
-    if not user or not security.verify_password(pwd, user.password_hash):
+    if user:
+        print("DEBUG: HASH:", user.password_hash)
+
+    # Verifica password
+    try:
+        valid = security.verify_password(pwd, user.password_hash) if user else False
+        print("DEBUG: PASSWORD VALID:", valid)
+    except Exception as e:
+        print("DEBUG: PASSWORD VERIFY ERROR:", str(e))
+        raise HTTPException(status_code=500, detail="Password verification error")
+
+    if not user or not valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -60,19 +71,18 @@ def login_access_token(
             detail="Inactive user"
         )
 
-    # Primo accesso → obbligo cambio password
     if getattr(user, "first_access", False):
         return {
             "requires_password_change": True,
             "message": "Primo accesso: è necessario cambiare la password."
         }
 
-    # Login normale
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         user.id, expires_delta=access_token_expires
     )
 
+    print("DEBUG: LOGIN SUCCESS")
     return {
         "access_token": access_token,
         "token_type": "bearer",

@@ -1,8 +1,8 @@
 from datetime import timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, EmailStr, field_validator
 import re
 
@@ -11,28 +11,43 @@ from app.core import security
 from app.core.config import settings
 from app.models.user import User
 from app.schemas.token import Token
+from app.schemas.user import User as UserSchema
 
 router = APIRouter()
 
-# -----------------------------
-# LOGIN (OAUTH2, FORM-DATA)
-# -----------------------------
-
-@router.post("/login", response_model=Any)  # <-- CAMBIATO: ora può restituire token o richiesta cambio password
+# ---------------------------------------------------------
+# LOGIN COMPATIBILE CON JSON E FORM-DATA
+# ---------------------------------------------------------
+@router.post("/login", response_model=Any)
 def login_access_token(
     db: Session = Depends(deps.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends()
+    username: str = Body(None),
+    password: str = Body(None),
+    form_data: OAuth2PasswordRequestForm = Depends(None)
 ) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests.
-    Using email as username.
-    Accetta form-data:
-      username: email
-      password: password
+    Login compatibile sia con JSON che con form-data.
+    Il frontend React invia JSON → username/password
+    OAuth2 invia form-data → form_data.username/form_data.password
     """
-    user = db.query(User).filter(User.email == form_data.username).first()
 
-    if not user or not security.verify_password(form_data.password, user.password_hash):
+    # JSON
+    if username and password:
+        email = username
+        pwd = password
+
+    # FORM-DATA (OAuth2)
+    elif form_data:
+        email = form_data.username
+        pwd = form_data.password
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid login payload")
+
+    # Recupero utente
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user or not security.verify_password(pwd, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -45,7 +60,7 @@ def login_access_token(
             detail="Inactive user"
         )
 
-    # 🔥 PRIMO ACCESSO → obbligo cambio password
+    # Primo accesso → obbligo cambio password
     if getattr(user, "first_access", False):
         return {
             "requires_password_change": True,
@@ -63,10 +78,27 @@ def login_access_token(
         "token_type": "bearer",
     }
 
-# -----------------------------
-# FORGOT PASSWORD
-# -----------------------------
 
+# ---------------------------------------------------------
+# UTENTE LOGGATO
+# ---------------------------------------------------------
+@router.get("/me", response_model=UserSchema)
+def read_current_user(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    user = (
+        db.query(User)
+        .options(joinedload(User.site))
+        .filter(User.id == current_user.id)
+        .first()
+    )
+    return user
+
+
+# ---------------------------------------------------------
+# FORGOT PASSWORD
+# ---------------------------------------------------------
 class ForgotPassword(BaseModel):
     email: EmailStr
 
@@ -75,19 +107,16 @@ def forgot_password(
     data: ForgotPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    """
-    Simula invio email reset password.
-    """
     user = db.query(User).filter(User.email == data.email).first()
     if user:
         print(f"DEBUG: Reset password email sent to {user.email} with reset token: FAKE_RESET_TOKEN")
 
     return {"message": "If the email is registered, a password reset link has been sent."}
 
-# -----------------------------
-# RESET PASSWORD
-# -----------------------------
 
+# ---------------------------------------------------------
+# RESET PASSWORD
+# ---------------------------------------------------------
 class ResetPassword(BaseModel):
     token: str
     new_password: str
@@ -112,9 +141,6 @@ def reset_password(
     data: ResetPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    """
-    Simula reset password tramite token.
-    """
     if data.token != "FAKE_RESET_TOKEN":
         raise HTTPException(status_code=400, detail="Invalid token")
 
@@ -126,10 +152,10 @@ def reset_password(
 
     raise HTTPException(status_code=404, detail="User not found")
 
-# -----------------------------
-# CHANGE PASSWORD (PRIMO ACCESSO)
-# -----------------------------
 
+# ---------------------------------------------------------
+# CAMBIO PASSWORD PRIMO ACCESSO
+# ---------------------------------------------------------
 class ChangePassword(BaseModel):
     email: EmailStr
     old_password: str
@@ -155,18 +181,13 @@ def change_password(
     data: ChangePassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    """
-    Cambio password obbligatorio al primo accesso.
-    """
     user = db.query(User).filter(User.email == data.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # verifica vecchia password
     if not security.verify_password(data.old_password, user.password_hash):
         raise HTTPException(status_code=400, detail="Old password is incorrect")
 
-    # aggiorna password e sblocca primo accesso
     user.password_hash = security.get_password_hash(data.new_password)
     user.first_access = False
 

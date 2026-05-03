@@ -30,7 +30,7 @@ import UserEditModal from "../components/users/UserEditModal";
 import UserChangeSiteModal from "../components/users/UserChangeSiteModal";
 import UserImportCsvModal from "../components/users/UserImportCsvModal";
 
-export default function UsersPage() {
+export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [sites, setSites] = useState<Site[]>([]);

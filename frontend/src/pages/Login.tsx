@@ -16,6 +16,9 @@ export const Login: React.FC = () => {
     try {
       const response = await authService.login(email, password);
 
+      // ⭐ Salviamo l'email per la pagina change-password
+      localStorage.setItem("user_email", email);
+
       // 🔥 1) PRIMO ACCESSO → reindirizza a change-password
       if ("requires_password_change" in response && response.requires_password_change) {
         navigate('/change-password');

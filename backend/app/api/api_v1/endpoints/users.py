@@ -350,7 +350,7 @@ def update_user(
         user.first_name = user_in.first_name
 
     if user_in.last_name is not None:
-        user.last_lastname = user_in.last_name
+        user.last_name = user_in.last_name   # FIX QUI
 
     if user_in.email is not None:
         user.email = user_in.email

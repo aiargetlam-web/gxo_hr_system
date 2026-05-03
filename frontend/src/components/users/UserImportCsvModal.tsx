@@ -1,10 +1,10 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Stack,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -22,19 +22,13 @@ export default function UserImportCsvModal({
   onImported,
 }: Props) {
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!file) return;
-    setLoading(true);
-    try {
-      await userService.importCsv(file);
-      onImported();
-      onClose();
-      setFile(null);
-    } finally {
-      setLoading(false);
-    }
+    await userService.importCsv(file);
+    onImported();
+    onClose();
+    setFile(null);
   };
 
   return (
@@ -42,7 +36,7 @@ export default function UserImportCsvModal({
       <DialogTitle>Importa Utenti da CSV</DialogTitle>
 
       <DialogContent>
-        <Stack spacing={2} mt={1}>
+        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
           <Typography>
             Carica un file CSV con i campi: email, first_name, last_name, id_lul, site_id, role, phone, address
           </Typography>
@@ -58,12 +52,12 @@ export default function UserImportCsvModal({
           </Button>
 
           {file && <Typography>File selezionato: {file.name}</Typography>}
-        </Stack>
+        </Box>
       </DialogContent>
 
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
-        <Button variant="contained" disabled={!file || loading} onClick={handleSubmit}>
+        <Button variant="contained" disabled={!file} onClick={handleSubmit}>
           Importa
         </Button>
       </DialogActions>

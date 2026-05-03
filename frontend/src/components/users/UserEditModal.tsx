@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   MenuItem,
-  Stack,
   TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -48,7 +47,7 @@ export default function UserEditModal({
   }, [user]);
 
   const handleChange = (field: keyof UserUpdate, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev: UserUpdate) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -65,8 +64,8 @@ export default function UserEditModal({
       <DialogTitle>Modifica Utente</DialogTitle>
 
       <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <Stack direction="row" spacing={2}>
+        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
+          <Box display="flex" style={{ gap: 16 }}>
             <TextField
               label="Nome"
               fullWidth
@@ -79,7 +78,7 @@ export default function UserEditModal({
               value={form.last_name || ""}
               onChange={(e) => handleChange("last_name", e.target.value)}
             />
-          </Stack>
+          </Box>
 
           <TextField
             label="Email"
@@ -88,7 +87,7 @@ export default function UserEditModal({
             onChange={(e) => handleChange("email", e.target.value)}
           />
 
-          <Stack direction="row" spacing={2}>
+          <Box display="flex" style={{ gap: 16 }}>
             <TextField
               label="Telefono"
               fullWidth
@@ -101,7 +100,7 @@ export default function UserEditModal({
               value={form.id_lul || ""}
               onChange={(e) => handleChange("id_lul", e.target.value)}
             />
-          </Stack>
+          </Box>
 
           <TextField
             label="Indirizzo"
@@ -110,7 +109,6 @@ export default function UserEditModal({
             onChange={(e) => handleChange("address", e.target.value)}
           />
 
-          {/* ROLE */}
           <TextField
             select
             label="Ruolo"
@@ -125,7 +123,6 @@ export default function UserEditModal({
             ))}
           </TextField>
 
-          {/* SITE */}
           <TextField
             select
             label="Sito"
@@ -140,15 +137,13 @@ export default function UserEditModal({
             ))}
           </TextField>
 
-          {/* PASSWORD (solo se modificata) */}
           <TextField
             label="Nuova Password (opzionale)"
             fullWidth
             value={form.password || ""}
             onChange={(e) => handleChange("password", e.target.value)}
-            helperText="Se compilata, l'utente dovrà cambiarla al primo accesso"
           />
-        </Stack>
+        </Box>
       </DialogContent>
 
       <DialogActions>

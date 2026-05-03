@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   MenuItem,
-  Stack,
   TextField,
 } from "@mui/material";
 import { useState } from "react";
@@ -40,32 +39,14 @@ export default function UserCreateModal({
     password: "Password123!",
   });
 
-  const [loading, setLoading] = useState(false);
-
   const handleChange = (field: keyof UserCreate, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev: UserCreate) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      await userService.createUser(form);
-      onCreated();
-      onClose();
-      setForm({
-        email: "",
-        first_name: "",
-        last_name: "",
-        phone: "",
-        address: "",
-        id_lul: "",
-        role_id: 0,
-        site_id: 0,
-        password: "Password123!",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await userService.createUser(form);
+    onCreated();
+    onClose();
   };
 
   return (
@@ -73,8 +54,8 @@ export default function UserCreateModal({
       <DialogTitle>Nuovo Utente</DialogTitle>
 
       <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <Stack direction="row" spacing={2}>
+        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
+          <Box display="flex" style={{ gap: 16 }}>
             <TextField
               label="Nome"
               fullWidth
@@ -87,7 +68,7 @@ export default function UserCreateModal({
               value={form.last_name}
               onChange={(e) => handleChange("last_name", e.target.value)}
             />
-          </Stack>
+          </Box>
 
           <TextField
             label="Email"
@@ -96,7 +77,7 @@ export default function UserCreateModal({
             onChange={(e) => handleChange("email", e.target.value)}
           />
 
-          <Stack direction="row" spacing={2}>
+          <Box display="flex" style={{ gap: 16 }}>
             <TextField
               label="Telefono"
               fullWidth
@@ -109,7 +90,7 @@ export default function UserCreateModal({
               value={form.id_lul}
               onChange={(e) => handleChange("id_lul", e.target.value)}
             />
-          </Stack>
+          </Box>
 
           <TextField
             label="Indirizzo"
@@ -118,7 +99,6 @@ export default function UserCreateModal({
             onChange={(e) => handleChange("address", e.target.value)}
           />
 
-          {/* ROLE */}
           <TextField
             select
             label="Ruolo"
@@ -133,7 +113,6 @@ export default function UserCreateModal({
             ))}
           </TextField>
 
-          {/* SITE */}
           <TextField
             select
             label="Sito"
@@ -148,24 +127,18 @@ export default function UserCreateModal({
             ))}
           </TextField>
 
-          {/* PASSWORD (hidden but editable if needed) */}
           <TextField
             label="Password iniziale"
             fullWidth
             value={form.password}
             onChange={(e) => handleChange("password", e.target.value)}
-            helperText="Default: Password123!"
           />
-        </Stack>
+        </Box>
       </DialogContent>
 
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
+        <Button variant="contained" onClick={handleSubmit}>
           Crea Utente
         </Button>
       </DialogActions>

@@ -1,11 +1,11 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   MenuItem,
-  Stack,
   TextField,
 } from "@mui/material";
 import { useState, useEffect } from "react";
@@ -47,7 +47,7 @@ export default function UserChangeSiteModal({
       <DialogTitle>Cambia Sito</DialogTitle>
 
       <DialogContent>
-        <Stack spacing={2} mt={1}>
+        <Box display="flex" flexDirection="column" style={{ gap: 16, marginTop: 8 }}>
           <TextField
             select
             label="Sito"
@@ -61,7 +61,7 @@ export default function UserChangeSiteModal({
               </MenuItem>
             ))}
           </TextField>
-        </Stack>
+        </Box>
       </DialogContent>
 
       <DialogActions>

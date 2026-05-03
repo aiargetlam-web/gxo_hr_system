@@ -13,7 +13,7 @@ import Board from "./pages/Board";
 import { Admin } from './pages/Admin';
 import { ActivityLogs, UserHistory } from './pages/Audit';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';
-import { ChangePassword } from './pages/ChangePassword';   // ⭐ AGGIUNTO
+import ChangePassword from './pages/ChangePassword';   // ⭐ AGGIUNTO
 
 // 🔥 TOAST
 import { Toaster } from "react-hot-toast";

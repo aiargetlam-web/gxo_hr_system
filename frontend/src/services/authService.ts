@@ -31,11 +31,13 @@ export const authService = {
     return response.data;
   },
 
-  changePassword: async (oldPassword: string, newPassword: string) => {
-    const response = await api.post("/api/v1/auth/change-password", {
-      old_password: oldPassword,
-      new_password: newPassword,
-    });
-    return response.data;
-  },
+  changePassword: async (email: string, oldPassword: string, newPassword: string) => {
+  const response = await api.post("/api/v1/auth/change-password", {
+    email,
+    old_password: oldPassword,
+    new_password: newPassword,
+  });
+  return response.data;
+},
+
 };

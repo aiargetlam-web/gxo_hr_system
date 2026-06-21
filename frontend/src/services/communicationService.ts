@@ -1,5 +1,28 @@
 import api from './api';
-import { Communication, CommunicationType, CommunicationMessage } from '../types';
+
+// 🔥 TIPI LOCALI (perché non esistono più in ../types)
+export interface Communication {
+  id: number;
+  user_id: number;
+  user?: { email: string } | null;
+  status: string;
+  priority: string;
+  created_at: string;
+}
+
+export interface CommunicationType {
+  id: number;
+  name: string;
+}
+
+export interface CommunicationMessage {
+  id: number;
+  communication_id: number;
+  content: string;
+  created_at: string;
+  user_id: number;
+  user?: { email: string } | null;
+}
 
 export const communicationService = {
   getCommunications: async (): Promise<Communication[]> => {

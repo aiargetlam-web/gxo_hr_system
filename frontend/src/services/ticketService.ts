@@ -1,5 +1,28 @@
 import api from './api';
-import { Ticket, TicketType, TicketMessage } from '../types';
+
+// 🔥 TIPI LOCALI (perché non esistono più in ../types)
+export interface Ticket {
+  id: number;
+  user_id: number;
+  user?: { email: string } | null;
+  status: string;
+  priority: string;
+  created_at: string;
+}
+
+export interface TicketType {
+  id: number;
+  name: string;
+}
+
+export interface TicketMessage {
+  id: number;
+  ticket_id: number;
+  content: string;
+  created_at: string;
+  user_id: number;
+  user?: { email: string } | null;
+}
 
 export const ticketService = {
   getTickets: async (): Promise<Ticket[]> => {

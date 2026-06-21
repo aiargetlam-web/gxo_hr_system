@@ -1,9 +1,9 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
+import { EmployeeAuth } from '../types';
 import { authService } from '../services/authService';
 
 interface AuthContextType {
-  user: User | null;
+  user: EmployeeAuth | null;
   token: string | null;
   login: (token: string) => Promise<void>;
   logout: () => void;
@@ -19,7 +19,7 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<EmployeeAuth | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 

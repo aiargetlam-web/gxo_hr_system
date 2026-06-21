@@ -13,8 +13,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   if (!user) return null;
 
-  // 🔥 Estraggo il nome del ruolo in modo sicuro
-  const roleName = user.role?.name ?? "";
+  // 🔥 Nuovo sistema ruoli
+  const roleName =
+    user.role_id === 1 ? "admin" :
+    user.role_id === 2 ? "hr" :
+    "employee";
 
   return (
     <>
@@ -37,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           }}
         >
           RUOLO: {roleName.toUpperCase()}<br />
-          SITO: {user.site?.name || 'Tutti'}
+          SITO: Tutti {/* user.site non esiste più */}
         </div>
 
         <nav className="sidebar-nav">

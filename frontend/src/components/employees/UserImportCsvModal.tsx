@@ -8,7 +8,6 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { userService } from "../../services/userService";
 
 interface Props {
   open: boolean;
@@ -25,7 +24,13 @@ export default function UserImportCsvModal({
 
   const handleSubmit = async () => {
     if (!file) return;
-    await userService.importCsv(file);
+
+    // 🔥 IMPORT MASSIVO SOSPESO
+    // Qui in futuro chiameremo employeeService.importCsv(file)
+    // Per ora non facciamo nulla per evitare errori.
+
+    console.warn("TODO: implementare import CSV dipendenti");
+
     onImported();
     onClose();
     setFile(null);
@@ -33,12 +38,14 @@ export default function UserImportCsvModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Importa Utenti da CSV</DialogTitle>
+      <DialogTitle>Importa Dipendenti da CSV</DialogTitle>
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <Typography>
-            Carica un file CSV con i campi: email, first_name, last_name, id_lul, site_id, role, phone, address
+            ⚠️ Funzione di import massivo non ancora attiva.
+            <br />
+            Verrà implementata quando definiremo il formato CSV definitivo.
           </Typography>
 
           <Button variant="outlined" component="label">

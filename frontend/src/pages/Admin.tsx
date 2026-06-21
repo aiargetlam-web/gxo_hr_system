@@ -5,10 +5,11 @@ import { AuthContext } from '../context/AuthContext';
 export const Admin: React.FC = () => {
   const { user } = useContext(AuthContext);
 
-  // 🔥 Estraggo il nome del ruolo in modo sicuro
-  const roleName = user?.role?.name ?? "";
+  // 🔥 Estraggo il ruolo tramite role_id
+  const roleId = user?.role_id ?? 0;
 
-  if (roleName !== 'admin') return <Navigate to="/dashboard" replace />;
+  // Se non è admin → redirect
+  if (roleId !== 1) return <Navigate to="/dashboard" replace />;
 
   return (
     <div>

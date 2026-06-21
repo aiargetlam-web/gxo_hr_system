@@ -1,5 +1,5 @@
 import api from "./api";
-import { User } from "../types";
+import { EmployeeAuth } from "../types";
 
 interface LoginSuccess {
   access_token: string;
@@ -26,18 +26,18 @@ export const authService = {
     return response.data;
   },
 
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<User>("/api/v1/users/me");
+  // 🔥 ORA RESTITUISCE EmployeeAuth, NON User
+  getCurrentUser: async (): Promise<EmployeeAuth> => {
+    const response = await api.get<EmployeeAuth>("/api/v1/employees/me");
     return response.data;
   },
 
   changePassword: async (email: string, oldPassword: string, newPassword: string) => {
-  const response = await api.post("/api/v1/auth/change-password", {
-    email,
-    old_password: oldPassword,
-    new_password: newPassword,
-  });
-  return response.data;
-},
-
+    const response = await api.post("/api/v1/auth/change-password", {
+      email,
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
+    return response.data;
+  },
 };

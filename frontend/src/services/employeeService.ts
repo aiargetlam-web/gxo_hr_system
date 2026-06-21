@@ -2,6 +2,7 @@ import api from "./api";
 import {
   EmployeeCreate,
   Employee,
+  EmployeeFull,
   ContractCreate,
   SalaryCreate,
   DepartmentCreate,
@@ -21,9 +22,9 @@ export const employeeService = {
   },
 
   // ============================
-  // GET DETTAGLIO DIPENDENTE
+  // GET DETTAGLIO COMPLETO DIPENDENTE
   // ============================
-  getById: async (id: number): Promise<Employee> => {
+  getById: async (id: number): Promise<EmployeeFull> => {
     const res = await api.get(`/api/v1/employees/${id}`);
     return res.data;
   },
@@ -55,7 +56,6 @@ export const employeeService = {
     return res.data;
   },
 
-  // Placeholder per UPDATE contratto attuale (lo attiveremo dopo aver creato l’endpoint)
   updateCurrentContract: async (employeeId: number, data: any) => {
     const res = await api.put(
       `/api/v1/employees/${employeeId}/contracts/current`,

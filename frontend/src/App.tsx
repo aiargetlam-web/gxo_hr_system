@@ -3,17 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
+
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Profile } from './pages/Profile';
-import Users from "./pages/Users";
 import { Communications } from './pages/Communications';
 import { Tickets } from './pages/Tickets';
 import Board from "./pages/Board";
 import { Admin } from './pages/Admin';
-import { ActivityLogs, UserHistory } from './pages/Audit';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';
-import ChangePassword from './pages/ChangePassword';   // ⭐ AGGIUNTO
+import ChangePassword from './pages/ChangePassword';
 
 // 🔥 TOAST
 import { Toaster } from "react-hot-toast";
@@ -21,7 +20,6 @@ import { Toaster } from "react-hot-toast";
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      {/* 🔥 TOASTER GLOBALE */}
       <Toaster 
         position="bottom-right"
         toastOptions={{
@@ -37,30 +35,39 @@ const App: React.FC = () => {
       <Router>
         <Routes>
 
-          {/* 🔥 LOGIN */}
+          {/* LOGIN */}
           <Route path="/login" element={<Login />} />
 
-          {/* 🔥 PRIMO ACCESSO → CAMBIO PASSWORD */}
+          {/* PRIMO ACCESSO */}
           <Route path="/change-password" element={<ChangePassword />} />
 
-          {/* 🔥 ROUTE PROTETTE */}
+          {/* ROUTE PROTETTE */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
+
+              {/* HOME → BOARD */}
               <Route path="/" element={<Navigate to="/board" replace />} />
+
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/users" element={<Users />} />
+
+              {/* LEGACY SYSTEM (manteniamo perché hai scelto B) */}
               <Route path="/communications" element={<Communications />} />
               <Route path="/tickets" element={<Tickets />} />
+
+              {/* BACHECA */}
               <Route path="/board" element={<Board />} />
+
+              {/* ADMIN */}
               <Route path="/admin" element={<Admin />} />
-              <Route path="/activity-logs" element={<ActivityLogs />} />
-              <Route path="/user-history" element={<UserHistory />} />
+
+              {/* POWERBI */}
               <Route path="/powerbi" element={<PowerBIDashboard />} />
+
             </Route>
           </Route>
 
-          {/* 🔥 FALLBACK */}
+          {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>

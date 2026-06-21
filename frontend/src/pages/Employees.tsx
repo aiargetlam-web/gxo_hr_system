@@ -160,24 +160,30 @@ export default function Employees() {
               </Box>
 
               {/* RUOLO */}
-              <Box flex={1}>{e.role?.name || "-"}</Box>
+              <Box flex={1}>
+                {e.role_name || "-"}
+              </Box>
 
               {/* REPARTO ATTUALE */}
-              <Box flex={1}>{e.department?.name || "-"}</Box>
+              <Box flex={1}>
+                {e.current_department?.name || "-"}
+              </Box>
 
               {/* SITO ATTUALE */}
-              <Box flex={1}>{e.site?.name || "-"}</Box>
+              <Box flex={1}>
+                {e.current_site?.name || "-"}
+              </Box>
 
               {/* CONTRATTO ATTUALE */}
               <Box flex={1}>
-                {e.contract?.work_regime_name || "-"} / {e.contract?.contract_nature_name || "-"}
+                {e.current_contract?.contract_type || "-"}
               </Box>
 
               {/* STATO */}
               <Box width={140}>
                 <Chip
-                  label={e.status?.status_type_name || "Attivo"}
-                  color={e.status?.status_type_name === "Attivo" ? "primary" : "default"}
+                  label={e.current_status?.status_name || "N/D"}
+                  color={e.current_status?.status_name === "Attivo" ? "primary" : "default"}
                 />
               </Box>
 

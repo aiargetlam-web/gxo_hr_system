@@ -8,8 +8,13 @@ import { models } from 'powerbi-client';
 export const PowerBIDashboard: React.FC = () => {
   const { user } = useContext(AuthContext);
 
-  // 🔥 Estraggo il nome del ruolo in modo sicuro
-  const roleName = user?.role?.name ?? "";
+  if (!user) return null;
+
+  // 🔥 Mappo il ruolo tramite role_id
+  const roleName =
+    user.role_id === 1 ? "admin" :
+    user.role_id === 2 ? "hr" :
+    "employee";
 
   const [tokenConfig, setTokenConfig] = useState<{
     embedToken: string;
@@ -41,7 +46,7 @@ export const PowerBIDashboard: React.FC = () => {
         <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
           {roleName === 'admin'
             ? 'Vista Globale (Nessun Filtro)'
-            : `Filtro RLS attivo su: ${user?.site?.name || 'Non assegnato'}`
+            : 'Filtro RLS attivo'
           }
         </div>
       </div>

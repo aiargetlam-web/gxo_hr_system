@@ -1,4 +1,3 @@
-// --- Board.tsx CORRETTO ---
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { BoardFile } from '../types';
@@ -13,8 +12,11 @@ import Box from "@mui/material/Box";
 const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
-  // ruolo corretto
-  const roleName = user?.role?.name ?? "";
+  // 🔥 nuovo controllo ruolo
+  const roleName =
+    user?.role_id === 1 ? "admin" :
+    user?.role_id === 2 ? "hr" :
+    "employee";
 
   const [files, setFiles] = useState<BoardFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,17 +43,15 @@ const Board: React.FC = () => {
   useEffect(() => {
     fetchFiles(activeFilter);
 
-    api.get("/sites")
+    api.get("/api/v1/sites")
       .then(res => setSites(res.data))
       .catch(() => toast.error("Errore nel caricamento dei siti"));
   }, []);
 
   const fetchFiles = async (active: "true" | "false") => {
     try {
-      const res = await api.get(
-        `/board?active=${active}&sort_by=${sortBy}&direction=${direction}`
-      );
-      setFiles(res.data);
+      const res = await boardService.getFiles(active, sortBy, direction);
+      setFiles(res);
     } catch {
       toast.error("Errore nel caricamento dei file");
     } finally {
@@ -71,11 +71,7 @@ const Board: React.FC = () => {
 
   const toggleStatus = async (id: number, newStatus: boolean) => {
     try {
-      const formData = new FormData();
-      formData.append("is_active", String(newStatus));
-
-      await api.patch(`/board/${id}/status`, formData);
-
+      await boardService.updateStatus(id, newStatus);
       toast.success(newStatus ? "File riattivato" : "File disattivato");
       fetchFiles(activeFilter);
     } catch {
@@ -87,11 +83,11 @@ const Board: React.FC = () => {
     setEditFile(file);
 
     try {
-      const res = await api.get("/sites");
-      setAllSites(res.data);
+      const sites = await boardService.getSites();
+      setAllSites(sites);
 
-      const fileSites = await api.get(`/board/${file.id}`);
-      setSelectedSites(fileSites.data.sites || []);
+      const fileSites = await boardService.getFileSites(file.id);
+      setSelectedSites(fileSites.map((s: any) => s.id));
     } catch {
       toast.error("Errore nel caricamento dei siti");
     }
@@ -103,11 +99,7 @@ const Board: React.FC = () => {
     if (!editFile) return;
 
     try {
-      const formData = new FormData();
-      formData.append("site_ids", selectedSites.join(","));
-
-      await api.patch(`/board/${editFile.id}/sites`, formData);
-
+      await boardService.updateSites(editFile.id, selectedSites);
       toast.success("Siti aggiornati");
       setShowEditSites(false);
       fetchFiles(activeFilter);
@@ -152,6 +144,7 @@ const Board: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
             }}
           >
+            {/* FILTRO STATO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Stato:</label>
               <select
@@ -174,6 +167,7 @@ const Board: React.FC = () => {
               </select>
             </div>
 
+            {/* FILTRO SITO */}
             <div>
               <label style={{ fontWeight: 500, marginRight: "0.5rem" }}>Sito:</label>
               <select
@@ -197,6 +191,7 @@ const Board: React.FC = () => {
               </select>
             </div>
 
+            {/* SEARCH */}
             <input
               type="text"
               placeholder="Cerca per nome file..."
@@ -214,6 +209,7 @@ const Board: React.FC = () => {
               }}
             />
 
+            {/* AZIONI */}
             <div style={{ marginLeft: "auto", display: "flex", gap: "1.5rem" }}>
               <span
                 onClick={() => setShowUpload(true)}
@@ -228,7 +224,7 @@ const Board: React.FC = () => {
               </span>
 
               <span
-                onClick={() => window.open(`${import.meta.env.VITE_API_URL}/export/board`)}
+                onClick={() => window.open(`${import.meta.env.VITE_API_URL}/api/v1/export/board`)}
                 style={{
                   cursor: "pointer",
                   color: "var(--color-primary)",
@@ -442,6 +438,7 @@ const Board: React.FC = () => {
           </table>
         </div>
 
+        {/* PAGINAZIONE */}
         <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem" }}>
           <button
             className="btn btn-outline"

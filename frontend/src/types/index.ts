@@ -279,7 +279,9 @@ export interface EmployeeCreate {
   company_car?: CompanyCarCreate;
 }
 
-
+/* ============================
+   AUTH
+============================ */
 export interface EmployeeAuth {
   id: number;
   email: string;
@@ -288,3 +290,37 @@ export interface EmployeeAuth {
   role_id: number;
 }
 
+/* ============================
+   EMPLOYEE FULL (DETTAGLIO)
+============================ */
+export interface EmployeeFull {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+
+  role_id: number;
+  role_name?: string;
+
+  id_lul?: string | null;
+
+  site_id?: number | null;
+  site_name?: string | null;
+
+  department?: string | null;
+  contract?: string | null;
+  status?: string | null;
+
+  is_active?: boolean;
+}
+
+/* ============================
+   BOARD FILE
+============================ */
+export interface BoardFile {
+  id: number;
+  file_name: string;
+  upload_date: string;
+  is_active: boolean;
+  sites: { id: number; name: string }[];
+}

@@ -295,23 +295,51 @@ export interface EmployeeAuth {
 ============================ */
 export interface EmployeeFull {
   id: number;
+
   first_name: string;
   last_name: string;
   email: string;
+  phone?: string;
+
+  fiscal_code?: string;
+  gender?: string;
+  birth_date?: string;
+  birth_place?: string;
+
+  address_street?: string;
+  address_city?: string;
+  address_cap?: string;
+
+  lul_id?: string;
 
   role_id: number;
-  role_name?: string;
+  role?: Role;
 
-  id_lul?: string | null;
+  current_site_id?: number;
+  site?: Site;
 
-  site_id?: number | null;
-  site_name?: string | null;
+  hire_date?: string;
+  termination_date?: string;
 
-  department?: string | null;
-  contract?: string | null;
-  status?: string | null;
+  is_protected_category: boolean;
+  is_disadvantaged: boolean;
 
-  is_active?: boolean;
+  is_active: boolean;
+  first_access: boolean;
+
+  created_at: string;
+  updated_at: string;
+
+  /* ============================
+     DATI ATTUALI HR
+  ============================ */
+  current_contract?: Contract | null;
+  current_salary?: Salary | null;
+  current_department?: Department | null;
+  current_cost_centers?: CostCenter[] | null;
+  current_company_car?: CompanyCar | null;
+  current_site?: SiteHistory | null;
+  current_status?: StatusHistory | null;
 }
 
 /* ============================

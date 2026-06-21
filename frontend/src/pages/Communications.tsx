@@ -1,15 +1,27 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Communication } from '../types';
 import { communicationService } from '../services/communicationService';
+
+// 🔥 TIPO LOCALE (perché non esiste più in ../types)
+interface Communication {
+  id: number;
+  user_id: number;
+  user?: { email: string } | null;
+  status: string;
+  priority: string;
+  created_at: string;
+}
 
 export const Communications: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [comms, setComms] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 Estraggo il nome del ruolo in modo sicuro
-  const roleName = user?.role?.name ?? "";
+  // 🔥 PATCH: ruolo basato su role_id
+  const roleName =
+    user?.role_id === 1 ? "admin" :
+    user?.role_id === 2 ? "hr" :
+    "employee";
 
   useEffect(() => {
     fetchComms();

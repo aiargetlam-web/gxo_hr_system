@@ -1,15 +1,27 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Ticket } from '../types';
 import { ticketService } from '../services/ticketService';
+
+// 🔥 TIPO LOCALE (perché non esiste più in ../types)
+interface Ticket {
+  id: number;
+  user_id: number;
+  user?: { email: string } | null;
+  status: string;
+  priority: string;
+  created_at: string;
+}
 
 export const Tickets: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 Estraggo il nome del ruolo in modo sicuro
-  const roleName = user?.role?.name ?? "";
+  // 🔥 PATCH: ruolo basato su role_id
+  const roleName =
+    user?.role_id === 1 ? "admin" :
+    user?.role_id === 2 ? "hr" :
+    "employee";
 
   useEffect(() => {
     fetchTickets();

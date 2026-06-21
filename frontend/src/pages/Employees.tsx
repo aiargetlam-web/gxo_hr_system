@@ -1,3 +1,4 @@
+// 🔥 IMPORT IDENTICI AI TUOI
 import { useEffect, useState } from "react";
 import {
   Avatar,
@@ -39,10 +40,8 @@ export default function Employees() {
 
   const [search, setSearch] = useState("");
 
-  // Dipendente selezionato
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  // Menu ⋮
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
@@ -67,7 +66,6 @@ export default function Employees() {
   const [openChangeSite, setOpenChangeSite] = useState<Employee | null>(null);
   const [openChangeStatus, setOpenChangeStatus] = useState<Employee | null>(null);
 
-  // Caricamento dati
   const loadData = async () => {
     setLoading(true);
     try {
@@ -98,6 +96,25 @@ export default function Employees() {
     );
   });
 
+  // 🔥 PATCH: funzioni per mostrare valori leggibili
+  const getRoleName = (role_id: number) => {
+    if (role_id === 1) return "Admin";
+    if (role_id === 2) return "HR";
+    return "Dipendente";
+  };
+
+  const getDepartmentName = (d: any) =>
+    d?.department_id ? `Dept #${d.department_id}` : "-";
+
+  const getSiteName = (s: any) =>
+    s?.site_id ? `Sito #${s.site_id}` : "-";
+
+  const getContractName = (c: any) =>
+    c?.work_regime_id ? `Regime #${c.work_regime_id}` : "-";
+
+  const getStatusName = (s: any) =>
+    s?.status_type_id ? `Status #${s.status_type_id}` : "N/D";
+
   return (
     <Box p={3}>
       {/* HEADER */}
@@ -124,7 +141,6 @@ export default function Employees() {
       {/* TABELLA */}
       <Card>
         <Box p={2}>
-          {/* HEADER */}
           <Stack direction="row" sx={{ fontWeight: 600, mb: 1 }}>
             <Box width={60}></Box>
             <Box flex={1}>Nome</Box>
@@ -138,7 +154,6 @@ export default function Employees() {
 
           <Divider sx={{ mb: 2 }} />
 
-          {/* RIGHE */}
           {filtered.map((e) => (
             <Stack
               key={e.id}
@@ -146,7 +161,6 @@ export default function Employees() {
               alignItems="center"
               sx={{ py: 1.5, borderBottom: "1px solid #eee" }}
             >
-              {/* AVATAR */}
               <Box width={60}>
                 <Avatar sx={{ bgcolor: "#1976d2" }}>
                   {e.first_name[0]}
@@ -154,40 +168,38 @@ export default function Employees() {
                 </Avatar>
               </Box>
 
-              {/* NOME */}
               <Box flex={1}>
                 {e.first_name} {e.last_name}
               </Box>
 
-              {/* RUOLO */}
+              {/* 🔥 PATCH: ruolo */}
               <Box flex={1}>
-                {e.role_name || "-"}
+                {getRoleName(e.role_id)}
               </Box>
 
-              {/* REPARTO ATTUALE */}
+              {/* 🔥 PATCH: reparto */}
               <Box flex={1}>
-                {e.current_department?.name || "-"}
+                {getDepartmentName(e.current_department)}
               </Box>
 
-              {/* SITO ATTUALE */}
+              {/* 🔥 PATCH: sito */}
               <Box flex={1}>
-                {e.current_site?.name || "-"}
+                {getSiteName(e.current_site)}
               </Box>
 
-              {/* CONTRATTO ATTUALE */}
+              {/* 🔥 PATCH: contratto */}
               <Box flex={1}>
-                {e.current_contract?.contract_type || "-"}
+                {getContractName(e.current_contract)}
               </Box>
 
-              {/* STATO */}
+              {/* 🔥 PATCH: stato */}
               <Box width={140}>
                 <Chip
-                  label={e.current_status?.status_name || "N/D"}
-                  color={e.current_status?.status_name === "Attivo" ? "primary" : "default"}
+                  label={getStatusName(e.current_status)}
+                  color={getStatusName(e.current_status) === "Status #1" ? "primary" : "default"}
                 />
               </Box>
 
-              {/* MENU ⋮ */}
               <Box width={50} textAlign="right">
                 <IconButton onClick={(ev) => handleMenuOpen(ev, e)}>
                   <MoreVertIcon />
@@ -200,75 +212,35 @@ export default function Employees() {
 
       {/* MENU ⋮ */}
       <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
-        <MenuItem
-          onClick={() => {
-            setOpenEdit(true);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenEdit(true); handleMenuClose(); }}>
           Modifica dati attuali
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenNewContract(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenNewContract(selectedEmployee); handleMenuClose(); }}>
           Nuovo Contratto
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenNewSalary(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenNewSalary(selectedEmployee); handleMenuClose(); }}>
           Nuova RAL
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenNewDepartment(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenNewDepartment(selectedEmployee); handleMenuClose(); }}>
           Nuovo Reparto
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenNewCostCenter(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenNewCostCenter(selectedEmployee); handleMenuClose(); }}>
           Nuovo Cost Center
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenNewCompanyCar(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenNewCompanyCar(selectedEmployee); handleMenuClose(); }}>
           Nuova Auto Aziendale
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenChangeSite(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenChangeSite(selectedEmployee); handleMenuClose(); }}>
           Cambio Sito
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setOpenChangeStatus(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
+        <MenuItem onClick={() => { setOpenChangeStatus(selectedEmployee); handleMenuClose(); }}>
           Cambio Stato Lavorativo
         </MenuItem>
       </Menu>
@@ -276,12 +248,7 @@ export default function Employees() {
       {/* MODALI HR */}
       <EmployeeCreateModal open={openCreate} onClose={() => setOpenCreate(false)} onCreated={loadData} />
 
-      <EmployeeEditModal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        onSaved={loadData}
-        employee={selectedEmployee}
-      />
+      <EmployeeEditModal open={openEdit} onClose={() => setOpenEdit(false)} onSaved={loadData} employee={selectedEmployee} />
 
       <EmployeeNewContractModal open={!!openNewContract} employee={openNewContract} onClose={() => setOpenNewContract(null)} onSaved={loadData} />
 

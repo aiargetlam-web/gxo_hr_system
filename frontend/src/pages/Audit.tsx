@@ -2,13 +2,37 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
-import { ActivityLog, UserHistoryLog } from '../types';
+
+// 🔥 TIPI LOCALI (perché non esistono più in ../types)
+interface ActivityLog {
+  id: number;
+  created_at: string;
+  user_id: number;
+  role: string;
+  action: string;
+  entity_type: string;
+  entity_id: number;
+}
+
+interface UserHistoryLog {
+  id: number;
+  created_at: string;
+  target_user_id: number;
+  modified_by_id: number;
+  field_name: string;
+  old_value: string | null;
+  new_value: string | null;
+}
 
 export const ActivityLogs: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
 
-  const roleName = user?.role?.name ?? "";
+  // 🔥 PATCH: ruolo basato su role_id
+  const roleName =
+    user?.role_id === 1 ? "admin" :
+    user?.role_id === 2 ? "hr" :
+    "employee";
 
   useEffect(() => {
     if (roleName === "admin") {
@@ -73,7 +97,11 @@ export const UserHistory: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [history, setHistory] = useState<UserHistoryLog[]>([]);
 
-  const roleName = user?.role?.name ?? "";
+  // 🔥 PATCH: ruolo basato su role_id
+  const roleName =
+    user?.role_id === 1 ? "admin" :
+    user?.role_id === 2 ? "hr" :
+    "employee";
 
   useEffect(() => {
     if (roleName === "admin") {

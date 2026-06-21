@@ -19,12 +19,29 @@ export const Profile: React.FC = () => {
 
   if (!user || !employee) return null;
 
+  // 🔥 PATCH: ruolo basato su role_id
   const roleName =
-    employee.role_name ||
-    (employee.role_id === 1 ? "Admin" :
-     employee.role_id === 2 ? "HR" :
-     employee.role_id === 3 ? "Dipendente" :
-     "N/D");
+    employee.role_id === 1 ? "Admin" :
+    employee.role_id === 2 ? "HR" :
+    employee.role_id === 3 ? "Dipendente" :
+    "N/D";
+
+  // 🔥 PATCH: valori leggibili
+  const siteName = employee.current_site?.site_id
+    ? `Sito #${employee.current_site.site_id}`
+    : "Non assegnato / Globale";
+
+  const departmentName = employee.current_department?.department_id
+    ? `Dept #${employee.current_department.department_id}`
+    : "N/D";
+
+  const contractName = employee.current_contract?.work_regime_id
+    ? `Regime #${employee.current_contract.work_regime_id}`
+    : "N/D";
+
+  const statusName = employee.current_status?.status_type_id
+    ? `Status #${employee.current_status.status_type_id}`
+    : "N/D";
 
   return (
     <div className="card">
@@ -47,16 +64,16 @@ export const Profile: React.FC = () => {
         </span>
 
         <strong>Sito:</strong> 
-        <span>{employee.site_name || 'Non assegnato / Globale'}</span>
+        <span>{siteName}</span>
 
         <strong>Dipartimento:</strong>
-        <span>{employee.department || 'N/D'}</span>
+        <span>{departmentName}</span>
 
         <strong>Contratto:</strong>
-        <span>{employee.contract || 'N/D'}</span>
+        <span>{contractName}</span>
 
         <strong>Status:</strong>
-        <span>{employee.status || 'N/D'}</span>
+        <span>{statusName}</span>
 
         <strong>Stato Account:</strong>
         <span>

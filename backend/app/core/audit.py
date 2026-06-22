@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from app.models.audit import ActivityLog, UserHistoryLog
-from app.models.user import User
+from app.models.employee import Employee
+
 
 def log_activity(
     db: Session,
-    user: User,
+    user: Employee,
     action: str,
     entity_type: str = None,
     entity_id: int = None,
@@ -14,7 +15,7 @@ def log_activity(
 
     log = ActivityLog(
         user_id=user.id,
-        role=user.role.name if user.role else None,   # FIX: serializziamo il nome del ruolo
+        role=user.role_id,   # Employee usa role_id, non role.name
         action=action,
         entity_type=entity_type,
         entity_id=entity_id,
@@ -35,7 +36,6 @@ def log_user_history(
 ):
     """Log a change to a user's sensitive data."""
 
-    # Nessuna modifica reale → nessun log
     if str(old_value) == str(new_value):
         return
 

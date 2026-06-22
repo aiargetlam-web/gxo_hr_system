@@ -2,8 +2,9 @@ import requests
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.api import deps
-from app.models.user import User
+from app.models.employee import Employee
 from app.models.site import Site, HRSite
 from app.core.config import settings
 
@@ -30,7 +31,7 @@ def get_azure_ad_token() -> str:
 @router.get("/embed-token")
 def get_embed_token(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: Employee = Depends(deps.get_current_active_user)
 ) -> Any:
     """Generate an Embed Token for Power BI, applying RLS if user is HR."""
     
@@ -50,7 +51,6 @@ def get_embed_token(
         "Content-Type": "application/json"
     }
     
-    # Costruiamo la richiesta base
     payload: dict = {
         "datasets": [{"id": settings.POWERBI_DATASET_ID}],
         "reports": [{"id": settings.POWERBI_REPORT_ID}],
@@ -59,35 +59,23 @@ def get_embed_token(
     
     # Se è HR, applichiamo RLS
     if current_user.role == "hr":
-        # 1. Trovo i site_id assegnati all'HR
         hr_sites = db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
         site_ids = [s.site_id for s in hr_sites]
         
-        # 2. Recupero i NOMI dei siti dal DB (come richiesto)
         sites = db.query(Site).filter(Site.id.in_(site_ids)).all()
         site_names = [site.name for site in sites]
         
         if not site_names:
-            # Se l'HR non ha siti, potremmo non volergli far vedere nulla,
-            # Passiamo un array vuoto o un valore inesistente per bloccare la RLS
             site_names = ["NESSUN_SITO_ASSEGNATO"]
             
-        # Costruisco l'oggetto RLS richiesto da Power BI
-        # L'username passato sarà la lista dei siti, o potremmo usare customData a seconda del modello PBI.
-        # Qui usiamo un approccio comune: passiamo l'identità e usiamo i nomi dei siti come "username"
-        # o, più corretto, passiamo una identity con multiple roles o custom data.
-        # Un metodo semplice supportato da PBI:
         payload["identities"] = [
             {
                 "username": current_user.email,
                 "roles": [settings.POWERBI_RLS_ROLE],
                 "datasets": [settings.POWERBI_DATASET_ID],
-                "customData": ",".join(site_names) # I nomi dei siti vengono passati qui e usati nel filtro DAX: CUSTOMDATA()
+                "customData": ",".join(site_names)
             }
         ]
-        
-    # Per Admin non passiamo identities (ha accesso completo, assumendo che in PowerBI Admin significhi senza RLS, 
-    # o potremmo passargli un ruolo "AdminRole" se il modello PBI lo richiede)
     
     response = requests.post(url, headers=headers, json=payload)
     

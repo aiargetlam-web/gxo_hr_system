@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.api_v1.endpoints import (
     auth,
-    users,
+    employees,
     communications,
     tickets,
     sites,
@@ -10,13 +10,13 @@ from app.api.api_v1.endpoints import (
     admin,
     powerbi,
     export,
-    roles   # ⭐ AGGIUNTO
+    roles
 )
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(users.router, prefix="/users", tags=["users"])
+api_router.include_router(employees.router, prefix="/employees", tags=["employees"])
 api_router.include_router(communications.router, prefix="/communications", tags=["communications"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(sites.router, prefix="/sites", tags=["sites"])
@@ -24,6 +24,4 @@ api_router.include_router(board.router, prefix="/board", tags=["board"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(powerbi.router, prefix="/powerbi", tags=["powerbi"])
 api_router.include_router(export.router, prefix="/export", tags=["export"])
-
-# ⭐ AGGIUNTO — questo era il pezzo mancante
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])

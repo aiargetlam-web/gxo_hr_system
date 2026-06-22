@@ -1,11 +1,8 @@
-# IMPORTA TUTTI I MODELLI QUI
-# Questo file serve SOLO a far registrare i modelli a SQLAlchemy
-
 from app.db.base_class import Base
 
-# ⚠️ IMPORTANTE: importa tutti i modelli presenti in app/models
 from app.models.role import Role
 from app.models.site import Site
+
 from app.models.employee import Employee
 from app.models.employee_contracts import EmployeeContract
 from app.models.employee_benefits import EmployeeBenefit
@@ -18,7 +15,7 @@ from app.models.employee_salaries import EmployeeSalary
 from app.models.employee_departments import EmployeeDepartment
 from app.models.employee_cost_centers import EmployeeCostCenter
 
-from app.models.board import Board
+from app.models.board import BoardFile, BoardFileSite
 from app.models.ticket import Ticket
 from app.models.communication import Communication
 from app.models.audit import Audit

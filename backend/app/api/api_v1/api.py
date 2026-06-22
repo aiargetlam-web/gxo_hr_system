@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.api_v1.endpoints import (
     auth,
-    employees,
+    employee,          # ← CORRETTO
     communications,
     tickets,
     sites,
@@ -16,7 +16,7 @@ from app.api.api_v1.endpoints import (
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(employees.router, prefix="/employees", tags=["employees"])
+api_router.include_router(employee.router, prefix="/employees", tags=["employees"])  # ← CORRETTO
 api_router.include_router(communications.router, prefix="/communications", tags=["communications"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(sites.router, prefix="/sites", tags=["sites"])

@@ -12,7 +12,8 @@ from app.models.employee_cost_centers import EmployeeCostCenter
 
 from app.models.role import Role
 from app.models.site import Site
-from app.models.board import Board
+
+from app.models.board import BoardFile, BoardFileSite
 from app.models.ticket import Ticket
 from app.models.communication import Communication
 from app.models.audit import Audit

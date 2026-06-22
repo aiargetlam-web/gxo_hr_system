@@ -1,13 +1,19 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
-from app.schemas.user import User
 
-# Ticket Types
+from app.schemas.employee import Employee
+
+
+# ============================================================
+# TICKET TYPES
+# ============================================================
+
 class TicketTypeBase(BaseModel):
     name: str
     description: Optional[str] = None
     default_priority: int = 3
+
 
 class TicketType(TicketTypeBase):
     id: int
@@ -15,34 +21,47 @@ class TicketType(TicketTypeBase):
     class Config:
         from_attributes = True
 
-# Ticket Messages
+
+# ============================================================
+# TICKET MESSAGES
+# ============================================================
+
 class TicketMessageBase(BaseModel):
     content: str
 
+
 class TicketMessageCreate(TicketMessageBase):
     pass
+
 
 class TicketMessage(TicketMessageBase):
     id: int
     ticket_id: int
     author_id: int
     created_at: datetime
-    author: Optional[User] = None
+    author: Optional[Employee] = None
 
     class Config:
         from_attributes = True
 
-# Tickets
+
+# ============================================================
+# TICKETS
+# ============================================================
+
 class TicketBase(BaseModel):
     type_id: int
     priority: Optional[int] = 3
 
+
 class TicketCreate(TicketBase):
-    content: str # First message
+    content: str  # First message
+
 
 class TicketUpdate(BaseModel):
     status: Optional[str] = None
     priority: Optional[int] = None
+
 
 class Ticket(TicketBase):
     id: int
@@ -50,8 +69,9 @@ class Ticket(TicketBase):
     status: str
     created_at: datetime
     updated_at: datetime
+
     type: Optional[TicketType] = None
-    user: Optional[User] = None
+    user: Optional[Employee] = None
     messages: List[TicketMessage] = []
 
     class Config:

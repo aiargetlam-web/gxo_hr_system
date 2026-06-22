@@ -1,14 +1,20 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
-from app.schemas.user import User
 
-# Communication Types
+from app.schemas.employee import Employee
+
+
+# ============================================================
+# COMMUNICATION TYPES
+# ============================================================
+
 class CommunicationTypeBase(BaseModel):
     name: str
     description: Optional[str] = None
     requires_attachment: bool = False
-    default_priority: str = 'medium'
+    default_priority: str = "medium"
+
 
 class CommunicationType(CommunicationTypeBase):
     id: int
@@ -16,10 +22,15 @@ class CommunicationType(CommunicationTypeBase):
     class Config:
         from_attributes = True
 
-# Communication Attachments
+
+# ============================================================
+# ATTACHMENTS
+# ============================================================
+
 class CommunicationAttachmentBase(BaseModel):
     file_path: str
     file_name: str
+
 
 class CommunicationAttachment(CommunicationAttachmentBase):
     id: int
@@ -29,36 +40,49 @@ class CommunicationAttachment(CommunicationAttachmentBase):
     class Config:
         from_attributes = True
 
-# Communication Messages
+
+# ============================================================
+# MESSAGES
+# ============================================================
+
 class CommunicationMessageBase(BaseModel):
     content: str
 
+
 class CommunicationMessageCreate(CommunicationMessageBase):
     pass
+
 
 class CommunicationMessage(CommunicationMessageBase):
     id: int
     communication_id: int
     author_id: int
     created_at: datetime
-    author: Optional[User] = None
+    author: Optional[Employee] = None
 
     class Config:
         from_attributes = True
 
-# Communications
+
+# ============================================================
+# COMMUNICATIONS
+# ============================================================
+
 class CommunicationBase(BaseModel):
     type_id: int
     notes: Optional[str] = None
-    priority: Optional[str] = 'medium'
+    priority: Optional[str] = "medium"
+
 
 class CommunicationCreate(CommunicationBase):
     pass
+
 
 class CommunicationUpdate(BaseModel):
     status: Optional[str] = None
     priority: Optional[str] = None
     notes: Optional[str] = None
+
 
 class Communication(CommunicationBase):
     id: int
@@ -66,8 +90,9 @@ class Communication(CommunicationBase):
     status: str
     created_at: datetime
     updated_at: datetime
+
     type: Optional[CommunicationType] = None
-    user: Optional[User] = None
+    user: Optional[Employee] = None
     attachments: List[CommunicationAttachment] = []
     messages: List[CommunicationMessage] = []
 

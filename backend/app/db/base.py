@@ -18,5 +18,5 @@ from app.models.employee_cost_centers import EmployeeCostCenter
 from app.models.board import BoardFile, BoardFileSite
 from app.models.ticket import Ticket
 from app.models.communication import Communication
-from app.models.audit import Audit
+from app.models.audit import ActivityLog, UserHistoryLog
 from app.models.import_users_log import ImportUsersLog

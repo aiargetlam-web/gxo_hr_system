@@ -9,9 +9,9 @@ import re
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.models.user import User
+from app.models.employee import Employee
+from app.schemas.employee import Employee as EmployeeSchema
 from app.schemas.token import Token
-from app.schemas.user import User as UserSchema
 
 router = APIRouter()
 
@@ -44,7 +44,7 @@ def login_access_token(
         raise HTTPException(status_code=400, detail="Invalid login payload")
 
     # Recupero utente
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(Employee).filter(Employee.email == email).first()
     print("DEBUG: USER FOUND:", user)
 
     if user:
@@ -92,15 +92,15 @@ def login_access_token(
 # ---------------------------------------------------------
 # UTENTE LOGGATO
 # ---------------------------------------------------------
-@router.get("/me", response_model=UserSchema)
+@router.get("/me", response_model=EmployeeSchema)
 def read_current_user(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_user)
+    current_user: Employee = Depends(deps.get_current_user)
 ):
     user = (
-        db.query(User)
-        .options(joinedload(User.site))
-        .filter(User.id == current_user.id)
+        db.query(Employee)
+        .options(joinedload(Employee.site))
+        .filter(Employee.id == current_user.id)
         .first()
     )
     return user
@@ -117,7 +117,7 @@ def forgot_password(
     data: ForgotPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    user = db.query(User).filter(User.email == data.email).first()
+    user = db.query(Employee).filter(Employee.email == data.email).first()
     if user:
         print(f"DEBUG: Reset password email sent to {user.email} with reset token: FAKE_RESET_TOKEN")
 
@@ -154,7 +154,7 @@ def reset_password(
     if data.token != "FAKE_RESET_TOKEN":
         raise HTTPException(status_code=400, detail="Invalid token")
 
-    user = db.query(User).filter(User.id == 1).first()
+    user = db.query(Employee).filter(Employee.id == 1).first()
     if user:
         user.password_hash = security.get_password_hash(data.new_password)
         db.commit()
@@ -191,7 +191,7 @@ def change_password(
     data: ChangePassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    user = db.query(User).filter(User.email == data.email).first()
+    user = db.query(Employee).filter(Employee.email == data.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

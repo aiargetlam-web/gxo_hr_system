@@ -4,10 +4,11 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
 from app.api import deps
 from app.models.board import BoardFile, BoardFileSite
 from app.models.site import HRSite
-from app.models.user import User
+from app.models.employee import Employee
 from app.schemas.board import BoardFile as BoardFileSchema
 from app.core.config import settings
 from app.core.audit import log_activity
@@ -20,7 +21,7 @@ router = APIRouter()
 @router.get("/", response_model=List[BoardFileSchema])
 def get_board_files(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: Employee = Depends(deps.get_current_active_user),
     active: Optional[bool] = Query(default=True),
     sort_by: str = Query(default="upload_date"),
     direction: str = Query(default="desc")
@@ -33,13 +34,13 @@ def get_board_files(
         query = query.filter(BoardFile.is_active == active)
 
     # USER → solo file attivi del proprio sito
-    if current_user.role == "user":
-        if not current_user.site_id:
+    if current_user.role_id == "user":
+        if not current_user.current_site_id:
             return []
-        query = query.filter(BoardFileSite.site_id == current_user.site_id)
+        query = query.filter(BoardFileSite.site_id == current_user.current_site_id)
 
     # HR → solo file dei siti che gestisce
-    elif current_user.role == "hr":
+    elif current_user.role_id == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id)
         ]
@@ -52,13 +53,11 @@ def get_board_files(
         "file_name": BoardFile.file_name,
         "upload_date": BoardFile.upload_date,
         "author": BoardFile.hr_author_id,
-        "sites": BoardFileSite.site_id,  # ⭐ ORDINAMENTO PER SITO
+        "sites": BoardFileSite.site_id,
     }
 
-    # colonna scelta o fallback
     order_column = sortable_columns.get(sort_by, BoardFile.upload_date)
 
-    # direzione
     if direction == "asc":
         query = query.order_by(order_column.asc())
     else:
@@ -76,7 +75,7 @@ def upload_board_file(
     db: Session = Depends(deps.get_db),
     file: UploadFile = File(...),
     site_ids: str = Form(...),
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: Employee = Depends(deps.get_current_hr_user)
 ) -> Any:
 
     import uuid
@@ -96,7 +95,6 @@ def upload_board_file(
     db.commit()
     db.refresh(db_obj)
 
-    # parsing site_ids: "1,2,3"
     site_ids_list = [
         int(s.strip()) for s in site_ids.split(",") if s.strip().isdigit()
     ]
@@ -120,7 +118,7 @@ def get_board_file_details(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: Employee = Depends(deps.get_current_active_user)
 ) -> Any:
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
@@ -148,7 +146,7 @@ def update_board_file_status(
     db: Session = Depends(deps.get_db),
     id: int,
     is_active: bool = Form(...),
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: Employee = Depends(deps.get_current_hr_user)
 ) -> Any:
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
@@ -173,7 +171,7 @@ def update_board_file_sites(
     db: Session = Depends(deps.get_db),
     id: int,
     site_ids: str = Form(...),
-    current_user: User = Depends(deps.get_current_hr_user)
+    current_user: Employee = Depends(deps.get_current_hr_user)
 ) -> Any:
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
@@ -184,10 +182,8 @@ def update_board_file_sites(
         int(s.strip()) for s in site_ids.split(",") if s.strip().isdigit()
     ]
 
-    # rimuove associazioni precedenti
     db.query(BoardFileSite).filter(BoardFileSite.file_id == id).delete()
 
-    # aggiunge nuove
     for sid in site_ids_list:
         db.add(BoardFileSite(file_id=id, site_id=sid))
 
@@ -206,29 +202,27 @@ def download_board_file(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: Employee = Depends(deps.get_current_active_user)
 ) -> Any:
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
     if not board_file:
         raise HTTPException(status_code=404, detail="File not found")
 
-    # utenti normali non possono scaricare file disattivati
-    if current_user.role == "user" and not board_file.is_active:
+    if current_user.role_id == "user" and not board_file.is_active:
         raise HTTPException(status_code=403, detail="File non più disponibile.")
 
-    # controllo visibilità per ruolo
-    if current_user.role == "user":
-        if not current_user.site_id:
+    if current_user.role_id == "user":
+        if not current_user.current_site_id:
             raise HTTPException(status_code=403, detail="Non hai un sito assegnato.")
         is_visible = db.query(BoardFileSite).filter(
             BoardFileSite.file_id == id,
-            BoardFileSite.site_id == current_user.site_id
+            BoardFileSite.site_id == current_user.current_site_id
         ).first()
         if not is_visible:
             raise HTTPException(status_code=403, detail="File non visibile per il tuo sito.")
 
-    elif current_user.role == "hr":
+    elif current_user.role_id == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id)
         ]

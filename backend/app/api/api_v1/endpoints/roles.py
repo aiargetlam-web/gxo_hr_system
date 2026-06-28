@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.models.role import Role
-from app.models.employee import Employee
 from app.schemas.role import Role as RoleSchema
 
 router = APIRouter()
@@ -15,8 +13,9 @@ router = APIRouter()
 @router.get("/", response_model=list[RoleSchema])
 def get_roles(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ):
+    from app.models.role import Role
     roles = db.query(Role).order_by(Role.id).all()
     return roles
 
@@ -29,8 +28,9 @@ def get_roles(
 def get_role(
     role_id: int,
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ):
+    from app.models.role import Role
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")

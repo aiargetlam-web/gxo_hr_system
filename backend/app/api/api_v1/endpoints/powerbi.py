@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.models.employee import Employee
-from app.models.site import Site, HRSite
 from app.core.config import settings
 
 router = APIRouter()
@@ -31,10 +29,13 @@ def get_azure_ad_token() -> str:
 @router.get("/embed-token")
 def get_embed_token(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     """Generate an Embed Token for Power BI, applying RLS if user is HR."""
-    
+
+    from app.models.employee import Employee
+    from app.models.site import Site, HRSite
+
     # Solo Admin e HR possono accedere alla dashboard
     if current_user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Accesso alla dashboard negato per questo ruolo.")

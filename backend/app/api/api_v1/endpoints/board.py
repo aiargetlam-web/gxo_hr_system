@@ -6,40 +6,33 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.models.board import BoardFile, BoardFileSite
-from app.models.site import HRSite
-from app.models.employee import Employee
 from app.schemas.board import BoardFile as BoardFileSchema
 from app.core.config import settings
 from app.core.audit import log_activity
 
 router = APIRouter()
 
-# ---------------------------------------------------------
-# GET LISTA FILE (con filtro attivi/disattivi + ordinamento dinamico)
-# ---------------------------------------------------------
 @router.get("/", response_model=List[BoardFileSchema])
 def get_board_files(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     active: Optional[bool] = Query(default=True),
     sort_by: str = Query(default="upload_date"),
     direction: str = Query(default="desc")
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
+    from app.models.site import HRSite
 
     query = db.query(BoardFile).join(BoardFileSite)
 
-    # filtro attivi/disattivi
     if active is not None:
         query = query.filter(BoardFile.is_active == active)
 
-    # USER → solo file attivi del proprio sito
     if current_user.role_id == "user":
         if not current_user.current_site_id:
             return []
         query = query.filter(BoardFileSite.site_id == current_user.current_site_id)
 
-    # HR → solo file dei siti che gestisce
     elif current_user.role_id == "hr":
         hr_site_ids = [
             s.site_id for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id)
@@ -48,7 +41,6 @@ def get_board_files(
             return []
         query = query.filter(BoardFileSite.site_id.in_(hr_site_ids))
 
-    # colonne ordinabili
     sortable_columns = {
         "file_name": BoardFile.file_name,
         "upload_date": BoardFile.upload_date,
@@ -66,17 +58,18 @@ def get_board_files(
     return query.all()
 
 
-# ---------------------------------------------------------
-# UPLOAD FILE
-# ---------------------------------------------------------
 @router.post("/upload", response_model=BoardFileSchema)
 def upload_board_file(
     *,
     db: Session = Depends(deps.get_db),
     file: UploadFile = File(...),
     site_ids: str = Form(...),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
+
+    if current_user.role_id != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     import uuid
     safe_filename = f"board_{uuid.uuid4().hex[:8]}_{file.filename}"
@@ -110,16 +103,14 @@ def upload_board_file(
     return db_obj
 
 
-# ---------------------------------------------------------
-# GET DETTAGLI FILE (siti associati)
-# ---------------------------------------------------------
 @router.get("/{id}", response_model=dict)
 def get_board_file_details(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
     if not board_file:
@@ -137,17 +128,18 @@ def get_board_file_details(
     }
 
 
-# ---------------------------------------------------------
-# PATCH STATO (attiva/disattiva)
-# ---------------------------------------------------------
 @router.patch("/{id}/status")
 def update_board_file_status(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     is_active: bool = Form(...),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile
+
+    if current_user.role_id != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
     if not board_file:
@@ -162,17 +154,18 @@ def update_board_file_status(
     return {"status": "ok", "is_active": board_file.is_active}
 
 
-# ---------------------------------------------------------
-# PATCH SITI ASSOCIATI
-# ---------------------------------------------------------
 @router.patch("/{id}/sites")
 def update_board_file_sites(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     site_ids: str = Form(...),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
+
+    if current_user.role_id != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
     if not board_file:
@@ -194,16 +187,15 @@ def update_board_file_sites(
     return {"status": "ok", "sites": site_ids_list}
 
 
-# ---------------------------------------------------------
-# DOWNLOAD FILE
-# ---------------------------------------------------------
 @router.get("/{id}/download")
 def download_board_file(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
+    from app.models.site import HRSite
 
     board_file = db.query(BoardFile).filter(BoardFile.id == id).first()
     if not board_file:

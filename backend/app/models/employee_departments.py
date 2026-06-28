@@ -14,6 +14,17 @@ class EmployeeDepartment(Base):
     to_date = Column(Date)
     note = Column(Text)
 
-    employee = relationship("Employee", back_populates="departments")
+    # 🔥 FIX: specifica quale FK usare
+    employee = relationship(
+        "Employee",
+        back_populates="departments",
+        foreign_keys=[employee_id]
+    )
+
     department = relationship("Department")
-    manager = relationship("Employee", foreign_keys=[manager_employee_id])
+
+    # Questa è già corretta
+    manager = relationship(
+        "Employee",
+        foreign_keys=[manager_employee_id]
+    )

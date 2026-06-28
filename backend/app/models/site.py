@@ -8,10 +8,12 @@ class Site(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True)
 
+    # ⭐ RELAZIONE INVERTITA (fondamentale)
+    employees = relationship("Employee", back_populates="current_site")
+
+
 class HRSite(Base):
     __tablename__ = "hr_sites"
 
-    # FIX: users.id → employees.id
     hr_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
-
     site_id = Column(Integer, ForeignKey("sites.id", ondelete="CASCADE"), primary_key=True)

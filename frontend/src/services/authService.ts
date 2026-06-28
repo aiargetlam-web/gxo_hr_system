@@ -15,12 +15,8 @@ export type LoginResponse = LoginSuccess | LoginFirstAccess;
 
 export const authService = {
 
-  // ⭐ LOGIN CORRETTO → form-urlencoded + fetch + URL assoluto
+  // ⭐ LOGIN CORRETTO → JSON + email
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const params = new URLSearchParams();
-    params.append("email", email);
-    params.append("password", password);
-
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
       {
@@ -28,10 +24,13 @@ export const authService = {
         mode: "cors",
         credentials: "include",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: params
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
       }
     );
 

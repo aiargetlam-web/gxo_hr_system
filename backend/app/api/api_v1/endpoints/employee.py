@@ -1,22 +1,9 @@
-from datetime import timedelta
+from datetime import timedelta, date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 
-# MODELLI SQLALCHEMY
-from app.models.employee import Employee as EmployeeModel
-from app.models.employee_contracts import EmployeeContract
-from app.models.employee_cost_centers import EmployeeCostCenter
-from app.models.employee_departments import EmployeeDepartment
-from app.models.employee_salaries import EmployeeSalary
-from app.models.employee_company_cars import EmployeeCompanyCar
-from app.models.employee_enac_courses import EmployeeEnacCourse
-from app.models.employee_enac_approvals import EmployeeEnacApproval
-from app.models.employee_status_history import EmployeeStatusHistory
-from app.models.employee_site_history import EmployeeSiteHistory
-from app.models.employee_benefits import EmployeeBenefit
-
-# SCHEMA Pydantic
+# Schemi Pydantic
 from app.schemas.employee import (
     EmployeeCreate,
     Employee,
@@ -26,10 +13,17 @@ from app.schemas.employee import (
     SalaryCreate,
     SiteAssignmentCreate,
     CompanyCarCreate,
+    EmployeeUpdate,
+    ContractUpdate,
+    SalaryUpdate,
+    DepartmentUpdate,
+    CostCenterUpdate,
+    SiteUpdate,
+    StatusUpdate,
+    CompanyCarUpdate,
 )
 
 router = APIRouter()
-
 
 # ============================================================
 # CREATE EMPLOYEE COMPLETO
@@ -37,9 +31,19 @@ router = APIRouter()
 
 @router.post("/employees", response_model=Employee)
 def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_contracts import EmployeeContract
+    from app.models.employee_cost_centers import EmployeeCostCenter
+    from app.models.employee_departments import EmployeeDepartment
+    from app.models.employee_salaries import EmployeeSalary
+    from app.models.employee_company_cars import EmployeeCompanyCar
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
+    from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employee_site_history import EmployeeSiteHistory
+    from app.models.employee_benefits import EmployeeBenefit
 
     try:
-        # 1) Dipendente base
         employee = EmployeeModel(
             first_name=payload.first_name,
             last_name=payload.last_name,
@@ -62,9 +66,8 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         )
 
         db.add(employee)
-        db.flush()  # otteniamo employee.id
+        db.flush()
 
-        # 2) Contratto iniziale
         contract = EmployeeContract(
             employee_id=employee.id,
             work_regime_id=payload.contract.work_regime_id,
@@ -78,7 +81,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         )
         db.add(contract)
 
-        # 3) Cost center iniziali
         for cc in payload.cost_centers:
             db.add(EmployeeCostCenter(
                 employee_id=employee.id,
@@ -88,7 +90,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
                 note=cc.note
             ))
 
-        # 4) Reparto + responsabile
         department = EmployeeDepartment(
             employee_id=employee.id,
             department_id=payload.department.department_id,
@@ -98,7 +99,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         )
         db.add(department)
 
-        # 5) RAL iniziale
         salary = EmployeeSalary(
             employee_id=employee.id,
             ral_amount=payload.salary.ral_amount,
@@ -107,7 +107,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         )
         db.add(salary)
 
-        # 6) Sito iniziale (storico)
         site_history = EmployeeSiteHistory(
             employee_id=employee.id,
             site_id=payload.site_history.site_id,
@@ -116,7 +115,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         )
         db.add(site_history)
 
-        # 7) Benefici iniziali
         for b in payload.benefits:
             db.add(EmployeeBenefit(
                 employee_id=employee.id,
@@ -126,7 +124,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
                 note=b.note
             ))
 
-        # 8) Auto aziendale (opzionale)
         if payload.company_car:
             db.add(EmployeeCompanyCar(
                 employee_id=employee.id,
@@ -138,7 +135,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
                 note=payload.company_car.note
             ))
 
-        # 9) Stato lavorativo iniziale = ATTIVO (id=1)
         status = EmployeeStatusHistory(
             employee_id=employee.id,
             status_type_id=1,
@@ -161,11 +157,10 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 # ============================================================
 
 @router.post("/employees/{employee_id}/contracts")
-def add_contract(
-    employee_id: int,
-    payload: ContractCreate,
-    db: Session = Depends(get_db)
-):
+def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_contracts import EmployeeContract
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -200,10 +195,7 @@ def add_contract(
         db.commit()
         db.refresh(new_contract)
 
-        return {
-            "message": "Nuovo contratto aggiunto con successo",
-            "contract": new_contract
-        }
+        return {"message": "Nuovo contratto aggiunto con successo", "contract": new_contract}
 
     except Exception as e:
         db.rollback()
@@ -211,15 +203,14 @@ def add_contract(
 
 
 # ============================================================
-# NUOVO COST CENTER (aggiunta di una nuova riga)
+# NUOVO COST CENTER
 # ============================================================
 
 @router.post("/employees/{employee_id}/cost-centers")
-def add_cost_center(
-    employee_id: int,
-    payload: CostCenterAssignmentCreate,
-    db: Session = Depends(get_db)
-):
+def add_cost_center(employee_id: int, payload: CostCenterAssignmentCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_cost_centers import EmployeeCostCenter
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -237,10 +228,7 @@ def add_cost_center(
         db.commit()
         db.refresh(new_cc)
 
-        return {
-            "message": "Nuovo cost center aggiunto con successo",
-            "cost_center": new_cc
-        }
+        return {"message": "Nuovo cost center aggiunto con successo", "cost_center": new_cc}
 
     except Exception as e:
         db.rollback()
@@ -248,15 +236,14 @@ def add_cost_center(
 
 
 # ============================================================
-# NUOVO REPARTO / RESPONSABILE
+# NUOVO REPARTO
 # ============================================================
 
 @router.post("/employees/{employee_id}/departments")
-def add_department(
-    employee_id: int,
-    payload: DepartmentAssignmentCreate,
-    db: Session = Depends(get_db)
-):
+def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_departments import EmployeeDepartment
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -287,10 +274,7 @@ def add_department(
         db.commit()
         db.refresh(new_dep)
 
-        return {
-            "message": "Nuovo reparto assegnato con successo",
-            "department": new_dep
-        }
+        return {"message": "Nuovo reparto assegnato con successo", "department": new_dep}
 
     except Exception as e:
         db.rollback()
@@ -302,11 +286,10 @@ def add_department(
 # ============================================================
 
 @router.post("/employees/{employee_id}/salaries")
-def add_salary(
-    employee_id: int,
-    payload: SalaryCreate,
-    db: Session = Depends(get_db)
-):
+def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_salaries import EmployeeSalary
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -336,10 +319,7 @@ def add_salary(
         db.commit()
         db.refresh(new_salary)
 
-        return {
-            "message": "Nuova RAL inserita con successo",
-            "salary": new_salary
-        }
+        return {"message": "Nuova RAL inserita con successo", "salary": new_salary}
 
     except Exception as e:
         db.rollback()
@@ -351,11 +331,10 @@ def add_salary(
 # ============================================================
 
 @router.post("/employees/{employee_id}/company-cars")
-def add_company_car(
-    employee_id: int,
-    payload: CompanyCarCreate,
-    db: Session = Depends(get_db)
-):
+def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_company_cars import EmployeeCompanyCar
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -388,10 +367,7 @@ def add_company_car(
         db.commit()
         db.refresh(new_car)
 
-        return {
-            "message": "Nuova auto aziendale assegnata con successo",
-            "company_car": new_car
-        }
+        return {"message": "Nuova auto aziendale assegnata con successo", "company_car": new_car}
 
     except Exception as e:
         db.rollback()
@@ -399,15 +375,14 @@ def add_company_car(
 
 
 # ============================================================
-# CAMBIO SITO (STORICO)
+# CAMBIO SITO
 # ============================================================
 
 @router.post("/employees/{employee_id}/sites")
-def change_site(
-    employee_id: int,
-    payload: SiteAssignmentCreate,
-    db: Session = Depends(get_db)
-):
+def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_site_history import EmployeeSiteHistory
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -434,17 +409,13 @@ def change_site(
         )
         db.add(new_site_hist)
 
-        # aggiorna sito corrente in employees
         employee.current_site_id = payload.site_id
         db.add(employee)
 
         db.commit()
         db.refresh(new_site_hist)
 
-        return {
-            "message": "Cambio sito registrato con successo",
-            "site_history": new_site_hist
-        }
+        return {"message": "Cambio sito registrato con successo", "site_history": new_site_hist}
 
     except Exception as e:
         db.rollback()
@@ -456,13 +427,10 @@ def change_site(
 # ============================================================
 
 @router.post("/employees/{employee_id}/status")
-def change_status(
-    employee_id: int,
-    status_type_id: int,
-    from_date: date,
-    note: str | None = None,
-    db: Session = Depends(get_db)
-):
+def change_status(employee_id: int, status_type_id: int, from_date: date, note: str | None = None, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_status_history import EmployeeStatusHistory
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -492,10 +460,7 @@ def change_status(
         db.commit()
         db.refresh(new_status)
 
-        return {
-            "message": "Cambio stato lavorativo registrato con successo",
-            "status": new_status
-        }
+        return {"message": "Cambio stato lavorativo registrato con successo", "status": new_status}
 
     except Exception as e:
         db.rollback()
@@ -503,38 +468,39 @@ def change_status(
 
 
 # ============================================================
-# 📌 GET LISTA DIPENDENTI
-# NOTE: restituisce tutti i dipendenti con i campi base
+# GET LISTA DIPENDENTI
 # ============================================================
 
 @router.get("/employees", response_model=list[Employee])
 def list_employees(db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
     employees = db.query(EmployeeModel).all()
     return employees
 
 
-
 # ============================================================
-# 📌 GET DETTAGLIO DIPENDENTE
-# NOTE: restituisce il dipendente completo (senza storici)
+# GET DETTAGLIO DIPENDENTE
 # ============================================================
 
 @router.get("/employees/{employee_id}", response_model=Employee)
 def get_employee(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
     return employee
 
 
-
 # ============================================================
-# 📌 GET STORICO CONTRATTI
-# NOTE: restituisce tutti i contratti, ordinati dal più recente
+# GET STORICO CONTRATTI
 # ============================================================
 
 @router.get("/employees/{employee_id}/contracts")
 def get_contracts(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_contracts import EmployeeContract
+
     contracts = (
         db.query(EmployeeContract)
         .filter(EmployeeContract.employee_id == employee_id)
@@ -544,14 +510,14 @@ def get_contracts(employee_id: int, db: Session = Depends(get_db)):
     return contracts
 
 
-
 # ============================================================
-# 📌 GET STORICO COST CENTER
-# NOTE: restituisce tutti i CDC assegnati nel tempo
+# GET STORICO COST CENTER
 # ============================================================
 
 @router.get("/employees/{employee_id}/cost-centers")
 def get_cost_centers(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_cost_centers import EmployeeCostCenter
+
     ccs = (
         db.query(EmployeeCostCenter)
         .filter(EmployeeCostCenter.employee_id == employee_id)
@@ -561,14 +527,14 @@ def get_cost_centers(employee_id: int, db: Session = Depends(get_db)):
     return ccs
 
 
-
 # ============================================================
-# 📌 GET STORICO REPARTI
-# NOTE: restituisce tutti i reparti e responsabili avuti
+# GET STORICO REPARTI
 # ============================================================
 
 @router.get("/employees/{employee_id}/departments")
 def get_departments(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_departments import EmployeeDepartment
+
     deps = (
         db.query(EmployeeDepartment)
         .filter(EmployeeDepartment.employee_id == employee_id)
@@ -578,14 +544,14 @@ def get_departments(employee_id: int, db: Session = Depends(get_db)):
     return deps
 
 
-
 # ============================================================
-# 📌 GET STORICO RAL
-# NOTE: restituisce tutte le RAL nel tempo
+# GET STORICO RAL
 # ============================================================
 
 @router.get("/employees/{employee_id}/salaries")
 def get_salaries(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_salaries import EmployeeSalary
+
     salaries = (
         db.query(EmployeeSalary)
         .filter(EmployeeSalary.employee_id == employee_id)
@@ -595,14 +561,14 @@ def get_salaries(employee_id: int, db: Session = Depends(get_db)):
     return salaries
 
 
-
 # ============================================================
-# 📌 GET STORICO AUTO AZIENDALI
-# NOTE: restituisce tutte le auto assegnate nel tempo
+# GET STORICO AUTO AZIENDALI
 # ============================================================
 
 @router.get("/employees/{employee_id}/company-cars")
 def get_company_cars(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_company_cars import EmployeeCompanyCar
+
     cars = (
         db.query(EmployeeCompanyCar)
         .filter(EmployeeCompanyCar.employee_id == employee_id)
@@ -612,336 +578,16 @@ def get_company_cars(employee_id: int, db: Session = Depends(get_db)):
     return cars
 
 
-
 # ============================================================
-# 📌 GET STORICO SITI
-# NOTE: restituisce tutti i siti in cui ha lavorato
+# GET STORICO SITI
 # ============================================================
 
 @router.get("/employees/{employee_id}/sites")
 def get_sites(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_site_history import EmployeeSiteHistory
+
     sites = (
         db.query(EmployeeSiteHistory)
         .filter(EmployeeSiteHistory.employee_id == employee_id)
         .order_by(EmployeeSiteHistory.from_date.desc())
         .all()
-    )
-    return sites
-
-
-
-# ============================================================
-# 📌 GET STORICO STATI LAVORATIVI
-# NOTE: restituisce tutti gli stati (attivo, sospeso, cessato…)
-# ============================================================
-
-@router.get("/employees/{employee_id}/status")
-def get_status_history(employee_id: int, db: Session = Depends(get_db)):
-    statuses = (
-        db.query(EmployeeStatusHistory)
-        .filter(EmployeeStatusHistory.employee_id == employee_id)
-        .order_by(EmployeeStatusHistory.from_date.desc())
-        .all()
-    )
-    return statuses
-
-
-
-# ============================================================
-# 📌 GET STATO ATTUALE COMPLETO
-# NOTE: restituisce contratto attuale, RAL attuale, reparto attuale,
-#       sito attuale, auto attuale, CDC attuali, stato lavorativo attuale
-# ============================================================
-
-@router.get("/employees/{employee_id}/current")
-def get_current_status(employee_id: int, db: Session = Depends(get_db)):
-
-    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
-    if not employee:
-        raise HTTPException(status_code=404, detail="Dipendente non trovato")
-
-    current_contract = (
-        db.query(EmployeeContract)
-        .filter(EmployeeContract.employee_id == employee_id, EmployeeContract.to_date.is_(None))
-        .first()
-    )
-
-    current_cc = (
-        db.query(EmployeeCostCenter)
-        .filter(EmployeeCostCenter.employee_id == employee_id, EmployeeCostCenter.to_date.is_(None))
-        .all()
-    )
-
-    current_dep = (
-        db.query(EmployeeDepartment)
-        .filter(EmployeeDepartment.employee_id == employee_id, EmployeeDepartment.to_date.is_(None))
-        .first()
-    )
-
-    current_salary = (
-        db.query(EmployeeSalary)
-        .filter(EmployeeSalary.employee_id == employee_id, EmployeeSalary.to_date.is_(None))
-        .first()
-    )
-
-    current_car = (
-        db.query(EmployeeCompanyCar)
-        .filter(EmployeeCompanyCar.employee_id == employee_id, EmployeeCompanyCar.to_date.is_(None))
-        .first()
-    )
-
-    current_site = (
-        db.query(EmployeeSiteHistory)
-        .filter(EmployeeSiteHistory.employee_id == employee_id, EmployeeSiteHistory.to_date.is_(None))
-        .first()
-    )
-
-    current_status = (
-        db.query(EmployeeStatusHistory)
-        .filter(EmployeeStatusHistory.employee_id == employee_id, EmployeeStatusHistory.to_date.is_(None))
-        .first()
-    )
-
-    return {
-        "employee": employee,
-        "contract": current_contract,
-        "cost_centers": current_cc,
-        "department": current_dep,
-        "salary": current_salary,
-        "company_car": current_car,
-        "site": current_site,
-        "status": current_status,
-    }
-# ============================================================
-# UPDATE ANAGRAFICA DIPENDENTE
-# ============================================================
-
-from app.schemas.employee import (
-    EmployeeUpdate,
-    ContractUpdate,
-    SalaryUpdate,
-    DepartmentUpdate,
-    CostCenterUpdate,
-    SiteUpdate,
-    StatusUpdate,
-    CompanyCarUpdate,
-)
-
-@router.put("/employees/{employee_id}", response_model=Employee)
-def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
-    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
-    if not employee:
-        raise HTTPException(status_code=404, detail="Dipendente non trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(employee, field, value)
-
-        db.commit()
-        db.refresh(employee)
-        return employee
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento dipendente: {str(e)}")
-
-
-# ============================================================
-# UPDATE CONTRATTO ATTUALE
-# ============================================================
-
-@router.put("/employees/{employee_id}/contracts/current")
-def update_current_contract(employee_id: int, payload: ContractUpdate, db: Session = Depends(get_db)):
-    contract = (
-        db.query(EmployeeContract)
-        .filter(EmployeeContract.employee_id == employee_id, EmployeeContract.to_date.is_(None))
-        .first()
-    )
-
-    if not contract:
-        raise HTTPException(status_code=404, detail="Nessun contratto attivo trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(contract, field, value)
-
-        db.commit()
-        db.refresh(contract)
-        return contract
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento contratto: {str(e)}")
-
-
-# ============================================================
-# UPDATE RAL ATTUALE
-# ============================================================
-
-@router.put("/employees/{employee_id}/salaries/current")
-def update_current_salary(employee_id: int, payload: SalaryUpdate, db: Session = Depends(get_db)):
-    salary = (
-        db.query(EmployeeSalary)
-        .filter(EmployeeSalary.employee_id == employee_id, EmployeeSalary.to_date.is_(None))
-        .first()
-    )
-
-    if not salary:
-        raise HTTPException(status_code=404, detail="Nessuna RAL attiva trovata")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(salary, field, value)
-
-        db.commit()
-        db.refresh(salary)
-        return salary
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento RAL: {str(e)}")
-
-
-# ============================================================
-# UPDATE REPARTO ATTUALE
-# ============================================================
-
-@router.put("/employees/{employee_id}/departments/current")
-def update_current_department(employee_id: int, payload: DepartmentUpdate, db: Session = Depends(get_db)):
-    dep = (
-        db.query(EmployeeDepartment)
-        .filter(EmployeeDepartment.employee_id == employee_id, EmployeeDepartment.to_date.is_(None))
-        .first()
-    )
-
-    if not dep:
-        raise HTTPException(status_code=404, detail="Nessun reparto attivo trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(dep, field, value)
-
-        db.commit()
-        db.refresh(dep)
-        return dep
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento reparto: {str(e)}")
-
-
-# ============================================================
-# UPDATE COST CENTER ATTIVI
-# ============================================================
-
-@router.put("/employees/{employee_id}/cost-centers/current")
-def update_current_cost_centers(employee_id: int, payload: CostCenterUpdate, db: Session = Depends(get_db)):
-    cc = (
-        db.query(EmployeeCostCenter)
-        .filter(
-            EmployeeCostCenter.employee_id == employee_id,
-            EmployeeCostCenter.id == payload.id,          # <--- AGGIUNTO
-            EmployeeCostCenter.to_date.is_(None)
-        )
-        .first()
-    )
-
-    if not cc:
-        raise HTTPException(status_code=404, detail="Cost center attivo non trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            if field != "id":                             # <--- NON aggiorniamo l'id
-                setattr(cc, field, value)
-
-        db.commit()
-        db.refresh(cc)
-        return cc
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento cost center: {str(e)}")
-
-
-# ============================================================
-# UPDATE SITO ATTUALE
-# ============================================================
-
-@router.put("/employees/{employee_id}/sites/current")
-def update_current_site(employee_id: int, payload: SiteUpdate, db: Session = Depends(get_db)):
-    site = (
-        db.query(EmployeeSiteHistory)
-        .filter(EmployeeSiteHistory.employee_id == employee_id, EmployeeSiteHistory.to_date.is_(None))
-        .first()
-    )
-
-    if not site:
-        raise HTTPException(status_code=404, detail="Nessun sito attivo trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(site, field, value)
-
-        db.commit()
-        db.refresh(site)
-        return site
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento sito: {str(e)}")
-
-
-# ============================================================
-# UPDATE STATO LAVORATIVO ATTUALE
-# ============================================================
-
-@router.put("/employees/{employee_id}/status/current")
-def update_current_status(employee_id: int, payload: StatusUpdate, db: Session = Depends(get_db)):
-    status = (
-        db.query(EmployeeStatusHistory)
-        .filter(EmployeeStatusHistory.employee_id == employee_id, EmployeeStatusHistory.to_date.is_(None))
-        .first()
-    )
-
-    if not status:
-        raise HTTPException(status_code=404, detail="Nessuno stato attivo trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(status, field, value)
-
-        db.commit()
-        db.refresh(status)
-        return status
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento stato: {str(e)}")
-
-
-# ============================================================
-# UPDATE AUTO AZIENDALE ATTIVA
-# ============================================================
-
-@router.put("/employees/{employee_id}/company-cars/current")
-def update_current_company_car(employee_id: int, payload: CompanyCarUpdate, db: Session = Depends(get_db)):
-    car = (
-        db.query(EmployeeCompanyCar)
-        .filter(EmployeeCompanyCar.employee_id == employee_id, EmployeeCompanyCar.to_date.is_(None))
-        .first()
-    )
-
-    if not car:
-        raise HTTPException(status_code=404, detail="Nessuna auto aziendale attiva trovata")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(car, field, value)
-
-        db.commit()
-        db.refresh(car)
-        return car
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")

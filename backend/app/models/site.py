@@ -11,5 +11,7 @@ class Site(Base):
 class HRSite(Base):
     __tablename__ = "hr_sites"
 
-    hr_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    # FIX: users.id → employees.id
+    hr_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
+
     site_id = Column(Integer, ForeignKey("sites.id", ondelete="CASCADE"), primary_key=True)

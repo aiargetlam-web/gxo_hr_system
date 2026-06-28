@@ -12,11 +12,15 @@ class CommunicationType(Base):
     requires_attachment = Column(Boolean, default=False)
     default_priority = Column(Enum('low', 'medium', 'high', 'daily', 'weekly', 'monthly'), default='medium')
 
+
 class Communication(Base):
     __tablename__ = "communications"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # FIX: users.id → employees.id
+    user_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+
     type_id = Column(Integer, ForeignKey("communication_types.id"), nullable=False)
     status = Column(Enum('unread', 'in_progress', 'closed'), default='unread')
     priority = Column(Enum('low', 'medium', 'high', 'daily', 'weekly', 'monthly'), default='medium')
@@ -24,22 +28,31 @@ class Communication(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    user = relationship("User")
+    # FIX: User → Employee
+    user = relationship("Employee")
+
     type = relationship("CommunicationType")
     attachments = relationship("CommunicationAttachment", back_populates="communication", cascade="all, delete-orphan")
     messages = relationship("CommunicationMessage", back_populates="communication", cascade="all, delete-orphan")
+
 
 class CommunicationMessage(Base):
     __tablename__ = "communication_messages"
 
     id = Column(Integer, primary_key=True, index=True)
     communication_id = Column(Integer, ForeignKey("communications.id", ondelete="CASCADE"), nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # FIX: users.id → employees.id
+    author_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     communication = relationship("Communication", back_populates="messages")
-    author = relationship("User")
+
+    # FIX: User → Employee
+    author = relationship("Employee")
+
 
 class CommunicationAttachment(Base):
     __tablename__ = "communication_attachments"

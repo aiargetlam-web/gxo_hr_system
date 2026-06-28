@@ -1,26 +1,20 @@
 import React, { useContext } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export const ProtectedRoute = () => {
-  const { user, isLoading, token } = useContext(AuthContext);
-  const location = useLocation();
+  const { user, isLoading } = useContext(AuthContext);
 
-  // ⏳ 1) Caricamento iniziale
+  // ⏳ 1) Caricamento iniziale → NON fare redirect
   if (isLoading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Caricamento...</div>;
   }
 
-  // ❌ 2) Nessun token → utente non loggato
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // ❌ 3) Token presente ma user non caricato → token scaduto o invalido
+  // ❌ 2) Utente non autenticato → redirect
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ 4) Utente autenticato → accesso consentito
+  // ✅ 3) Utente autenticato → accesso consentito
   return <Outlet />;
 };

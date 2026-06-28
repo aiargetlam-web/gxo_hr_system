@@ -14,4 +14,6 @@ class EmployeeStatusHistory(Base):
     note = Column(Text)
 
     employee = relationship("Employee", back_populates="status_history")
-    status_type = relationship("EmploymentStatusType")
+
+    # 🔥 FIX: aggiungi back_populates per collegare la relazione inversa
+    status_type = relationship("EmploymentStatusType", back_populates="history")

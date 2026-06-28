@@ -24,7 +24,7 @@ router = APIRouter()
 @router.get("/types", response_model=List[CommunicationTypeSchema])
 def get_communication_types(
     db: Session = Depends(deps.get_db),
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import CommunicationType
 
@@ -41,7 +41,7 @@ def get_communications(
     db: Session = Depends(deps.get_db),
     status: Optional[str] = None,
     priority: Optional[str] = None,
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication
     from app.models.employee import Employee
@@ -79,7 +79,7 @@ def create_communication(
     *,
     db: Session = Depends(deps.get_db),
     communication_in: CommunicationCreate,
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication, CommunicationType
 
@@ -112,7 +112,7 @@ def get_communication(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication
 
@@ -169,7 +169,7 @@ def upload_attachment(
     db: Session = Depends(deps.get_db),
     id: int,
     file: UploadFile = File(...),
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication, CommunicationAttachment
 
@@ -199,8 +199,6 @@ def upload_attachment(
     db.refresh(attachment)
 
     return {"id": attachment.id, "filename": attachment.file_name}
-
-
 # ============================================================
 # GET MESSAGES
 # ============================================================
@@ -210,7 +208,7 @@ def get_communication_messages(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication, CommunicationMessage
 
@@ -240,7 +238,7 @@ def create_communication_message(
     db: Session = Depends(deps.get_db),
     id: int,
     message_in: CommunicationMessageCreate,
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication, CommunicationMessage
 

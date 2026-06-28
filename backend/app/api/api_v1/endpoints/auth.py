@@ -19,26 +19,14 @@ router = APIRouter()
 @router.post("/login", response_model=Any)
 def login_access_token(
     db: Session = Depends(deps.get_db),
-    username: str = Body(...),
+    email: str = Body(...),
     password: str = Body(...)
 ) -> Any:
-    from app.models.employee import Employee  # import locale, niente loop
-
-    print("DEBUG: JSON LOGIN", username, password)
-
-    email = username
-    pwd = password
+    from app.models.employee import Employee
 
     user = db.query(Employee).filter(Employee.email == email).first()
-    print("DEBUG: USER FOUND:", user)
 
-    if user:
-        print("DEBUG: HASH:", user.password_hash)
-
-    valid = security.verify_password(pwd, user.password_hash) if user else False
-    print("DEBUG: PASSWORD VALID:", valid)
-
-    if not user or not valid:
+    if not user or not security.verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -62,7 +50,6 @@ def login_access_token(
         user.id, expires_delta=access_token_expires
     )
 
-    print("DEBUG: LOGIN SUCCESS")
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -77,7 +64,7 @@ def read_current_user(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)
 ):
-    from app.models.employee import Employee  # import locale
+    from app.models.employee import Employee
 
     user = (
         db.query(Employee)
@@ -103,7 +90,7 @@ def forgot_password(
     data: ForgotPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    from app.models.employee import Employee  # import locale
+    from app.models.employee import Employee
 
     user = db.query(Employee).filter(Employee.email == data.email).first()
     if user:
@@ -143,7 +130,7 @@ def reset_password(
     data: ResetPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    from app.models.employee import Employee  # import locale
+    from app.models.employee import Employee
 
     if data.token != "FAKE_RESET_TOKEN":
         raise HTTPException(status_code=400, detail="Invalid token")
@@ -186,7 +173,7 @@ def change_password(
     data: ChangePassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
-    from app.models.employee import Employee  # import locale
+    from app.models.employee import Employee
 
     user = db.query(Employee).filter(Employee.email == data.email).first()
     if not user:

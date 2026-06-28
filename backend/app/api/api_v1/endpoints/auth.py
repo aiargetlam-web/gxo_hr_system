@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status, Body
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, EmailStr, field_validator
 import re
@@ -16,32 +15,18 @@ from app.schemas.token import Token
 router = APIRouter()
 
 # ---------------------------------------------------------
-# LOGIN COMPATIBILE CON JSON E FORM-DATA
+# LOGIN CORRETTO → SOLO JSON (username + password)
 # ---------------------------------------------------------
 @router.post("/login", response_model=Any)
 def login_access_token(
     db: Session = Depends(deps.get_db),
-    username: str = Body(None),
-    password: str = Body(None),
-    form_data: OAuth2PasswordRequestForm = Depends(None)
+    username: str = Body(...),
+    password: str = Body(...)
 ) -> Any:
-    print("DEBUG: LOGIN STARTED")
+    print("DEBUG: JSON LOGIN", username, password)
 
-    # JSON
-    if username and password:
-        email = username
-        pwd = password
-        print("DEBUG: JSON LOGIN", email, pwd)
-
-    # FORM-DATA
-    elif form_data:
-        email = form_data.username
-        pwd = form_data.password
-        print("DEBUG: FORM LOGIN", email, pwd)
-
-    else:
-        print("DEBUG: INVALID PAYLOAD")
-        raise HTTPException(status_code=400, detail="Invalid login payload")
+    email = username
+    pwd = password
 
     # Recupero utente
     user = db.query(Employee).filter(Employee.email == email).first()

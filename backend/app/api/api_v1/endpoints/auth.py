@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, EmailStr, field_validator
@@ -8,7 +9,6 @@ import re
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.models.employee import Employee
 from app.schemas.employee import Employee as EmployeeSchema
 
 router = APIRouter()
@@ -22,6 +22,8 @@ def login_access_token(
     username: str = Body(...),
     password: str = Body(...)
 ) -> Any:
+    from app.models.employee import Employee  # import locale, niente loop
+
     print("DEBUG: JSON LOGIN", username, password)
 
     email = username
@@ -73,13 +75,15 @@ def login_access_token(
 @router.get("/me", response_model=EmployeeSchema)
 def read_current_user(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_user)
+    current_user = Depends(deps.get_current_user)
 ):
+    from app.models.employee import Employee  # import locale
+
     user = (
         db.query(Employee)
         .options(
-            joinedload(Employee.current_site),   # Sito
-            joinedload(Employee.role)            # ⭐ RUOLO (FIX)
+            joinedload(Employee.current_site),
+            joinedload(Employee.role)
         )
         .filter(Employee.id == current_user.id)
         .first()
@@ -93,14 +97,20 @@ def read_current_user(
 class ForgotPassword(BaseModel):
     email: EmailStr
 
+
 @router.post("/forgot-password")
 def forgot_password(
     data: ForgotPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
+    from app.models.employee import Employee  # import locale
+
     user = db.query(Employee).filter(Employee.email == data.email).first()
     if user:
-        print(f"DEBUG: Reset password email sent to {user.email} with reset token: FAKE_RESET_TOKEN")
+        print(
+            f"DEBUG: Reset password email sent to {user.email} "
+            f"with reset token: FAKE_RESET_TOKEN"
+        )
 
     return {"message": "If the email is registered, a password reset link has been sent."}
 
@@ -127,11 +137,14 @@ class ResetPassword(BaseModel):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
 
+
 @router.post("/reset-password")
 def reset_password(
     data: ResetPassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
+    from app.models.employee import Employee  # import locale
+
     if data.token != "FAKE_RESET_TOKEN":
         raise HTTPException(status_code=400, detail="Invalid token")
 
@@ -167,11 +180,14 @@ class ChangePassword(BaseModel):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
 
+
 @router.post("/change-password")
 def change_password(
     data: ChangePassword,
     db: Session = Depends(deps.get_db)
 ) -> Any:
+    from app.models.employee import Employee  # import locale
+
     user = db.query(Employee).filter(Employee.email == data.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

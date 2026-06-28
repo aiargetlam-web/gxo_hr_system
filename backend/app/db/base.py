@@ -6,7 +6,7 @@ from app.models.role import Role
 # Se hai altri modelli HR:
 from app.models.employee_contracts import EmployeeContract
 from app.models.employee_cost_centers import EmployeeCostCenter
-from app.models.employee_department import EmployeeDepartment
+from app.models.employee_departments import EmployeeDepartment
 from app.models.employee_salaries import EmployeeSalary
 from app.models.employee_company_cars import EmployeeCompanyCar
 from app.models.employee_enac_courses import EmployeeEnacCourse

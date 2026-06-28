@@ -352,3 +352,18 @@ export interface BoardFile {
   is_active: boolean;
   sites: { id: number; name: string }[];
 }
+
+/* ============================
+   LOGIN RESPONSE TYPES
+============================ */
+
+export interface LoginSuccess {
+  access_token: string;
+}
+
+export interface LoginFirstAccess {
+  requires_password_change: boolean;
+}
+
+export type LoginResponse = LoginSuccess | LoginFirstAccess;
+

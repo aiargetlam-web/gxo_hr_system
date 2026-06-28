@@ -23,37 +23,19 @@ class Employee(Base):
     address_city = Column(String(100))
     address_cap = Column(String(10))
 
-    # LUL — nome colonna corretto come nel DB
+    # LUL
     id_lul = Column(String(100), unique=True)
 
-    # Password — mancava nel modello
+    # Password
     password_hash = Column(String(255), nullable=False)
 
-    # Stato lavorativo attuale
+    # Stato lavorativo
     is_active = Column(Boolean, default=True)
     first_access = Column(Boolean, default=True)
 
-    # Sito attuale
+    # ⭐ Sito attuale (relazione corretta)
     current_site_id = Column(Integer, ForeignKey("sites.id", ondelete="SET NULL"))
-    from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from app.db.base_class import Base
-
-class Site(Base):
-    __tablename__ = "sites"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False, unique=True)
-
-    # ⭐ RELAZIONE INVERTITA (fondamentale)
-    employees = relationship("Employee", back_populates="current_site")
-
-
-class HRSite(Base):
-    __tablename__ = "hr_sites"
-
-    hr_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
-    site_id = Column(Integer, ForeignKey("sites.id", ondelete="CASCADE"), primary_key=True)
+    current_site = relationship("Site", back_populates="employees")
 
     # Ruolo
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)

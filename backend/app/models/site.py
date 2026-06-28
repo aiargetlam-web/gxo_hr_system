@@ -8,7 +8,7 @@ class Site(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True)
 
-    # ⭐ RELAZIONE INVERTITA (fondamentale)
+    # Relazione inversa con Employee
     employees = relationship("Employee", back_populates="current_site")
 
 

@@ -3,6 +3,18 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 # ---------------------------------------------------------
+# ROLE SCHEMA (AGGIUNTO)
+# ---------------------------------------------------------
+
+class Role(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+# ---------------------------------------------------------
 # SOTTO-SCHEMI HR (CREATE)
 # ---------------------------------------------------------
 
@@ -189,6 +201,9 @@ class Employee(EmployeeInDBBase):
     first_access: bool
     created_at: datetime
     updated_at: datetime
+
+    # 🔥 AGGIUNTO: RUOLO COMPLETO
+    role: Optional[Role] = None
 
     # Dati attuali HR
     current_contract: Optional[ContractUpdate] = None

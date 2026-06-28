@@ -41,9 +41,9 @@ export const authService = {
     return response.json();
   },
 
-  // 🔥 RESTO INVARIATO (Axios)
+  // ⭐ ENDPOINT CORRETTO → /auth/me
   getCurrentUser: async (): Promise<EmployeeAuth> => {
-    const response = await api.get<EmployeeAuth>("/api/v1/employees/me");
+    const response = await api.get<EmployeeAuth>("/api/v1/auth/me");
     return response.data;
   },
 

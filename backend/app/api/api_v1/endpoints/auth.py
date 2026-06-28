@@ -10,12 +10,11 @@ from app.core import security
 from app.core.config import settings
 from app.models.employee import Employee
 from app.schemas.employee import Employee as EmployeeSchema
-from app.schemas.token import Token
 
 router = APIRouter()
 
 # ---------------------------------------------------------
-# LOGIN CORRETTO → SOLO JSON (username + password)
+# LOGIN
 # ---------------------------------------------------------
 @router.post("/login", response_model=Any)
 def login_access_token(
@@ -28,20 +27,14 @@ def login_access_token(
     email = username
     pwd = password
 
-    # Recupero utente
     user = db.query(Employee).filter(Employee.email == email).first()
     print("DEBUG: USER FOUND:", user)
 
     if user:
         print("DEBUG: HASH:", user.password_hash)
 
-    # Verifica password
-    try:
-        valid = security.verify_password(pwd, user.password_hash) if user else False
-        print("DEBUG: PASSWORD VALID:", valid)
-    except Exception as e:
-        print("DEBUG: PASSWORD VERIFY ERROR:", str(e))
-        raise HTTPException(status_code=500, detail="Password verification error")
+    valid = security.verify_password(pwd, user.password_hash) if user else False
+    print("DEBUG: PASSWORD VALID:", valid)
 
     if not user or not valid:
         raise HTTPException(
@@ -84,7 +77,7 @@ def read_current_user(
 ):
     user = (
         db.query(Employee)
-        .options(joinedload(Employee.site))
+        .options(joinedload(Employee.current_site))  # ⭐ FIX QUI
         .filter(Employee.id == current_user.id)
         .first()
     )

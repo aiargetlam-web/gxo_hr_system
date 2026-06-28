@@ -14,5 +14,16 @@ class EmployeeCostCenter(Base):
     to_date = Column(Date)
     note = Column(Text)
 
-    employee = relationship("Employee", back_populates="cost_centers")
-    cost_center = relationship("CostCenter")
+    # 🔥 Relazione corretta verso Employee
+    employee = relationship(
+        "Employee",
+        back_populates="cost_centers",
+        foreign_keys=[employee_id]
+    )
+
+    # 🔥 Relazione corretta verso CostCenter
+    cost_center = relationship(
+        "CostCenter",
+        back_populates="employees",
+        foreign_keys=[cost_center_id]
+    )

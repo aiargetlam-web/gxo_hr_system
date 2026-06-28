@@ -1,11 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { useNavigate } from 'react-router-dom';
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,19 +16,20 @@ export const Login: React.FC = () => {
     try {
       const response = await authService.login(email, password);
 
-      // ⭐ Salva email per ChangePassword
+      // Salva email per ChangePassword
       localStorage.setItem("user_email", email);
 
-      // 🔥 Primo accesso → cambio password obbligatorio
+      // Primo accesso → cambio password obbligatorio
       if ("requires_password_change" in response && response.requires_password_change) {
-        navigate('/change-password');
+        // 🔥 Navigazione gestita dal router, NON dal login normale
+        window.location.href = "/change-password";
         return;
       }
 
-      // 🔥 Login normale
+      // Login normale
       if ("access_token" in response) {
-        login(response.access_token);
-        navigate('/dashboard');
+        // 🔥 NON navigare qui
+        await login(response.access_token);
         return;
       }
 

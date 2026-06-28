@@ -19,20 +19,20 @@ import { Toaster } from "react-hot-toast";
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Toaster 
-        position="bottom-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#333',
-            color: '#fff',
-            borderRadius: '8px'
-          }
-        }}
-      />
+    <Router>
+      <AuthProvider>
+        <Toaster 
+          position="bottom-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#333',
+              color: '#fff',
+              borderRadius: '8px'
+            }
+          }}
+        />
 
-      <Router>
         <Routes>
 
           {/* LOGIN */}
@@ -51,7 +51,7 @@ const App: React.FC = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
 
-              {/* LEGACY SYSTEM (manteniamo perché hai scelto B) */}
+              {/* LEGACY SYSTEM */}
               <Route path="/communications" element={<Communications />} />
               <Route path="/tickets" element={<Tickets />} />
 
@@ -70,8 +70,8 @@ const App: React.FC = () => {
           {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 

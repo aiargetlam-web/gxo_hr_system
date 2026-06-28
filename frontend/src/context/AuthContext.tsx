@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { EmployeeAuth } from '../types';
 import { authService } from '../services/authService';
+import api from "../services/api";
 
 interface AuthContextType {
   user: EmployeeAuth | null;
@@ -29,6 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       if (token) {
+        // ⭐ FIX: imposta subito l'Authorization header
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
         try {
           const userData = await authService.getCurrentUser();
           setUser(userData);
@@ -47,8 +51,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // LOGIN MIGLIORATO
   // -----------------------------
   const login = async (newToken: string) => {
+    // ⭐ Salva token
     localStorage.setItem('access_token', newToken);
     setToken(newToken);
+
+    // ⭐ FIX: imposta subito l'Authorization header
+    api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
     try {
       const userData = await authService.getCurrentUser();

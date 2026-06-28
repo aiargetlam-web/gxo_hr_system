@@ -20,3 +20,4 @@ from app.models.ticket import Ticket
 from app.models.communication import Communication
 from app.models.audit import ActivityLog, UserHistoryLog
 from app.models.import_users_log import ImportUsersLog
+from app.models.employment_status_type import EmploymentStatusType

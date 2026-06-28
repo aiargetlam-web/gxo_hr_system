@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { EmployeeAuth } from '../types';
 import { authService } from '../services/authService';
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: EmployeeAuth | null;
@@ -20,6 +21,8 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState<EmployeeAuth | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -30,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       if (token) {
-        // ⭐ FIX: imposta subito l'Authorization header
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         try {
@@ -48,19 +50,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token]);
 
   // -----------------------------
-  // LOGIN MIGLIORATO
+  // LOGIN CORRETTO
   // -----------------------------
   const login = async (newToken: string) => {
-    // ⭐ Salva token
+    // Salva token
     localStorage.setItem('access_token', newToken);
     setToken(newToken);
 
-    // ⭐ FIX: imposta subito l'Authorization header
+    // Imposta header
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
     try {
+      // 🔥 Carica l'utente PRIMA di navigare
       const userData = await authService.getCurrentUser();
       setUser(userData);
+
+      // 🔥 Naviga SOLO dopo che il ruolo è stato caricato
+      navigate('/dashboard');
+
     } catch (error) {
       console.error("Errore caricamento utente dopo login", error);
       logout();

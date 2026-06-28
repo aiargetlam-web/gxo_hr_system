@@ -9,7 +9,12 @@ from app.core import security
 from app.db.session import SessionLocal
 from app.schemas.token import TokenPayload
 
+# ⭐ IMPORT FONDAMENTALE — SENZA QUESTO SI ROMPE TUTTO
+from app.models.employee import Employee
+
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+
 
 def get_db() -> Generator:
     try:
@@ -18,26 +23,36 @@ def get_db() -> Generator:
     finally:
         db.close()
 
+
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+            token,
+            settings.SECRET_KEY,
+            algorithms=[security.ALGORITHM]
         )
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
+
         token_data = TokenPayload(sub=user_id)
+
     except JWTError:
         raise credentials_exception
-        
+
+    # ⭐ QUI SERVE Employee IMPORTATO CORRETTAMENTE
     user = db.query(Employee).filter(Employee.id == token_data.sub).first()
+
     if not user:
         raise credentials_exception
+
     return user

@@ -50,8 +50,16 @@ def login_access_token(
         }
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    # 🔥 TOKEN COMPLETO CON RUOLO E USER_ID
     access_token = security.create_access_token(
-        user.id, expires_delta=access_token_expires
+        {
+            "sub": user.email,
+            "user_id": user.id,
+            "role_id": user.role_id,
+            "role": user.role.name if user.role else None
+        },
+        expires_delta=access_token_expires
     )
 
     return {

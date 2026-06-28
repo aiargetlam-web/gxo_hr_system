@@ -51,11 +51,11 @@ def login_access_token(
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # 🔥 TOKEN COMPLETO CON RUOLO E USER_ID
+    # 🔥 TOKEN CORRETTO: sub = ID numerico, email separata
     access_token = security.create_access_token(
         {
-            "sub": user.email,
-            "user_id": user.id,
+            "sub": str(user.id),                 # <-- deve essere l'ID numerico
+            "email": user.email,                 # <-- email separata
             "role_id": user.role_id,
             "role": user.role.name if user.role else None
         },

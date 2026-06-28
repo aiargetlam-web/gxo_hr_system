@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { LoginResponse } from '../types';
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
@@ -16,28 +17,26 @@ export const Login: React.FC = () => {
     setError('');
 
     try {
-      const response = await authService.login(email, password);
+      const response: LoginResponse = await authService.login(email, password);
 
       localStorage.setItem("user_email", email);
 
-      if (response.requires_password_change) {
+      // ⭐ Primo accesso
+      if ("requires_password_change" in response) {
         navigate('/change-password');
         return;
       }
 
-      if (response.access_token) {
+      // ⭐ Login normale
+      if ("access_token" in response) {
         const user = await login(response.access_token);
-
-        if (user) {
-          navigate('/dashboard'); // 🔥 navigazione sicura
-        }
-
+        navigate('/dashboard');
         return;
       }
 
       setError("Risposta inattesa dal server.");
 
-    } catch {
+    } catch (err) {
       setError('Credenziali non valide.');
     }
   };

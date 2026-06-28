@@ -21,22 +21,26 @@ export const Login: React.FC = () => {
 
       localStorage.setItem("user_email", email);
 
-      // ⭐ Primo accesso
+      // Primo accesso
       if ("requires_password_change" in response) {
         navigate('/change-password');
         return;
       }
 
-      // ⭐ Login normale
+      // Login normale
       if ("access_token" in response) {
         const user = await login(response.access_token);
-        navigate('/dashboard');
+
+        if (user) {
+          navigate('/dashboard');
+        }
+
         return;
       }
 
       setError("Risposta inattesa dal server.");
 
-    } catch (err) {
+    } catch {
       setError('Credenziali non valide.');
     }
   };

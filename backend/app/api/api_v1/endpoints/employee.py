@@ -676,3 +676,35 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
         "site": current_site,
         "status": current_status,
     }
+# ============================================================
+# UPDATE AUTO AZIENDALE ATTIVA
+# ============================================================
+
+@router.put("/employees/{employee_id}/company-cars/current")
+def update_current_company_car(employee_id: int, payload: CompanyCarUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_company_cars import EmployeeCompanyCar
+
+    car = (
+        db.query(EmployeeCompanyCar)
+        .filter(
+            EmployeeCompanyCar.employee_id == employee_id,
+            EmployeeCompanyCar.to_date.is_(None)
+        )
+        .first()
+    )
+
+    if not car:
+        raise HTTPException(status_code=404, detail="Nessuna auto aziendale attiva trovata")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(car, field, value)
+
+        db.commit()
+        db.refresh(car)
+        return car
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")
+

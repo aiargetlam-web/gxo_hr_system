@@ -22,7 +22,6 @@ export const authService = {
       {
         method: "POST",
         mode: "cors",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
@@ -41,11 +40,13 @@ export const authService = {
     return response.json();
   },
 
+  // ⭐ UTENTE LOGGATO
   getCurrentUser: async (): Promise<EmployeeAuth> => {
     const response = await api.get<EmployeeAuth>("/api/v1/auth/me");
     return response.data;
   },
 
+  // ⭐ CAMBIO PASSWORD PRIMO ACCESSO
   changePassword: async (email: string, oldPassword: string, newPassword: string) => {
     const response = await api.post("/api/v1/auth/change-password", {
       email,

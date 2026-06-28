@@ -5,12 +5,12 @@ from app.models.role import Role
 
 # Se hai altri modelli HR:
 from app.models.employee_contracts import EmployeeContract
-from app.models.employee_cost_center import EmployeeCostCenter
+from app.models.employee_cost_centers import EmployeeCostCenter
 from app.models.employee_department import EmployeeDepartment
-from app.models.employee_salary import EmployeeSalary
-from app.models.employee_company_car import EmployeeCompanyCar
-from app.models.employee_enac_course import EmployeeEnacCourse
-from app.models.employee_enac_approval import EmployeeEnacApproval
+from app.models.employee_salaries import EmployeeSalary
+from app.models.employee_company_cars import EmployeeCompanyCar
+from app.models.employee_enac_courses import EmployeeEnacCourse
+from app.models.employee_enac_approvals import EmployeeEnacApproval
 from app.models.employee_status_history import EmployeeStatusHistory
 from app.models.employee_site_history import EmployeeSiteHistory
-from app.models.employee_benefit import EmployeeBenefit
+from app.models.employee_benefits import EmployeeBenefit

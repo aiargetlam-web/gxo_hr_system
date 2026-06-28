@@ -5,13 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.models.communication import (
-    Communication,
-    CommunicationType,
-    CommunicationAttachment,
-    CommunicationMessage
-)
-from app.models.employee import Employee
 from app.schemas.communication import (
     Communication as CommunicationSchema,
     CommunicationCreate,
@@ -24,31 +17,42 @@ from app.core.config import settings
 
 router = APIRouter()
 
+# ============================================================
+# GET COMMUNICATION TYPES
+# ============================================================
+
 @router.get("/types", response_model=List[CommunicationTypeSchema])
 def get_communication_types(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Get all communication types."""
+    from app.models.communication import CommunicationType
+
     types = db.query(CommunicationType).all()
     return types
 
+
+# ============================================================
+# GET COMMUNICATIONS
+# ============================================================
 
 @router.get("/", response_model=List[CommunicationSchema])
 def get_communications(
     db: Session = Depends(deps.get_db),
     status: Optional[str] = None,
     priority: Optional[str] = None,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Get communications based on user role and filters."""
+    from app.models.communication import Communication
+    from app.models.employee import Employee
+    from app.models.site import HRSite
+
     query = db.query(Communication).join(Employee, Communication.user_id == Employee.id)
 
     if current_user.role == "user":
         query = query.filter(Communication.user_id == current_user.id)
 
     elif current_user.role == "hr":
-        from app.models.site import HRSite
         hr_site_ids = [
             s.site_id
             for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
@@ -66,14 +70,19 @@ def get_communications(
     return query.order_by(Communication.created_at.desc()).all()
 
 
+# ============================================================
+# CREATE COMMUNICATION
+# ============================================================
+
 @router.post("/", response_model=CommunicationSchema)
 def create_communication(
     *,
     db: Session = Depends(deps.get_db),
     communication_in: CommunicationCreate,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Create new communication."""
+    from app.models.communication import Communication, CommunicationType
+
     ctype = db.query(CommunicationType).filter(
         CommunicationType.id == communication_in.type_id
     ).first()
@@ -94,14 +103,19 @@ def create_communication(
     return db_obj
 
 
+# ============================================================
+# GET SINGLE COMMUNICATION
+# ============================================================
+
 @router.get("/{id}", response_model=CommunicationSchema)
 def get_communication(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Get specific communication."""
+    from app.models.communication import Communication
+
     comm = db.query(Communication).filter(Communication.id == id).first()
 
     if not comm:
@@ -113,15 +127,20 @@ def get_communication(
     return comm
 
 
+# ============================================================
+# UPDATE COMMUNICATION (HR ONLY)
+# ============================================================
+
 @router.patch("/{id}", response_model=CommunicationSchema)
 def update_communication(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     communication_in: CommunicationUpdate,
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_hr_user)
 ) -> Any:
-    """Update communication (HR only)."""
+    from app.models.communication import Communication
+
     comm = db.query(Communication).filter(Communication.id == id).first()
 
     if not comm:
@@ -140,15 +159,20 @@ def update_communication(
     return comm
 
 
+# ============================================================
+# UPLOAD ATTACHMENT
+# ============================================================
+
 @router.post("/{id}/attachments")
 def upload_attachment(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     file: UploadFile = File(...),
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Upload attachment to a communication."""
+    from app.models.communication import Communication, CommunicationAttachment
+
     comm = db.query(Communication).filter(Communication.id == id).first()
 
     if not comm:
@@ -177,14 +201,19 @@ def upload_attachment(
     return {"id": attachment.id, "filename": attachment.file_name}
 
 
+# ============================================================
+# GET MESSAGES
+# ============================================================
+
 @router.get("/{id}/messages", response_model=List[CommunicationMessageSchema])
 def get_communication_messages(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Get messages for a communication."""
+    from app.models.communication import Communication, CommunicationMessage
+
     comm = db.query(Communication).filter(Communication.id == id).first()
 
     if not comm:
@@ -201,15 +230,20 @@ def get_communication_messages(
     )
 
 
+# ============================================================
+# CREATE MESSAGE
+# ============================================================
+
 @router.post("/{id}/messages", response_model=CommunicationMessageSchema)
 def create_communication_message(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     message_in: CommunicationMessageCreate,
-    current_user: Employee = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_active_user)
 ) -> Any:
-    """Add a message to a communication."""
+    from app.models.communication import Communication, CommunicationMessage
+
     comm = db.query(Communication).filter(Communication.id == id).first()
 
     if not comm:

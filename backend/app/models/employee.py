@@ -23,8 +23,8 @@ class Employee(Base):
     address_city = Column(String(100))
     address_cap = Column(String(10))
 
-    # LUL
-    lul_id = Column(String(100), unique=True)
+    # LUL — FIX: nome colonna corretto come nel DB
+    id_lul = Column(String(100), unique=True)
 
     # Stato lavorativo attuale
     is_active = Column(Boolean, default=True)
@@ -54,7 +54,7 @@ class Employee(Base):
     contracts = relationship("EmployeeContract", back_populates="employee")
     cost_centers = relationship("EmployeeCostCenter", back_populates="employee")
 
-    # 🔥 FIX DEFINITIVA: specifica quale FK usare
+    # FIX: specifica FK corretta
     departments = relationship(
         "EmployeeDepartment",
         back_populates="employee",

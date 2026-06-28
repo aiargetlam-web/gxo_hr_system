@@ -23,8 +23,11 @@ class Employee(Base):
     address_city = Column(String(100))
     address_cap = Column(String(10))
 
-    # LUL — FIX: nome colonna corretto come nel DB
+    # LUL — nome colonna corretto come nel DB
     id_lul = Column(String(100), unique=True)
+
+    # Password — mancava nel modello
+    password_hash = Column(String(255), nullable=False)
 
     # Stato lavorativo attuale
     is_active = Column(Boolean, default=True)
@@ -54,7 +57,6 @@ class Employee(Base):
     contracts = relationship("EmployeeContract", back_populates="employee")
     cost_centers = relationship("EmployeeCostCenter", back_populates="employee")
 
-    # FIX: specifica FK corretta
     departments = relationship(
         "EmployeeDepartment",
         back_populates="employee",

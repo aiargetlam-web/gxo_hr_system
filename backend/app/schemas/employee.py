@@ -3,15 +3,16 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 # ---------------------------------------------------------
-# ROLE SCHEMA (AGGIUNTO)
+# ROLE SCHEMA
 # ---------------------------------------------------------
 
 class Role(BaseModel):
     id: int
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 # ---------------------------------------------------------
@@ -188,8 +189,9 @@ class EmployeeCreate(EmployeeBase):
 class EmployeeInDBBase(EmployeeBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 # ---------------------------------------------------------
@@ -205,7 +207,6 @@ class Employee(EmployeeInDBBase):
     # 🔥 AGGIUNTO: RUOLO COMPLETO
     role: Optional[Role] = None
 
-    # Dati attuali HR
     current_contract: Optional[ContractUpdate] = None
     current_salary: Optional[SalaryUpdate] = None
     current_department: Optional[DepartmentUpdate] = None
@@ -214,5 +215,6 @@ class Employee(EmployeeInDBBase):
     current_company_car: Optional[CompanyCarUpdate] = None
     current_cost_centers: Optional[List[CostCenterUpdate]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }

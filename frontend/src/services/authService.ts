@@ -18,7 +18,7 @@ export const authService = {
   // ⭐ LOGIN CORRETTO → form-urlencoded + fetch + URL assoluto
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const params = new URLSearchParams();
-    params.append("username", email);
+    params.append("email", email);
     params.append("password", password);
 
     const response = await fetch(

@@ -22,3 +22,4 @@ from app.models.audit import ActivityLog, UserHistoryLog
 from app.models.import_users_log import ImportUsersLog
 from app.models.employment_status_type import EmploymentStatusType
 from app.models.department import Department
+from app.models.cost_center import CostCenter

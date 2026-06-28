@@ -1,59 +1,75 @@
-import api from "./api";
-import { EmployeeAuth } from "../types";
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { authService } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginSuccess {
-  access_token: string;
-  token_type: string;
-}
+export const Login: React.FC = () => {
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-interface LoginFirstAccess {
-  requires_password_change: boolean;
-  message: string;
-}
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-export type LoginResponse = LoginSuccess | LoginFirstAccess;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-export const authService = {
+    try {
+      const response = await authService.login(email, password);
 
-  // ⭐ LOGIN CORRETTO → form-urlencoded + fetch + URL assoluto
-  login: async (email: string, password: string): Promise<LoginResponse> => {
-    const params = new URLSearchParams();
-    params.append("username", email);
-    params.append("password", password);
+      // ⭐ Salva email per ChangePassword
+      localStorage.setItem("user_email", email);
 
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
-      {
-        method: "POST",
-        mode: "cors",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json"
-        },
-        body: params
+      // 🔥 Primo accesso → cambio password obbligatorio
+      if ("requires_password_change" in response && response.requires_password_change) {
+        navigate('/change-password');
+        return;
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Login failed");
+      // 🔥 Login normale
+      if ("access_token" in response) {
+        login(response.access_token);
+        navigate('/dashboard');
+        return;
+      }
+
+      setError("Risposta inattesa dal server.");
+
+    } catch (err) {
+      setError('Credenziali non valide.');
     }
+  };
 
-    return response.json();
-  },
+  return (
+    <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--color-background)' }}>
+      <div className="card" style={{ width: '400px' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>GXO HR Portal</h2>
 
-  // 🔥 RESTO INVARIATO (Axios)
-  getCurrentUser: async (): Promise<EmployeeAuth> => {
-    const response = await api.get<EmployeeAuth>("/api/v1/employees/me");
-    return response.data;
-  },
+        {error && (
+          <div style={{ padding: '0.5rem', backgroundColor: '#f8d7da', color: '#721c24', marginBottom: '1rem', borderRadius: '4px' }}>
+            {error}
+          </div>
+        )}
 
-  changePassword: async (email: string, oldPassword: string, newPassword: string) => {
-    const response = await api.post("/api/v1/auth/change-password", {
-      email,
-      old_password: oldPassword,
-      new_password: newPassword,
-    });
-    return response.data;
-  },
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="form-control" required />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="form-control" required />
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+            Accedi
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 };
+
+export default Login;

@@ -27,9 +27,7 @@ def get_communication_types(
     current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import CommunicationType
-
-    types = db.query(CommunicationType).all()
-    return types
+    return db.query(CommunicationType).all()
 
 
 # ============================================================
@@ -137,9 +135,13 @@ def update_communication(
     db: Session = Depends(deps.get_db),
     id: int,
     communication_in: CommunicationUpdate,
-    current_user = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
     from app.models.communication import Communication
+
+    # controllo ruolo HR
+    if current_user.role != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     comm = db.query(Communication).filter(Communication.id == id).first()
 
@@ -181,7 +183,6 @@ def upload_attachment(
     if current_user.role == "user" and comm.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    file_ext = os.path.splitext(file.filename)[1]
     safe_filename = f"comm_{id}_{file.filename}"
     file_path = os.path.join(settings.UPLOAD_DIR, safe_filename)
 
@@ -199,6 +200,8 @@ def upload_attachment(
     db.refresh(attachment)
 
     return {"id": attachment.id, "filename": attachment.file_name}
+
+
 # ============================================================
 # GET MESSAGES
 # ============================================================

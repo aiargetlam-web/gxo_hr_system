@@ -19,4 +19,5 @@ from app.models.employee_benefits import EmployeeBenefit
 from app.models.work_regime import WorkRegime
 from app.models.contract_nature import ContractNature
 from app.models.cost_center import CostCenter
+from app.models.department import Department
 

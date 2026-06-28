@@ -15,9 +15,14 @@ class BoardFile(Base):
     id = Column(Integer, primary_key=True, index=True)
     file_name = Column(String(255), nullable=False)
     file_path = Column(String(255), nullable=False)
-    hr_author_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # 🔥 FIX: User → Employee
+    hr_author_id = Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"), nullable=True)
+
     upload_date = Column(DateTime(timezone=True), server_default=func.now())
     is_active = Column(Boolean, default=True)
 
-    author = relationship("User")
+    # 🔥 FIX: User → Employee
+    author = relationship("Employee")
+
     sites = relationship("Site", secondary="board_file_sites")

@@ -23,3 +23,5 @@ from app.models.import_users_log import ImportUsersLog
 from app.models.employment_status_type import EmploymentStatusType
 from app.models.department import Department
 from app.models.cost_center import CostCenter
+from app.models.work_regime import WorkRegime
+from app.models.contract_nature import ContractNature

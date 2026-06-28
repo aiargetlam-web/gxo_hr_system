@@ -33,12 +33,12 @@ class Employee(Base):
     is_active = Column(Boolean, default=True)
     first_access = Column(Boolean, default=True)
 
-    # ⭐ Sito attuale (relazione corretta)
+    # ⭐ Relazione con Site (corretta)
     current_site_id = Column(Integer, ForeignKey("sites.id", ondelete="SET NULL"))
     current_site = relationship("Site", back_populates="employees")
 
     # Ruolo
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     role = relationship("Role", back_populates="employees")
 
     # Date assunzione/cessazione

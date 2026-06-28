@@ -77,7 +77,10 @@ def read_current_user(
 ):
     user = (
         db.query(Employee)
-        .options(joinedload(Employee.current_site))  # ⭐ FIX QUI
+        .options(
+            joinedload(Employee.current_site),   # Sito
+            joinedload(Employee.role)            # ⭐ RUOLO (FIX)
+        )
         .filter(Employee.id == current_user.id)
         .first()
     )

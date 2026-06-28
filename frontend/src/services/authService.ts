@@ -14,19 +14,34 @@ interface LoginFirstAccess {
 export type LoginResponse = LoginSuccess | LoginFirstAccess;
 
 export const authService = {
+
+  // ⭐ LOGIN BLINDATO (fetch + JSON + CORS)
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const params = new URLSearchParams();
-    params.append("username", email);
-    params.append("password", password);
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
+      {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          username: email,
+          password: password
+        })
+      }
+    );
 
-    const response = await api.post("/api/v1/auth/login", params, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
 
-    return response.data;
+    return response.json();
   },
 
-  // 🔥 ORA RESTITUISCE EmployeeAuth, NON User
+  // 🔥 RESTO INVARIATO (Axios)
   getCurrentUser: async (): Promise<EmployeeAuth> => {
     const response = await api.get<EmployeeAuth>("/api/v1/employees/me");
     return response.data;

@@ -6,12 +6,6 @@ from sqlalchemy.orm import Session
 from typing import Any
 
 from app.api import deps
-from app.models.employee import Employee
-from app.models.communication import Communication
-from app.models.ticket import Ticket
-from app.models.board import BoardFile, BoardFileSite
-from app.models.audit import ActivityLog, UserHistoryLog
-from app.models.site import HRSite
 
 router = APIRouter()
 
@@ -28,23 +22,24 @@ def get_csv_response(headers: list, rows: list, filename: str):
     return response
 
 
-# ============================================================
-# EXPORT USERS
-# ============================================================
-
 @router.get("/users")
 def export_users(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.employee import Employee
+    from app.models.site import HRSite
+
+    if current_user.role != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     query = db.query(Employee)
 
-    if current_user.role == "hr":
-        hr_site_ids = [
-            s.site_id
-            for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
-        ]
-        query = query.filter(Employee.current_site_id.in_(hr_site_ids))
+    hr_site_ids = [
+        s.site_id
+        for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+    ]
+    query = query.filter(Employee.current_site_id.in_(hr_site_ids))
 
     users = query.all()
 
@@ -65,23 +60,25 @@ def export_users(
     return get_csv_response(headers, rows, "users_export")
 
 
-# ============================================================
-# EXPORT COMMUNICATIONS
-# ============================================================
-
 @router.get("/communications")
 def export_communications(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.communication import Communication
+    from app.models.employee import Employee
+    from app.models.site import HRSite
+
+    if current_user.role != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     query = db.query(Communication).join(Employee)
 
-    if current_user.role == "hr":
-        hr_site_ids = [
-            s.site_id
-            for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
-        ]
-        query = query.filter(Employee.current_site_id.in_(hr_site_ids))
+    hr_site_ids = [
+        s.site_id
+        for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+    ]
+    query = query.filter(Employee.current_site_id.in_(hr_site_ids))
 
     comms = query.all()
 
@@ -102,23 +99,25 @@ def export_communications(
     return get_csv_response(headers, rows, "communications_export")
 
 
-# ============================================================
-# EXPORT TICKETS
-# ============================================================
-
 @router.get("/tickets")
 def export_tickets(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.ticket import Ticket
+    from app.models.employee import Employee
+    from app.models.site import HRSite
+
+    if current_user.role != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     query = db.query(Ticket).join(Employee)
 
-    if current_user.role == "hr":
-        hr_site_ids = [
-            s.site_id
-            for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
-        ]
-        query = query.filter(Employee.current_site_id.in_(hr_site_ids))
+    hr_site_ids = [
+        s.site_id
+        for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+    ]
+    query = query.filter(Employee.current_site_id.in_(hr_site_ids))
 
     tickets = query.all()
 
@@ -139,23 +138,24 @@ def export_tickets(
     return get_csv_response(headers, rows, "tickets_export")
 
 
-# ============================================================
-# EXPORT BOARD
-# ============================================================
-
 @router.get("/board")
 def export_board(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_hr_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.board import BoardFile, BoardFileSite
+    from app.models.site import HRSite
+
+    if current_user.role != "hr":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     query = db.query(BoardFile).join(BoardFileSite)
 
-    if current_user.role == "hr":
-        hr_site_ids = [
-            s.site_id
-            for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
-        ]
-        query = query.filter(BoardFileSite.site_id.in_(hr_site_ids))
+    hr_site_ids = [
+        s.site_id
+        for s in db.query(HRSite).filter(HRSite.hr_id == current_user.id).all()
+    ]
+    query = query.filter(BoardFileSite.site_id.in_(hr_site_ids))
 
     files = query.group_by(BoardFile.id).all()
 
@@ -169,15 +169,16 @@ def export_board(
     return get_csv_response(headers, rows, "board_export")
 
 
-# ============================================================
-# EXPORT ACTIVITY LOGS
-# ============================================================
-
 @router.get("/activity-logs")
 def export_activity_logs(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_admin_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.audit import ActivityLog
+
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     logs = db.query(ActivityLog).all()
 
     headers = [
@@ -196,15 +197,16 @@ def export_activity_logs(
     return get_csv_response(headers, rows, "activity_logs_export")
 
 
-# ============================================================
-# EXPORT USER HISTORY
-# ============================================================
-
 @router.get("/user-history")
 def export_user_history(
     db: Session = Depends(deps.get_db),
-    current_user: Employee = Depends(deps.get_current_admin_user)
+    current_user = Depends(deps.get_current_user)
 ) -> Any:
+    from app.models.audit import UserHistoryLog
+
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     logs = db.query(UserHistoryLog).all()
 
     headers = [

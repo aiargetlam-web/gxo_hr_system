@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, EmailStr, field_validator
 import re
@@ -16,17 +16,21 @@ router = APIRouter()
 # ---------------------------------------------------------
 # LOGIN
 # ---------------------------------------------------------
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
 @router.post("/login", response_model=Any)
 def login_access_token(
-    db: Session = Depends(deps.get_db),
-    email: str = Body(...),
-    password: str = Body(...)
+    data: LoginRequest,
+    db: Session = Depends(deps.get_db)
 ) -> Any:
     from app.models.employee import Employee
 
-    user = db.query(Employee).filter(Employee.email == email).first()
+    user = db.query(Employee).filter(Employee.email == data.email).first()
 
-    if not user or not security.verify_password(password, user.password_hash):
+    if not user or not security.verify_password(data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -59,6 +63,7 @@ def login_access_token(
 # ---------------------------------------------------------
 # UTENTE LOGGATO
 # ---------------------------------------------------------
+
 @router.get("/me", response_model=EmployeeSchema)
 def read_current_user(
     db: Session = Depends(deps.get_db),
@@ -81,9 +86,9 @@ def read_current_user(
 # ---------------------------------------------------------
 # FORGOT PASSWORD
 # ---------------------------------------------------------
+
 class ForgotPassword(BaseModel):
     email: EmailStr
-
 
 @router.post("/forgot-password")
 def forgot_password(
@@ -94,10 +99,7 @@ def forgot_password(
 
     user = db.query(Employee).filter(Employee.email == data.email).first()
     if user:
-        print(
-            f"DEBUG: Reset password email sent to {user.email} "
-            f"with reset token: FAKE_RESET_TOKEN"
-        )
+        print(f"DEBUG: Reset password email sent to {user.email}")
 
     return {"message": "If the email is registered, a password reset link has been sent."}
 
@@ -105,6 +107,7 @@ def forgot_password(
 # ---------------------------------------------------------
 # RESET PASSWORD
 # ---------------------------------------------------------
+
 class ResetPassword(BaseModel):
     token: str
     new_password: str
@@ -123,7 +126,6 @@ class ResetPassword(BaseModel):
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
-
 
 @router.post("/reset-password")
 def reset_password(
@@ -147,6 +149,7 @@ def reset_password(
 # ---------------------------------------------------------
 # CAMBIO PASSWORD PRIMO ACCESSO
 # ---------------------------------------------------------
+
 class ChangePassword(BaseModel):
     email: EmailStr
     old_password: str
@@ -166,7 +169,6 @@ class ChangePassword(BaseModel):
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
             raise ValueError('La password deve contenere almeno un carattere speciale')
         return v
-
 
 @router.post("/change-password")
 def change_password(

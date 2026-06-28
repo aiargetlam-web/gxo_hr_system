@@ -53,7 +53,14 @@ class Employee(Base):
     # RELAZIONI HR
     contracts = relationship("EmployeeContract", back_populates="employee")
     cost_centers = relationship("EmployeeCostCenter", back_populates="employee")
-    departments = relationship("EmployeeDepartment", back_populates="employee")
+
+    # 🔥 FIX DEFINITIVA: specifica quale FK usare
+    departments = relationship(
+        "EmployeeDepartment",
+        back_populates="employee",
+        foreign_keys="EmployeeDepartment.employee_id"
+    )
+
     salaries = relationship("EmployeeSalary", back_populates="employee")
     cars = relationship("EmployeeCompanyCar", back_populates="employee")
     enac_courses = relationship("EmployeeEnacCourse", back_populates="employee")

@@ -21,3 +21,7 @@ class EmployeeContract(Base):
     note = Column(String)
 
     employee = relationship("Employee", back_populates="contracts")
+
+    # 🔥 RELAZIONI MANCANTI (DEVONO ESSERCI)
+    work_regime = relationship("WorkRegime")
+    contract_nature = relationship("ContractNature")

@@ -18,4 +18,4 @@ from app.models.employee_benefits import EmployeeBenefit
 # Modelli aggiuntivi
 from app.models.work_regime import WorkRegime
 from app.models.contract_nature import ContractNature
-from app.models.benefit_type import BenefitType
+

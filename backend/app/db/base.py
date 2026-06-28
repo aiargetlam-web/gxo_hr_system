@@ -14,3 +14,4 @@ from app.models.employee_enac_approvals import EmployeeEnacApproval
 from app.models.employee_status_history import EmployeeStatusHistory
 from app.models.employee_site_history import EmployeeSiteHistory
 from app.models.employee_benefits import EmployeeBenefit
+from app.models.work_regime import WorkRegime

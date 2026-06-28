@@ -15,7 +15,7 @@ export type LoginResponse = LoginSuccess | LoginFirstAccess;
 
 export const authService = {
 
-  // ⭐ LOGIN CORRETTO → JSON + email
+  // ⭐ LOGIN → JSON + username (come richiesto dal backend)
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
@@ -28,7 +28,7 @@ export const authService = {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          email: email,
+          username: email,   // ← il backend vuole "username"
           password: password
         })
       }

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 
-// 🔥 TIPI LOCALI (perché non esistono più in ../types)
+// 🔥 TIPI LOCALI
 interface ActivityLog {
   id: number;
   created_at: string;
@@ -24,11 +24,11 @@ interface UserHistoryLog {
   new_value: string | null;
 }
 
+// 🔥 COMPONENTE 1 — Activity Logs
 export const ActivityLogs: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
 
-  // 🔥 PATCH: ruolo basato su role_id
   const roleName =
     user?.role_id === 1 ? "admin" :
     user?.role_id === 2 ? "hr" :
@@ -93,11 +93,11 @@ export const ActivityLogs: React.FC = () => {
   );
 };
 
+// 🔥 COMPONENTE 2 — User History
 export const UserHistory: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [history, setHistory] = useState<UserHistoryLog[]>([]);
 
-  // 🔥 PATCH: ruolo basato su role_id
   const roleName =
     user?.role_id === 1 ? "admin" :
     user?.role_id === 2 ? "hr" :
@@ -161,3 +161,6 @@ export const UserHistory: React.FC = () => {
     </div>
   );
 };
+
+// 🔥 DEFAULT EXPORT (necessario per App.tsx)
+export default ActivityLogs;

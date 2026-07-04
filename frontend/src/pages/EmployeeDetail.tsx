@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { employeeService } from "../services/employeeService";
-import { Employee } from "../types";
+import { EmployeeFull } from "../types";
 import { Box, CircularProgress, Typography, Card } from "@mui/material";
 
 export default function EmployeeDetail() {
   const { id } = useParams();
-  const [employee, setEmployee] = useState<Employee | null>(null);
+  const [employee, setEmployee] = useState<EmployeeFull | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
+        if (!id) return;
         const data = await employeeService.getById(Number(id));
         setEmployee(data);
       } finally {
@@ -50,7 +51,7 @@ export default function EmployeeDetail() {
         </Typography>
 
         <Typography sx={{ mt: 1 }}>
-          <strong>Ruolo:</strong> {employee.role?.name}
+          <strong>Ruolo:</strong> {employee.role?.name}</strong>
         </Typography>
 
         <Typography sx={{ mt: 1 }}>

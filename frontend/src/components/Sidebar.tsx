@@ -98,8 +98,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </Link>
 
               <Link
-                to="/users"
-                className={`sidebar-link ${path === '/users' ? 'active' : ''}`}
+                to="/employees"
+                className={`sidebar-link ${path === '/employees' ? 'active' : ''}`}
                 onClick={onClose}
               >
                 👥 Gestione Utenti
@@ -119,8 +119,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </Link>
 
               <Link
-                to="/activity-logs"
-                className={`sidebar-link ${path === '/activity-logs' ? 'active' : ''}`}
+                to="/activity-log"
+                className={`sidebar-link ${path === '/activity-log' ? 'active' : ''}`}
                 onClick={onClose}
               >
                 📜 Log Attività

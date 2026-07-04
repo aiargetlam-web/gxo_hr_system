@@ -284,10 +284,48 @@ export interface EmployeeCreate {
 ============================ */
 export interface EmployeeAuth {
   id: number;
-  email: string;
+
   first_name: string;
   last_name: string;
+  email: string;
+  phone?: string | null;
+
+  fiscal_code?: string | null;
+  gender?: string | null;
+  birth_date?: string | null;
+  birth_place?: string | null;
+
+  address_street?: string | null;
+  address_city?: string | null;
+  address_cap?: string | null;
+
+  lul_id?: string | null;
+
   role_id: number;
+  role?: Role;
+
+  current_site_id?: number | null;
+  site?: Site;
+
+  hire_date?: string | null;
+  termination_date?: string | null;
+
+  is_protected_category: boolean;
+  is_disadvantaged: boolean;
+
+  is_active: boolean;
+  first_access: boolean;
+
+  created_at: string;
+  updated_at: string;
+
+  current_contract?: Contract | null;
+  current_salary?: Salary | null;
+  current_department?: Department | null;
+  current_cost_centers?: CostCenter[] | null;
+  current_company_car?: CompanyCar | null;
+  current_site?: SiteHistory | null;
+  current_status?: StatusHistory | null;
 }
 
 /* ============================
@@ -330,9 +368,6 @@ export interface EmployeeFull {
   created_at: string;
   updated_at: string;
 
-  /* ============================
-     DATI ATTUALI HR
-  ============================ */
   current_contract?: Contract | null;
   current_salary?: Salary | null;
   current_department?: Department | null;
@@ -356,9 +391,9 @@ export interface BoardFile {
 /* ============================
    LOGIN RESPONSE TYPES
 ============================ */
-
 export interface LoginSuccess {
   access_token: string;
+  token_type?: string;
 }
 
 export interface LoginFirstAccess {
@@ -366,4 +401,3 @@ export interface LoginFirstAccess {
 }
 
 export type LoginResponse = LoginSuccess | LoginFirstAccess;
-

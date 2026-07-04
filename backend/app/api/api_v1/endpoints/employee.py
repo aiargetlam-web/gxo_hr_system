@@ -24,7 +24,7 @@ from app.schemas.employee import (
 )
 
 # ⭐ PASSO 3 — SOLO QUESTA RIGA CAMBIATA
-router = APIRouter(prefix="/api/v1", tags=["Employees"])
+router = APIRouter(tags=["Employees"])
 
 # ============================================================
 # CREATE EMPLOYEE COMPLETO

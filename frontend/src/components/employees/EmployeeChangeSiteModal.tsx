@@ -4,7 +4,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
   Stack,
   TextField,
 } from "@mui/material";
@@ -35,7 +34,8 @@ export default function EmployeeChangeSiteModal({
   useEffect(() => {
     if (employee) {
       setForm({
-        site_id: employee.current_site_id,
+        // ⭐ PATCH: normalizziamo il valore
+        site_id: employee.current_site_id ?? 1,
         from_date: "",
         note: "",
       });

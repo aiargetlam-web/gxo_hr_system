@@ -49,10 +49,6 @@ interface Props {
 export default function EmployeeCreateModal({ open, onClose, onCreated }: Props) {
   const [activeStep, setActiveStep] = useState(0);
 
-  // ============================
-  // FORM STATE
-  // ============================
-
   const [form, setForm] = useState<EmployeeCreate>({
     first_name: "",
     last_name: "",
@@ -109,10 +105,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
 
     company_car: undefined,
   });
-
-  // ============================
-  // HANDLERS
-  // ============================
 
   const handleChange = (field: keyof EmployeeCreate, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -196,10 +188,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     onClose();
     setActiveStep(0);
   };
-
-  // ============================
-  // RENDER STEP
-  // ============================
 
   const renderStep = () => {
     switch (activeStep) {
@@ -445,11 +433,11 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             <TextField
               label="Responsabile (ID dipendente)"
               fullWidth
-              value={form.department.manager_employee_id || ""}
+              value={form.department.manager_employee_id ?? ""}
               onChange={(e) =>
                 handleDepartmentChange(
                   "manager_employee_id",
-                  Number(e.target.value)
+                  e.target.value === "" ? undefined : Number(e.target.value)
                 )
               }
             />
@@ -527,7 +515,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                     fullWidth
                     value={b.benefit_type}
                     onChange={(e) => {
-                      const updated = [...form.benefits];
+                      const updated = [...form.benefets];
                       updated[index].benefit_type = e.target.value;
                       handleChange("benefits", updated);
                     }}
@@ -556,10 +544,10 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             <TextField
               label="Modello auto"
               fullWidth
-              value={form.company_car?.car_model || ""}
+              value={form.company_car?.car_model ?? ""}
               onChange={(e) =>
                 handleChange("company_car", {
-                  ...(form.company_car || {}),
+                  ...(form.company_car ?? {}),
                   car_model: e.target.value,
                 })
               }
@@ -568,10 +556,10 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             <TextField
               label="Targa"
               fullWidth
-              value={form.company_car?.plate || ""}
+              value={form.company_car?.plate ?? ""}
               onChange={(e) =>
                 handleChange("company_car", {
-                  ...(form.company_car || {}),
+                  ...(form.company_car ?? {}),
                   plate: e.target.value,
                 })
               }
@@ -582,10 +570,10 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
               type="date"
               InputLabelProps={{ shrink: true }}
               fullWidth
-              value={form.company_car?.from_date || ""}
+              value={form.company_car?.from_date ?? ""}
               onChange={(e) =>
                 handleChange("company_car", {
-                  ...(form.company_car || {}),
+                  ...(form.company_car ?? {}),
                   from_date: e.target.value,
                 })
               }
@@ -594,10 +582,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
         );
     }
   };
-
-  // ============================
-  // RENDER MODAL
-  // ============================
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">

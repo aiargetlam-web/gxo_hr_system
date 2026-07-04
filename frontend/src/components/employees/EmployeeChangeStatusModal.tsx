@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Employee } from "../../types";
 import { employeeService } from "../../services/employeeService";
 
@@ -26,9 +26,17 @@ export default function EmployeeChangeStatusModal({
   onSaved,
   employee,
 }: Props) {
+  // ⭐ PATCH: normalizziamo il valore iniziale
   const [statusTypeId, setStatusTypeId] = useState<number>(1);
   const [fromDate, setFromDate] = useState<string>("");
   const [note, setNote] = useState<string>("");
+
+  // ⭐ PATCH: sincronizziamo lo stato attuale del dipendente
+  useEffect(() => {
+    if (employee) {
+      setStatusTypeId(employee.current_status?.status_type_id ?? 1);
+    }
+  }, [employee]);
 
   const handleSubmit = async () => {
     if (!employee) return;
@@ -60,7 +68,6 @@ export default function EmployeeChangeStatusModal({
             value={statusTypeId}
             onChange={(e) => setStatusTypeId(Number(e.target.value))}
           >
-            {/* ⚠️ Questi ID devono corrispondere alla tua tabella status_type */}
             <MenuItem value={1}>Attivo</MenuItem>
             <MenuItem value={2}>Sospeso</MenuItem>
             <MenuItem value={3}>Cessato</MenuItem>

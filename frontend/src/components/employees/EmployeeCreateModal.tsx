@@ -515,7 +515,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                     fullWidth
                     value={b.benefit_type}
                     onChange={(e) => {
-                      const updated = [...form.benefets];
+                      const updated = [...form.benefits];   {/* CORRETTO */}
                       updated[index].benefit_type = e.target.value;
                       handleChange("benefits", updated);
                     }}

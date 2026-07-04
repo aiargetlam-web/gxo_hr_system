@@ -13,6 +13,13 @@ import { Admin } from './pages/Admin';
 import { PowerBIDashboard } from './pages/PowerBIDashboard';
 import ChangePassword from './pages/ChangePassword';
 
+// ⭐ PAGINE HR REALI
+import Employees from "./pages/Employees";
+import Audit from "./pages/Audit";
+import ActivityLog from "./pages/ActivityLog";
+import UserHistory from "./pages/UserHistory";
+import EmployeeDetail from "./pages/EmployeeDetail";
+
 import { Toaster } from "react-hot-toast";
 
 const App: React.FC = () => {
@@ -31,12 +38,18 @@ const App: React.FC = () => {
       />
 
       <Routes>
+        {/* LOGIN */}
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ChangePassword />} />
 
+        {/* AREA PROTETTA */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
+
+            {/* HOME */}
             <Route path="/" element={<Navigate to="/board" replace />} />
+
+            {/* PAGINE STANDARD */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/communications" element={<Communications />} />
@@ -44,9 +57,18 @@ const App: React.FC = () => {
             <Route path="/board" element={<Board />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/powerbi" element={<PowerBIDashboard />} />
+
+            {/* ⭐ PAGINE HR */}
+            <Route path="/employees" element={<Employees />} />
+            <Route path="/employee/:id" element={<EmployeeDetail />} />
+            <Route path="/audit" element={<Audit />} />
+            <Route path="/activity-log" element={<ActivityLog />} />
+            <Route path="/user-history" element={<UserHistory />} />
+
           </Route>
         </Route>
 
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </>

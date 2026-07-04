@@ -17,13 +17,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Se il token è scaduto → lo rimuoviamo
     if (error.response?.status === 401) {
       localStorage.removeItem("access_token");
-      // ❌ NON fare redirect qui
-      // ProtectedRoute gestirà il redirect in modo sicuro
+      // ❌ niente redirect qui
     }
-
     return Promise.reject(error);
   }
 );

@@ -13,11 +13,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   if (!user) return null;
 
-  // 🔥 Nuovo sistema ruoli
-  const roleName =
-    user.role_id === 1 ? "admin" :
-    user.role_id === 2 ? "hr" :
-    "employee";
+  // ⭐ Ruolo corretto dal backend
+  const roleName = user.role?.name ?? "employee";
 
   return (
     <>
@@ -40,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           }}
         >
           RUOLO: {roleName.toUpperCase()}<br />
-          SITO: Tutti {/* user.site non esiste più */}
+          SITO: Tutti
         </div>
 
         <nav className="sidebar-nav">
@@ -84,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             Profilo
           </Link>
 
-          {/* 🔥 HR + ADMIN */}
+          {/* ⭐ HR + ADMIN */}
           {(roleName === 'hr' || roleName === 'admin') && (
             <>
               <Link
@@ -110,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </>
           )}
 
-          {/* 🔥 SOLO ADMIN */}
+          {/* ⭐ SOLO ADMIN */}
           {roleName === 'admin' && (
             <>
               <Link

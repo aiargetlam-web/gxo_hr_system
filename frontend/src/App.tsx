@@ -15,10 +15,11 @@ import ChangePassword from './pages/ChangePassword';
 
 // ⭐ PAGINE HR REALI
 import Employees from "./pages/Employees";
-import Audit from "./pages/Audit";
-import ActivityLog from "./pages/ActivityLog";
-import UserHistory from "./pages/UserHistory";
 import EmployeeDetail from "./pages/EmployeeDetail";
+
+// ⭐ IMPORT CORRETTI DA Audit.tsx
+import ActivityLogs from "./pages/Audit";
+import { UserHistory } from "./pages/Audit";
 
 import { Toaster } from "react-hot-toast";
 
@@ -61,8 +62,9 @@ const App: React.FC = () => {
             {/* ⭐ PAGINE HR */}
             <Route path="/employees" element={<Employees />} />
             <Route path="/employee/:id" element={<EmployeeDetail />} />
-            <Route path="/audit" element={<Audit />} />
-            <Route path="/activity-log" element={<ActivityLog />} />
+
+            {/* ⭐ LOG & STORICO */}
+            <Route path="/activity-log" element={<ActivityLogs />} />
             <Route path="/user-history" element={<UserHistory />} />
 
           </Route>

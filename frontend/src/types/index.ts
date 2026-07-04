@@ -214,7 +214,12 @@ export interface Employee {
   role_id: number;
   role?: Role;
 
-  current_site_id: number;
+  /* ⭐ PATCH: questi campi possono essere null o undefined */
+  current_site_id?: number | null;
+  current_department_id?: number | null;
+  current_contract_id?: number | null;
+  current_status_id?: number | null;
+
   site?: Site;
 
   hire_date?: string;
@@ -229,9 +234,6 @@ export interface Employee {
   created_at: string;
   updated_at: string;
 
-  /* ============================
-     DATI ATTUALI HR
-  ============================ */
   current_contract?: Contract | null;
   current_salary?: Salary | null;
   current_department?: Department | null;
@@ -353,7 +355,8 @@ export interface EmployeeFull {
   role_id: number;
   role?: Role;
 
-  current_site_id?: number;
+  /* ⭐ PATCH: anche qui */
+  current_site_id?: number | null;
   site?: Site;
 
   hire_date?: string;

@@ -23,7 +23,8 @@ from app.schemas.employee import (
     CompanyCarUpdate,
 )
 
-router = APIRouter()
+# ⭐ PASSO 3 — SOLO QUESTA RIGA CAMBIATA
+router = APIRouter(prefix="/api/v1", tags=["Employees"])
 
 # ============================================================
 # CREATE EMPLOYEE COMPLETO
@@ -676,6 +677,8 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
         "site": current_site,
         "status": current_status,
     }
+
+
 # ============================================================
 # UPDATE AUTO AZIENDALE ATTIVA
 # ============================================================
@@ -707,4 +710,3 @@ def update_current_company_car(employee_id: int, payload: CompanyCarUpdate, db: 
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")
-

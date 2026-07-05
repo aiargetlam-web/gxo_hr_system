@@ -8,7 +8,9 @@ class Employee(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # Anagrafica
+    # ============================
+    # ANAGRAFICA
+    # ============================
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -18,55 +20,91 @@ class Employee(Base):
     birth_date = Column(Date)
     birth_place = Column(String(255))
 
-    # Indirizzo
+    # ============================
+    # INDIRIZZO
+    # ============================
     address_street = Column(String(255))
     address_city = Column(String(100))
     address_cap = Column(String(10))
 
+    # ============================
     # LUL
+    # ============================
     id_lul = Column(String(100), unique=True)
 
-    # Password
+    # ============================
+    # PASSWORD HASH
+    # ============================
     password_hash = Column(String(255), nullable=False)
 
-    # Stato lavorativo
+    # ============================
+    # STATO LAVORATIVO
+    # ============================
     is_active = Column(Boolean, default=True)
     first_access = Column(Boolean, default=True)
 
-    # ⭐ Relazione con Site (corretta)
+    # ============================
+    # SITO ATTUALE (manteniamo perché lo usi nelle route)
+    # ============================
     current_site_id = Column(Integer, ForeignKey("sites.id", ondelete="SET NULL"))
     current_site = relationship("Site", back_populates="employees")
 
-    # Ruolo
+    # ============================
+    # RUOLO
+    # ============================
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     role = relationship("Role", back_populates="employees")
 
-    # Date assunzione/cessazione
+    # ============================
+    # DATE ASSUNZIONE / CESSAZIONE
+    # ============================
     hire_date = Column(Date)
     termination_date = Column(Date)
 
-    # Categoria protetta / svantaggiato
+    # ============================
+    # CATEGORIE SPECIALI
+    # ============================
     is_protected_category = Column(Boolean, default=False)
     is_disadvantaged = Column(Boolean, default=False)
 
-    # Timestamps
+    # ============================
+    # TIMESTAMPS
+    # ============================
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    # RELAZIONI HR
+    # ============================
+    # RELAZIONI HR (history tables)
+    # ============================
+
+    # Contratti
     contracts = relationship("EmployeeContract", back_populates="employee")
+
+    # Cost centers
     cost_centers = relationship("EmployeeCostCenter", back_populates="employee")
 
+    # Reparti
     departments = relationship(
         "EmployeeDepartment",
         back_populates="employee",
         foreign_keys="EmployeeDepartment.employee_id"
     )
 
+    # RAL
     salaries = relationship("EmployeeSalary", back_populates="employee")
+
+    # Auto aziendali
     cars = relationship("EmployeeCompanyCar", back_populates="employee")
+
+    # ENAC
     enac_courses = relationship("EmployeeEnacCourse", back_populates="employee")
     enac_approvals = relationship("EmployeeEnacApproval", back_populates="employee")
+
+    # Stato lavorativo (history)
     status_history = relationship("EmployeeStatusHistory", back_populates="employee")
+
+    # Siti (history)
     site_history = relationship("EmployeeSiteHistory", back_populates="employee")
+
+    # Benefit
     benefits = relationship("EmployeeBenefit", back_populates="employee")

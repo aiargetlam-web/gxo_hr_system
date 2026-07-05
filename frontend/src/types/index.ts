@@ -272,6 +272,9 @@ export interface EmployeeCreate {
   is_protected_category: boolean;
   is_disadvantaged: boolean;
 
+  preposto: boolean;
+
+
   contract: ContractCreate;
   cost_centers: CostCenterCreate[];
   department: DepartmentCreate;

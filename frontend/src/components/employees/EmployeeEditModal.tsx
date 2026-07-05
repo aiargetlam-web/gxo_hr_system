@@ -113,39 +113,39 @@ export default function EmployeeEditModal({
     setIsDisadvantaged(employee.is_disadvantaged || false);
 
     // Contratto attuale
-    if (employee.current_contract) {
-      setContractWorkRegimeId(employee.current_contract.work_regime_id);
-      setContractNatureId(employee.current_contract.contract_nature_id);
-      setContractWeeklyHours(employee.current_contract.weekly_hours ?? 40);
-      setContractFte(employee.current_contract.fte);
-      setContractTimeBand(employee.current_contract.time_band ?? "");
-      setContractShiftType(employee.current_contract.shift_type ?? "");
+    if (employee.contract) {
+      setContractWorkRegimeId(employee.contract.work_regime_id);
+      setContractNatureId(employee.contract.contract_nature_id);
+      setContractWeeklyHours(employee.contract.weekly_hours ?? 40);
+      setContractFte(employee.contract.fte);
+      setContractTimeBand(employee.contract.time_band ?? "");
+      setContractShiftType(employee.contract.shift_type ?? "");
     }
 
     // RAL attuale
-    if (employee.current_salary) {
-      setSalaryRalAmount(employee.current_salary.ral_amount);
+    if (employee.salary) {
+      setSalaryRalAmount(employee.salary.ral_amount);
     }
 
     // Reparto
-    if (employee.current_department) {
-      setDepartmentId(employee.current_department.department_id);
+    if (employee.department) {
+      setDepartmentId(employee.department.department_id);
     }
 
     // Sito
-    if (employee.current_site) {
-      setSiteId(employee.current_site.site_id);
+    if (employee.site) {
+      setSiteId(employee.site.site_id);
     }
 
     // Stato
-    if (employee.current_status) {
-      setStatusTypeId(employee.current_status.status_type_id);
+    if (employee.status) {
+      setStatusTypeId(employee.status.status_type_id);
     }
 
     // Cost center attivi
-    if (employee.current_cost_centers) {
+    if (employee.cost_centers) {
       setCostCenters(
-        employee.current_cost_centers.map((cc) => ({
+        employee.cost_centers.map((cc) => ({
           id: cc.id,
           cost_center_id: cc.cost_center_id,
           weight_percent: cc.weight_percent,
@@ -155,10 +155,10 @@ export default function EmployeeEditModal({
     }
 
     // Auto aziendale
-    if (employee.current_company_car) {
+    if (employee.company_car) {
       setHasCompanyCar(true);
-      setCompanyCarModel(employee.current_company_car.car_model ?? "");
-      setCompanyCarPlate(employee.current_company_car.plate ?? "");
+      setCompanyCarModel(employee.company_car.car_model ?? "");
+      setCompanyCarPlate(employee.company_car.plate ?? "");
     } else {
       setHasCompanyCar(false);
       setCompanyCarModel("");

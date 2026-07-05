@@ -26,15 +26,14 @@ export default function EmployeeChangeStatusModal({
   onSaved,
   employee,
 }: Props) {
-  // ⭐ PATCH: normalizziamo il valore iniziale
   const [statusTypeId, setStatusTypeId] = useState<number>(1);
   const [fromDate, setFromDate] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
-  // ⭐ PATCH: sincronizziamo lo stato attuale del dipendente
+  // ⭐ CORRETTO: sincronizziamo lo stato attuale del dipendente
   useEffect(() => {
     if (employee) {
-      setStatusTypeId(employee.current_status?.status_type_id ?? 1);
+      setStatusTypeId(employee.status?.status_type_id ?? 1);
     }
   }, [employee]);
 

@@ -34,8 +34,7 @@ export default function EmployeeChangeSiteModal({
   useEffect(() => {
     if (employee) {
       setForm({
-        // ⭐ PATCH: normalizziamo il valore
-        site_id: employee.current_site_id ?? 1,
+        site_id: employee.site?.site_id ?? 1,   // ⭐ CORRETTO
         from_date: "",
         note: "",
       });

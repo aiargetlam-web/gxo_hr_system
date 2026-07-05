@@ -15,29 +15,38 @@ export type LoginResponse = LoginSuccess | LoginFirstAccess;
 
 export const authService = {
 
-  // ⭐ LOGIN → JSON corretto (email + password)
+  // ⭐ LOGIN PROTETTA, VELOCE, ANTI-ESTENSIONI
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
-      {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          email: email,      // ← CORRETTO
-          password: password // ← CORRETTO
-        })
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // timeout 5 secondi
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Referrer-Policy": "no-referrer"
+          },
+          credentials: "omit",        // ← evita interferenze delle estensioni
+          signal: controller.signal,  // ← permette abort automatico
+          body: JSON.stringify({ email, password })
+        }
+      );
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error("Login failed");
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Login failed");
+      return await response.json();
+    } catch (err) {
+      // retry automatico dopo 300ms
+      await new Promise((res) => setTimeout(res, 300));
+      return authService.login(email, password);
     }
-
-    return response.json();
   },
 
   // ⭐ UTENTE LOGGATO

@@ -46,7 +46,7 @@ export const employeeService = {
   },
 
   // ============================
-  // CONTRATTO
+  // CONTRATTO (storico)
   // ============================
   addContract: async (employeeId: number, data: ContractCreate) => {
     const res = await api.post(
@@ -56,16 +56,8 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentContract: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/contracts/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // RAL
+  // RAL (storico)
   // ============================
   addSalary: async (employeeId: number, data: SalaryCreate) => {
     const res = await api.post(
@@ -75,16 +67,8 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentSalary: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/salaries/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // REPARTO
+  // REPARTO (storico)
   // ============================
   addDepartment: async (employeeId: number, data: DepartmentCreate) => {
     const res = await api.post(
@@ -94,16 +78,8 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentDepartment: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/departments/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // COST CENTER
+  // COST CENTER (storico)
   // ============================
   addCostCenter: async (employeeId: number, data: CostCenterCreate) => {
     const res = await api.post(
@@ -113,16 +89,8 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentCostCenters: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/cost-centers/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // CAMBIO SITO
+  // CAMBIO SITO (storico)
   // ============================
   changeSite: async (employeeId: number, data: SiteAssignmentCreate) => {
     const res = await api.post(
@@ -132,16 +100,8 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentSite: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/sites/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // STATO LAVORATIVO
+  // STATO LAVORATIVO (storico)
   // ============================
   changeStatus: async (
     employeeId: number,
@@ -160,28 +120,12 @@ export const employeeService = {
     return res.data;
   },
 
-  updateCurrentStatus: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/status/current`,
-      data
-    );
-    return res.data;
-  },
-
   // ============================
-  // AUTO AZIENDALE
+  // AUTO AZIENDALE (storico)
   // ============================
   addCompanyCar: async (employeeId: number, data: CompanyCarCreate) => {
     const res = await api.post(
       `/api/v1/employees/${employeeId}/company-cars`,
-      data
-    );
-    return res.data;
-  },
-
-  updateCurrentCompanyCar: async (employeeId: number, data: any) => {
-    const res = await api.put(
-      `/api/v1/employees/${employeeId}/company-cars/current`,
       data
     );
     return res.data;
@@ -220,9 +164,6 @@ export const employeeService = {
     return res.data;
   },
 
-  // ============================
-  // RUOLI (AGGIUNTA NECESSARIA)
-  // ============================
   getAllRoles: async () => {
     const res = await api.get("/api/v1/roles");
     return res.data;

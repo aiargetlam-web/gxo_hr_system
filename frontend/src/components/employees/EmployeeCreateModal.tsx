@@ -84,7 +84,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
-    preposto: false,
+    preposto: false, // ⭐ ORA ESISTE NEL TIPO
 
     contract: {
       work_regime_id: 1,
@@ -258,7 +258,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     onClose();
     setActiveStep(0);
   };
-
   // ============================
   // RENDER STEP
   // ============================
@@ -642,13 +641,13 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             </TextField>
 
             <TextField
-  label="Data inizio sito"
-  type="date"
-  InputLabelProps={{ shrink: true }}
-  fullWidth
-  value={form.site_history.from_date}
-  onChange={(e) => handleSiteChange("from_date", e.target.value)}
-/>
+              label="Data inizio sito"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              value={form.site_history.from_date}
+              onChange={(e) => handleSiteChange("from_date", e.target.value)}
+            />
           </Stack>
         );
 
@@ -743,7 +742,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
         );
     }
   };
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Nuovo Dipendente</DialogTitle>
@@ -762,11 +760,16 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
 
       <DialogActions>
         {activeStep > 0 && (
-          <Button onClick={() => setActiveStep(activeStep - 1)}>Indietro</Button>
+          <Button onClick={() => setActiveStep(activeStep - 1)}>
+            Indietro
+          </Button>
         )}
 
         {activeStep < steps.length - 1 ? (
-          <Button variant="contained" onClick={() => setActiveStep(activeStep + 1)}>
+          <Button
+            variant="contained"
+            onClick={() => setActiveStep(activeStep + 1)}
+          >
             Avanti
           </Button>
         ) : (
@@ -778,4 +781,3 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     </Dialog>
   );
 }
-

@@ -186,4 +186,45 @@ export const employeeService = {
     );
     return res.data;
   },
+
+  // ============================
+  // MENU A TENDINA – VALORI DA DB
+  // ============================
+  getWorkRegimes: async () => {
+    const res = await api.get("/api/v1/work-regimes");
+    return res.data;
+  },
+
+  getContractNatures: async () => {
+    const res = await api.get("/api/v1/contract-natures");
+    return res.data;
+  },
+
+  getCostCenters: async () => {
+    const res = await api.get("/api/v1/cost-centers");
+    return res.data;
+  },
+
+  getDepartments: async () => {
+    const res = await api.get("/api/v1/departments");
+    return res.data;
+  },
+
+  getSites: async () => {
+    const res = await api.get("/api/v1/sites");
+    return res.data;
+  },
+
+  getPreposti: async () => {
+    const res = await api.get("/api/v1/employees/preposti");
+    return res.data;
+  },
+
+  // ============================
+  // RUOLI (AGGIUNTA NECESSARIA)
+  // ============================
+  getAllRoles: async () => {
+    const res = await api.get("/api/v1/roles");
+    return res.data;
+  },
 };

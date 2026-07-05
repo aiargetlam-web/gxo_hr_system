@@ -469,29 +469,176 @@ def change_status(employee_id: int, status_type_id: int, from_date: date, note: 
 
 
 # ============================================================
-# GET LISTA DIPENDENTI
+# GET LISTA DIPENDENTI (VERSIONE CORRETTA)
 # ============================================================
 
-@router.get("/employees", response_model=list[Employee])
+@router.get("/employees")
 def list_employees(db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_site_history import EmployeeSiteHistory
+    from app.models.employee_departments import EmployeeDepartment
+    from app.models.employee_cost_centers import EmployeeCostCenter
+    from app.models.employee_contracts import EmployeeContract
+    from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employee_salaries import EmployeeSalary
+    from app.models.employee_company_cars import EmployeeCompanyCar
 
     employees = db.query(EmployeeModel).all()
-    return employees
+    result = []
+
+    for emp in employees:
+
+        # SITO ATTUALE
+        site = db.query(EmployeeSiteHistory).filter(
+            EmployeeSiteHistory.employee_id == emp.id,
+            EmployeeSiteHistory.to_date.is_(None)
+        ).first()
+
+        # REPARTO ATTUALE
+        department = db.query(EmployeeDepartment).filter(
+            EmployeeDepartment.employee_id == emp.id,
+            EmployeeDepartment.to_date.is_(None)
+        ).first()
+
+        # COST CENTER ATTUALI
+        cost_centers = db.query(EmployeeCostCenter).filter(
+            EmployeeCostCenter.employee_id == emp.id,
+            EmployeeCostCenter.to_date.is_(None)
+        ).all()
+
+        # CONTRATTO ATTUALE
+        contract = db.query(EmployeeContract).filter(
+            EmployeeContract.employee_id == emp.id,
+            EmployeeContract.to_date.is_(None)
+        ).first()
+
+        # STATO ATTUALE
+        status = db.query(EmployeeStatusHistory).filter(
+            EmployeeStatusHistory.employee_id == emp.id,
+            EmployeeStatusHistory.to_date.is_(None)
+        ).first()
+
+        # RAL ATTUALE
+        salary = db.query(EmployeeSalary).filter(
+            EmployeeSalary.employee_id == emp.id,
+            EmployeeSalary.to_date.is_(None)
+        ).first()
+
+        # AUTO AZIENDALE ATTUALE
+        car = db.query(EmployeeCompanyCar).filter(
+            EmployeeCompanyCar.employee_id == emp.id,
+            EmployeeCompanyCar.to_date.is_(None)
+        ).first()
+
+        result.append({
+            "id": emp.id,
+            "email": emp.email,
+            "first_name": emp.first_name,
+            "last_name": emp.last_name,
+            "role": emp.role,
+            "site": site,
+            "department": department,
+            "cost_centers": cost_centers,
+            "contract": contract,
+            "status": status,
+            "salary": salary,
+            "company_car": car,
+        })
+
+    return result
 
 
 # ============================================================
-# GET DETTAGLIO DIPENDENTE
+# GET DETTAGLIO DIPENDENTE (VERSIONE CORRETTA)
 # ============================================================
 
-@router.get("/employees/{employee_id}", response_model=Employee)
+@router.get("/employees/{employee_id}")
 def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_site_history import EmployeeSiteHistory
+    from app.models.employee_departments import EmployeeDepartment
+    from app.models.employee_cost_centers import EmployeeCostCenter
+    from app.models.employee_contracts import EmployeeContract
+    from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employee_salaries import EmployeeSalary
+    from app.models.employee_company_cars import EmployeeCompanyCar
 
+    # DIPENDENTE BASE
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
-    return employee
+
+    # SITO ATTUALE
+    site = db.query(EmployeeSiteHistory).filter(
+        EmployeeSiteHistory.employee_id == employee_id,
+        EmployeeSiteHistory.to_date.is_(None)
+    ).first()
+
+    # REPARTO ATTUALE
+    department = db.query(EmployeeDepartment).filter(
+        EmployeeDepartment.employee_id == employee_id,
+        EmployeeDepartment.to_date.is_(None)
+    ).first()
+
+    # COST CENTER ATTUALI
+    cost_centers = db.query(EmployeeCostCenter).filter(
+        EmployeeCostCenter.employee_id == employee_id,
+        EmployeeCostCenter.to_date.is_(None)
+    ).all()
+
+    # CONTRATTO ATTUALE
+    contract = db.query(EmployeeContract).filter(
+        EmployeeContract.employee_id == employee_id,
+        EmployeeContract.to_date.is_(None)
+    ).first()
+
+    # STATO ATTUALE
+    status = db.query(EmployeeStatusHistory).filter(
+        EmployeeStatusHistory.employee_id == employee_id,
+        EmployeeStatusHistory.to_date.is_(None)
+    ).first()
+
+    # RAL ATTUALE
+    salary = db.query(EmployeeSalary).filter(
+        EmployeeSalary.employee_id == employee_id,
+        EmployeeSalary.to_date.is_(None)
+    ).first()
+
+    # AUTO AZIENDALE ATTUALE
+    car = db.query(EmployeeCompanyCar).filter(
+        EmployeeCompanyCar.employee_id == employee_id,
+        EmployeeCompanyCar.to_date.is_(None)
+    ).first()
+
+    # RISPOSTA COMPLETA
+    return {
+        "id": employee.id,
+        "email": employee.email,
+        "first_name": employee.first_name,
+        "last_name": employee.last_name,
+        "phone": employee.phone,
+        "fiscal_code": employee.fiscal_code,
+        "gender": employee.gender,
+        "birth_date": employee.birth_date,
+        "birth_place": employee.birth_place,
+        "address_street": employee.address_street,
+        "address_city": employee.address_city,
+        "address_cap": employee.address_cap,
+        "lul_id": employee.lul_id,
+        "role": employee.role,
+        "is_active": employee.is_active,
+        "hire_date": employee.hire_date,
+        "termination_date": employee.termination_date,
+
+        # VALORI ATTUALI (history tables)
+        "site": site,
+        "department": department,
+        "cost_centers": cost_centers,
+        "contract": contract,
+        "status": status,
+        "salary": salary,
+        "company_car": car,
+    }
 
 
 # ============================================================

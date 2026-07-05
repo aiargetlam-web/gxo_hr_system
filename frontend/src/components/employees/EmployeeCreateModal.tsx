@@ -17,7 +17,7 @@ import {
   IconButton,
 } from "@mui/material";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   EmployeeCreate,
   ContractCreate,
@@ -27,6 +27,8 @@ import {
   SiteAssignmentCreate,
   BenefitCreate,
   CompanyCarCreate,
+  Role,
+  Site,
 } from "../../types";
 
 import { employeeService } from "../../services/employeeService";
@@ -49,6 +51,20 @@ interface Props {
 export default function EmployeeCreateModal({ open, onClose, onCreated }: Props) {
   const [activeStep, setActiveStep] = useState(0);
 
+  // ============================
+  // MENU A TENDINA (VALORI DA DB)
+  // ============================
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [workRegimes, setWorkRegimes] = useState<any[]>([]);
+  const [contractNatures, setContractNatures] = useState<any[]>([]);
+  const [costCentersList, setCostCentersList] = useState<any[]>([]);
+  const [departmentsList, setDepartmentsList] = useState<any[]>([]);
+  const [preposti, setPreposti] = useState<any[]>([]);
+
+  // ============================
+  // FORM PRINCIPALE
+  // ============================
   const [form, setForm] = useState<EmployeeCreate>({
     first_name: "",
     last_name: "",
@@ -68,6 +84,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
+    preposto: false,
 
     contract: {
       work_regime_id: 1,
@@ -106,6 +123,9 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     company_car: undefined,
   });
 
+  // ============================
+  // HANDLER CAMPI
+  // ============================
   const handleChange = (field: keyof EmployeeCreate, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -138,6 +158,9 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     }));
   };
 
+  // ============================
+  // COST CENTER
+  // ============================
   const addCostCenter = () => {
     setForm((prev) => ({
       ...prev,
@@ -160,6 +183,9 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     }));
   };
 
+  // ============================
+  // BENEFICI
+  // ============================
   const addBenefit = () => {
     setForm((prev) => ({
       ...prev,
@@ -182,6 +208,50 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     }));
   };
 
+  // ============================
+  // CARICAMENTO VALORI DAL DB
+  // ============================
+  useEffect(() => {
+    if (open) {
+      loadDropdowns();
+    }
+  }, [open]);
+
+  const loadDropdowns = async () => {
+    try {
+      const [
+        rolesRes,
+        sitesRes,
+        wrRes,
+        cnRes,
+        ccRes,
+        depRes,
+        prepostiRes,
+      ] = await Promise.all([
+        employeeService.getAllRoles(),
+        employeeService.getSites(),
+        employeeService.getWorkRegimes(),
+        employeeService.getContractNatures(),
+        employeeService.getCostCenters(),
+        employeeService.getDepartments(),
+        employeeService.getPreposti(),
+      ]);
+
+      setRoles(rolesRes);
+      setSites(sitesRes);
+      setWorkRegimes(wrRes);
+      setContractNatures(cnRes);
+      setCostCentersList(ccRes);
+      setDepartmentsList(depRes);
+      setPreposti(prepostiRes);
+    } catch (err) {
+      console.error("Errore caricamento dropdown:", err);
+    }
+  };
+
+  // ============================
+  // SUBMIT
+  // ============================
   const handleSubmit = async () => {
     await employeeService.createEmployee(form);
     onCreated();
@@ -189,6 +259,9 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     setActiveStep(0);
   };
 
+  // ============================
+  // RENDER STEP
+  // ============================
   const renderStep = () => {
     switch (activeStep) {
       case 0:
@@ -272,6 +345,18 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             <FormControlLabel
               control={
                 <Checkbox
+                  checked={form.preposto}
+                  onChange={(e) =>
+                    handleChange("preposto", e.target.checked)
+                  }
+                />
+              }
+              label="Preposto"
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
                   checked={form.is_protected_category}
                   onChange={(e) =>
                     handleChange("is_protected_category", e.target.checked)
@@ -292,6 +377,36 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
               }
               label="Svantaggiato"
             />
+
+            <TextField
+              select
+              label="Ruolo"
+              fullWidth
+              value={form.role_id}
+              onChange={(e) => handleChange("role_id", Number(e.target.value))}
+            >
+              {roles.map((r) => (
+                <MenuItem key={r.id} value={r.id}>
+                  {r.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Sito"
+              fullWidth
+              value={form.current_site_id}
+              onChange={(e) =>
+                handleChange("current_site_id", Number(e.target.value))
+              }
+            >
+              {sites.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </TextField>
           </Stack>
         );
 
@@ -308,22 +423,36 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             />
 
             <TextField
-              label="Regime di lavoro (ID)"
+              select
+              label="Regime di lavoro"
               fullWidth
               value={form.contract.work_regime_id}
               onChange={(e) =>
                 handleContractChange("work_regime_id", Number(e.target.value))
               }
-            />
+            >
+              {workRegimes.map((wr) => (
+                <MenuItem key={wr.id} value={wr.id}>
+                  {wr.code} - {wr.description}
+                </MenuItem>
+              ))}
+            </TextField>
 
             <TextField
-              label="Natura contratto (ID)"
+              select
+              label="Natura contratto"
               fullWidth
               value={form.contract.contract_nature_id}
               onChange={(e) =>
                 handleContractChange("contract_nature_id", Number(e.target.value))
               }
-            />
+            >
+              {contractNatures.map((cn) => (
+                <MenuItem key={cn.id} value={cn.id}>
+                  {cn.code} - {cn.description}
+                </MenuItem>
+              ))}
+            </TextField>
 
             <TextField
               label="Ore settimanali"
@@ -351,11 +480,15 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             />
 
             <TextField
+              select
               label="Turno"
               fullWidth
               value={form.contract.shift_type}
               onChange={(e) => handleContractChange("shift_type", e.target.value)}
-            />
+            >
+              <MenuItem value="Giornata">Giornata</MenuItem>
+              <MenuItem value="Turnista">Turnista</MenuItem>
+            </TextField>
           </Stack>
         );
 
@@ -379,7 +512,8 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                   </Stack>
 
                   <TextField
-                    label="Cost Center ID"
+                    select
+                    label="Cost Center"
                     fullWidth
                     value={cc.cost_center_id}
                     onChange={(e) => {
@@ -387,7 +521,13 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                       updated[index].cost_center_id = Number(e.target.value);
                       handleChange("cost_centers", updated);
                     }}
-                  />
+                  >
+                    {costCentersList.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        {c.code} - {c.description}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
                   <TextField
                     label="Percentuale"
@@ -422,16 +562,24 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
         return (
           <Stack spacing={2}>
             <TextField
-              label="Reparto ID"
+              select
+              label="Reparto"
               fullWidth
               value={form.department.department_id}
               onChange={(e) =>
                 handleDepartmentChange("department_id", Number(e.target.value))
               }
-            />
+            >
+              {departmentsList.map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+                  {d.name}
+                </MenuItem>
+              ))}
+            </TextField>
 
             <TextField
-              label="Responsabile (ID dipendente)"
+              select
+              label="Responsabile"
               fullWidth
               value={form.department.manager_employee_id ?? ""}
               onChange={(e) =>
@@ -440,7 +588,13 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                   e.target.value === "" ? undefined : Number(e.target.value)
                 )
               }
-            />
+            >
+              {preposti.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.last_name} {p.first_name}
+                </MenuItem>
+              ))}
+            </TextField>
 
             <TextField
               label="Data inizio reparto"
@@ -472,22 +626,29 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
             />
 
             <TextField
-              label="Sito iniziale (ID)"
+              select
+              label="Sito iniziale"
               fullWidth
               value={form.site_history.site_id}
               onChange={(e) =>
                 handleSiteChange("site_id", Number(e.target.value))
               }
-            />
+            >
+              {sites.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </TextField>
 
             <TextField
-              label="Data inizio sito"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.site_history.from_date}
-              onChange={(e) => handleSiteChange("from_date", e.target.value)}
-            />
+  label="Data inizio sito"
+  type="date"
+  InputLabelProps={{ shrink: true }}
+  fullWidth
+  value={form.site_history.from_date}
+  onChange={(e) => handleSiteChange("from_date", e.target.value)}
+/>
           </Stack>
         );
 
@@ -515,7 +676,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
                     fullWidth
                     value={b.benefit_type}
                     onChange={(e) => {
-                      const updated = [...form.benefits];   {/* CORRETTO */}
+                      const updated = [...form.benefits];
                       updated[index].benefit_type = e.target.value;
                       handleChange("benefits", updated);
                     }}
@@ -582,38 +743,3 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
         );
     }
   };
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Nuovo Dipendente</DialogTitle>
-
-      <DialogContent>
-        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {renderStep()}
-      </DialogContent>
-
-      <DialogActions>
-        {activeStep > 0 && (
-          <Button onClick={() => setActiveStep(activeStep - 1)}>Indietro</Button>
-        )}
-
-        {activeStep < steps.length - 1 ? (
-          <Button variant="contained" onClick={() => setActiveStep(activeStep + 1)}>
-            Avanti
-          </Button>
-        ) : (
-          <Button variant="contained" onClick={handleSubmit}>
-            Crea Dipendente
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
-  );
-}

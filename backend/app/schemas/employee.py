@@ -10,9 +10,91 @@ class Role(BaseModel):
     id: int
     name: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# SOTTO-SCHEMI HR (READ)
+# ---------------------------------------------------------
+
+class Contract(BaseModel):
+    id: int
+    work_regime_id: int
+    contract_nature_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    weekly_hours: Optional[float] = None
+    fte: Optional[float] = None
+    time_band: Optional[str] = None
+    shift_type: Optional[str] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class CostCenter(BaseModel):
+    id: int
+    cost_center_id: int
+    weight_percent: float
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class Department(BaseModel):
+    id: int
+    department_id: int
+    manager_employee_id: Optional[int]
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class Salary(BaseModel):
+    id: int
+    ral_amount: float
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class SiteHistory(BaseModel):
+    id: int
+    site_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class CompanyCar(BaseModel):
+    id: int
+    car_model: str
+    plate: Optional[str]
+    from_date: date
+    to_date: Optional[date] = None
+    benefit_type: Optional[str]
+    payroll_notes: Optional[str]
+    note: Optional[str]
+
+    model_config = {"from_attributes": True}
+
+
+class Status(BaseModel):
+    id: int
+    status_type_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
 
 
 # ---------------------------------------------------------
@@ -183,15 +265,13 @@ class EmployeeCreate(EmployeeBase):
 
 
 # ---------------------------------------------------------
-# OUTPUT DAL DB
+# OUTPUT DAL DB (BASE)
 # ---------------------------------------------------------
 
 class EmployeeInDBBase(EmployeeBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 # ---------------------------------------------------------
@@ -204,17 +284,15 @@ class Employee(EmployeeInDBBase):
     created_at: datetime
     updated_at: datetime
 
-    # 🔥 AGGIUNTO: RUOLO COMPLETO
     role: Optional[Role] = None
 
-    current_contract: Optional[ContractUpdate] = None
-    current_salary: Optional[SalaryUpdate] = None
-    current_department: Optional[DepartmentUpdate] = None
-    current_site: Optional[SiteUpdate] = None
-    current_status: Optional[StatusUpdate] = None
-    current_company_car: Optional[CompanyCarUpdate] = None
-    current_cost_centers: Optional[List[CostCenterUpdate]] = None
+    # 🔥 VALORI ATTUALI (history tables)
+    site: Optional[SiteHistory] = None
+    department: Optional[Department] = None
+    cost_centers: Optional[List[CostCenter]] = None
+    contract: Optional[Contract] = None
+    salary: Optional[Salary] = None
+    company_car: Optional[CompanyCar] = None
+    status: Optional[Status] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}

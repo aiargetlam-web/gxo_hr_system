@@ -103,7 +103,7 @@ export default function Employees() {
     return "default";
   };
 
-  // 🔥 Colonne DataGrid moderne
+  // 🔥 Colonne DataGrid moderne — VERSIONE CORRETTA
   const columns = [
     {
       field: "avatar",
@@ -141,8 +141,8 @@ export default function Employees() {
       headerName: "Reparto",
       flex: 1,
       valueGetter: (params: any) =>
-        params.row.current_department?.department_id
-          ? `Dept #${params.row.current_department.department_id}`
+        params.row.department?.department_id
+          ? `Dept #${params.row.department.department_id}`
           : "-",
     },
     {
@@ -150,15 +150,15 @@ export default function Employees() {
       headerName: "Sito",
       flex: 1,
       valueGetter: (params: any) =>
-        params.row.current_site?.site_id ? `Sito #${params.row.current_site.site_id}` : "-",
+        params.row.site?.site_id ? `Sito #${params.row.site.site_id}` : "-",
     },
     {
       field: "contract",
       headerName: "Contratto",
       flex: 1,
       valueGetter: (params: any) =>
-        params.row.current_contract?.work_regime_id
-          ? `Regime #${params.row.current_contract.work_regime_id}`
+        params.row.contract?.work_regime_id
+          ? `Regime #${params.row.contract.work_regime_id}`
           : "-",
     },
     {
@@ -168,11 +168,11 @@ export default function Employees() {
       renderCell: (params: any) => (
         <Chip
           label={
-            params.row.current_status?.status_type_id
-              ? `Status #${params.row.current_status.status_type_id}`
+            params.row.status?.status_type_id
+              ? `Status #${params.row.status.status_type_id}`
               : "N/D"
           }
-          color={getStatusColor(params.row.current_status)}
+          color={getStatusColor(params.row.status)}
         />
       ),
     },
@@ -190,15 +190,15 @@ export default function Employees() {
     },
   ];
 
-  // 🔥 Export CSV
+  // 🔥 Export CSV — VERSIONE CORRETTA
   const handleExportCSV = () => {
     const rows = employees.map(e => ({
       Nome: `${e.first_name} ${e.last_name}`,
       Ruolo: getRoleName(e.role_id),
-      Reparto: e.current_department?.department_id || "-",
-      Sito: e.current_site?.site_id || "-",
-      Contratto: e.current_contract?.work_regime_id || "-",
-      Stato: e.current_status?.status_type_id || "N/D",
+      Reparto: e.department?.department_id || "-",
+      Sito: e.site?.site_id || "-",
+      Contratto: e.contract?.work_regime_id || "-",
+      Stato: e.status?.status_type_id || "N/D",
     }));
 
     const csv = [
@@ -243,7 +243,7 @@ export default function Employees() {
         </Stack>
       </Stack>
 
-      {/* TABELLA MODERNA */}
+      {/* TABELLA */}
       <Card sx={{ height: 650 }}>
         <DataGrid
           rows={employees}

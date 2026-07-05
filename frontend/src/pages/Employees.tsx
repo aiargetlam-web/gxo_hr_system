@@ -1,23 +1,20 @@
-// 🔥 IMPORT IDENTICI AI TUOI
 import { useEffect, useState } from "react";
 import {
   Avatar,
   Box,
   Button,
   Card,
-  Chip,
-  CircularProgress,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
+
+import { DataGrid } from "@mui/x-data-grid";
 
 import { employeeService } from "../services/employeeService";
 import { Employee } from "../types";
@@ -41,18 +38,8 @@ export default function Employees() {
   const [search, setSearch] = useState("");
 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, emp: Employee) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedEmployee(emp);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   // Modali HR
   const [openCreate, setOpenCreate] = useState(false);
@@ -70,6 +57,12 @@ export default function Employees() {
     setLoading(true);
     try {
       const data = await employeeService.getAll();
+
+      // 🔥 Ordinamento alfabetico
+      data.sort((a, b) =>
+        `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
+      );
+
       setEmployees(data);
     } finally {
       setLoading(false);
@@ -80,40 +73,125 @@ export default function Employees() {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" sx={{ mt: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, emp: Employee) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedEmployee(emp);
+  };
 
-  const filtered = employees.filter((e) => {
-    const s = search.toLowerCase();
-    return (
-      e.first_name.toLowerCase().includes(s) ||
-      e.last_name.toLowerCase().includes(s)
-    );
-  });
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
-  // 🔥 PATCH: funzioni per mostrare valori leggibili
+  // 🔥 Ruoli moderni
   const getRoleName = (role_id: number) => {
-    if (role_id === 1) return "Admin";
-    if (role_id === 2) return "HR";
+    if (role_id === 6) return "Amministratore";
+    if (role_id === 5) return "Risorse Umane";
+    if (role_id === 4) return "Operaio di Magazzino";
     return "Dipendente";
   };
 
-  const getDepartmentName = (d: any) =>
-    d?.department_id ? `Dept #${d.department_id}` : "-";
+  // 🔥 Colonne DataGrid
+  const columns = [
+    {
+      field: "avatar",
+      headerName: "",
+      width: 70,
+      sortable: false,
+      renderCell: (params: any) => (
+        <Avatar sx={{ bgcolor: "#1976d2" }}>
+          {params.row.first_name[0]}
+          {params.row.last_name[0]}
+        </Avatar>
+      ),
+    },
+    {
+      field: "name",
+      headerName: "Nome",
+      flex: 1,
+      valueGetter: (params: any) => `${params.row.first_name} ${params.row.last_name}`,
+    },
+    {
+      field: "role",
+      headerName: "Ruolo",
+      flex: 1,
+      valueGetter: (params: any) => getRoleName(params.row.role_id),
+    },
+    {
+      field: "department",
+      headerName: "Reparto",
+      flex: 1,
+      valueGetter: (params: any) =>
+        params.row.current_department?.department_id
+          ? `Dept #${params.row.current_department.department_id}`
+          : "-",
+    },
+    {
+      field: "site",
+      headerName: "Sito",
+      flex: 1,
+      valueGetter: (params: any) =>
+        params.row.current_site?.site_id ? `Sito #${params.row.current_site.site_id}` : "-",
+    },
+    {
+      field: "contract",
+      headerName: "Contratto",
+      flex: 1,
+      valueGetter: (params: any) =>
+        params.row.current_contract?.work_regime_id
+          ? `Regime #${params.row.current_contract.work_regime_id}`
+          : "-",
+    },
+    {
+      field: "status",
+      headerName: "Stato",
+      flex: 1,
+      valueGetter: (params: any) =>
+        params.row.current_status?.status_type_id
+          ? `Status #${params.row.current_status.status_type_id}`
+          : "N/D",
+    },
+    {
+      field: "actions",
+      headerName: "",
+      width: 60,
+      sortable: false,
+      renderCell: (params: any) => (
+        <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
+          <MoreVertIcon />
+        </IconButton>
+      ),
+    },
+  ];
 
-  const getSiteName = (s: any) =>
-    s?.site_id ? `Sito #${s.site_id}` : "-";
+  // 🔥 Export CSV
+  const handleExportCSV = () => {
+    const rows = employees.map(e => ({
+      Nome: `${e.first_name} ${e.last_name}`,
+      Ruolo: getRoleName(e.role_id),
+      Reparto: e.current_department?.department_id || "-",
+      Sito: e.current_site?.site_id || "-",
+      Contratto: e.current_contract?.work_regime_id || "-",
+      Stato: e.current_status?.status_type_id || "N/D",
+    }));
 
-  const getContractName = (c: any) =>
-    c?.work_regime_id ? `Regime #${c.work_regime_id}` : "-";
+    const csv = [
+      Object.keys(rows[0]).join(";"),
+      ...rows.map(r => Object.values(r).join(";"))
+    ].join("\n");
 
-  const getStatusName = (s: any) =>
-    s?.status_type_id ? `Status #${s.status_type_id}` : "N/D";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "dipendenti.csv";
+    link.click();
+  };
+
+  // 🔥 Import CSV (placeholder)
+  const handleImportCSV = () => {
+    alert("Funzione Import CSV da implementare (richiede backend)");
+  };
 
   return (
     <Box p={3}>
@@ -123,91 +201,34 @@ export default function Employees() {
           Gestione Dipendenti
         </Typography>
 
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>
-          Nuovo Dipendente
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" onClick={handleImportCSV}>
+            Importa CSV
+          </Button>
+
+          <Button variant="outlined" onClick={handleExportCSV}>
+            Esporta CSV
+          </Button>
+
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>
+            Nuovo Dipendente
+          </Button>
+        </Stack>
       </Stack>
 
-      {/* FILTRO */}
-      <Card sx={{ p: 2, mb: 3 }}>
-        <TextField
-          label="Cerca dipendente"
-          fullWidth
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      {/* TABELLA MODERNA */}
+      <Card sx={{ height: 600 }}>
+        <DataGrid
+          rows={employees}
+          columns={columns}
+          loading={loading}
+          disableSelectionOnClick
+          pageSizeOptions={[10, 20, 50]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10 } },
+            sorting: { sortModel: [{ field: "name", sort: "asc" }] },
+          }}
         />
-      </Card>
-
-      {/* TABELLA */}
-      <Card>
-        <Box p={2}>
-          <Stack direction="row" sx={{ fontWeight: 600, mb: 1 }}>
-            <Box width={60}></Box>
-            <Box flex={1}>Nome</Box>
-            <Box flex={1}>Ruolo</Box>
-            <Box flex={1}>Reparto</Box>
-            <Box flex={1}>Sito</Box>
-            <Box flex={1}>Contratto</Box>
-            <Box width={140}>Stato</Box>
-            <Box width={50}></Box>
-          </Stack>
-
-          <Divider sx={{ mb: 2 }} />
-
-          {filtered.map((e) => (
-            <Stack
-              key={e.id}
-              direction="row"
-              alignItems="center"
-              sx={{ py: 1.5, borderBottom: "1px solid #eee" }}
-            >
-              <Box width={60}>
-                <Avatar sx={{ bgcolor: "#1976d2" }}>
-                  {e.first_name[0]}
-                  {e.last_name[0]}
-                </Avatar>
-              </Box>
-
-              <Box flex={1}>
-                {e.first_name} {e.last_name}
-              </Box>
-
-              {/* 🔥 PATCH: ruolo */}
-              <Box flex={1}>
-                {getRoleName(e.role_id)}
-              </Box>
-
-              {/* 🔥 PATCH: reparto */}
-              <Box flex={1}>
-                {getDepartmentName(e.current_department)}
-              </Box>
-
-              {/* 🔥 PATCH: sito */}
-              <Box flex={1}>
-                {getSiteName(e.current_site)}
-              </Box>
-
-              {/* 🔥 PATCH: contratto */}
-              <Box flex={1}>
-                {getContractName(e.current_contract)}
-              </Box>
-
-              {/* 🔥 PATCH: stato */}
-              <Box width={140}>
-                <Chip
-                  label={getStatusName(e.current_status)}
-                  color={getStatusName(e.current_status) === "Status #1" ? "primary" : "default"}
-                />
-              </Box>
-
-              <Box width={50} textAlign="right">
-                <IconButton onClick={(ev) => handleMenuOpen(ev, e)}>
-                  <MoreVertIcon />
-                </IconButton>
-              </Box>
-            </Stack>
-          ))}
-        </Box>
       </Card>
 
       {/* MENU ⋮ */}

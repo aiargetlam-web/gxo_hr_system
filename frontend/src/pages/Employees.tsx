@@ -18,7 +18,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 import { employeeService } from "../services/employeeService";
-import { Employee } from "../types";
+import { EmployeeFull } from "../types";
 
 // Modali HR
 import EmployeeCreateModal from "../components/employees/EmployeeCreateModal";
@@ -33,10 +33,10 @@ import EmployeeChangeSiteModal from "../components/employees/EmployeeChangeSiteM
 import EmployeeChangeStatusModal from "../components/employees/EmployeeChangeStatusModal";
 
 export default function Employees() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<EmployeeFull[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeFull | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
@@ -44,20 +44,19 @@ export default function Employees() {
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
 
-  const [openNewContract, setOpenNewContract] = useState<Employee | null>(null);
-  const [openNewSalary, setOpenNewSalary] = useState<Employee | null>(null);
-  const [openNewDepartment, setOpenNewDepartment] = useState<Employee | null>(null);
-  const [openNewCostCenter, setOpenNewCostCenter] = useState<Employee | null>(null);
-  const [openNewCompanyCar, setOpenNewCompanyCar] = useState<Employee | null>(null);
-  const [openChangeSite, setOpenChangeSite] = useState<Employee | null>(null);
-  const [openChangeStatus, setOpenChangeStatus] = useState<Employee | null>(null);
+  const [openNewContract, setOpenNewContract] = useState<EmployeeFull | null>(null);
+  const [openNewSalary, setOpenNewSalary] = useState<EmployeeFull | null>(null);
+  const [openNewDepartment, setOpenNewDepartment] = useState<EmployeeFull | null>(null);
+  const [openNewCostCenter, setOpenNewCostCenter] = useState<EmployeeFull | null>(null);
+  const [openNewCompanyCar, setOpenNewCompanyCar] = useState<EmployeeFull | null>(null);
+  const [openChangeSite, setOpenChangeSite] = useState<EmployeeFull | null>(null);
+  const [openChangeStatus, setOpenChangeStatus] = useState<EmployeeFull | null>(null);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const data = await employeeService.getAll();
 
-      // 🔥 Ordinamento alfabetico
       data.sort((a, b) =>
         `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
       );
@@ -71,8 +70,10 @@ export default function Employees() {
   useEffect(() => {
     loadData();
   }, []);
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, emp: Employee) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    emp: EmployeeFull
+  ) => {
     setAnchorEl(event.currentTarget);
     setSelectedEmployee(emp);
   };
@@ -81,7 +82,7 @@ export default function Employees() {
     setAnchorEl(null);
   };
 
-  // 🔥 Ruoli moderni con badge colorati
+  // Ruoli moderni con badge colorati
   const getRoleName = (role_id: number) => {
     if (role_id === 6) return "Amministratore";
     if (role_id === 5) return "Risorse Umane";
@@ -103,7 +104,7 @@ export default function Employees() {
     return "default";
   };
 
-  // 🔥 Colonne DataGrid moderne — VERSIONE CORRETTA
+  // ⭐ COLONNE CORRETTE PER EmployeeFull
   const columns = [
     {
       field: "avatar",
@@ -122,7 +123,8 @@ export default function Employees() {
       field: "name",
       headerName: "Nome",
       flex: 1,
-      valueGetter: (params: any) => `${params.row.first_name} ${params.row.last_name}`,
+      valueGetter: (params: any) =>
+        `${params.row.first_name} ${params.row.last_name}`,
     },
     {
       field: "role",
@@ -136,6 +138,8 @@ export default function Employees() {
         />
       ),
     },
+
+    // ⭐ DEPARTMENT — CORRETTO
     {
       field: "department",
       headerName: "Reparto",
@@ -145,13 +149,17 @@ export default function Employees() {
           ? `Dept #${params.row.department.department_id}`
           : "-",
     },
+
+    // ⭐ SITE — CORRETTO (site.id, NON site_id)
     {
       field: "site",
       headerName: "Sito",
       flex: 1,
       valueGetter: (params: any) =>
-        params.row.site?.site_id ? `Sito #${params.row.site.site_id}` : "-",
+        params.row.site?.id ? `Sito #${params.row.site.id}` : "-",
     },
+
+    // ⭐ CONTRACT — CORRETTO
     {
       field: "contract",
       headerName: "Contratto",
@@ -161,6 +169,8 @@ export default function Employees() {
           ? `Regime #${params.row.contract.work_regime_id}`
           : "-",
     },
+
+    // ⭐ STATUS — CORRETTO
     {
       field: "status",
       headerName: "Stato",
@@ -176,6 +186,7 @@ export default function Employees() {
         />
       ),
     },
+
     {
       field: "actions",
       headerName: "",
@@ -189,21 +200,22 @@ export default function Employees() {
       ),
     },
   ];
-
-  // 🔥 Export CSV — VERSIONE CORRETTA
+  // ⭐ Export CSV — CORRETTO PER EmployeeFull
   const handleExportCSV = () => {
-    const rows = employees.map(e => ({
+    const rows = employees.map((e) => ({
       Nome: `${e.first_name} ${e.last_name}`,
       Ruolo: getRoleName(e.role_id),
       Reparto: e.department?.department_id || "-",
-      Sito: e.site?.site_id || "-",
+      Sito: e.site?.id || "-", // ⭐ CORRETTO
       Contratto: e.contract?.work_regime_id || "-",
       Stato: e.status?.status_type_id || "N/D",
     }));
 
+    if (rows.length === 0) return;
+
     const csv = [
       Object.keys(rows[0]).join(";"),
-      ...rows.map(r => Object.values(r).join(";"))
+      ...rows.map((r) => Object.values(r).join(";")),
     ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -215,7 +227,7 @@ export default function Employees() {
     link.click();
   };
 
-  // 🔥 Import CSV (placeholder)
+  // Import CSV (placeholder)
   const handleImportCSV = () => {
     alert("Funzione Import CSV da implementare (richiede backend)");
   };
@@ -223,7 +235,12 @@ export default function Employees() {
   return (
     <Box p={3}>
       {/* HEADER */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 3 }}
+      >
         <Typography variant="h4" fontWeight={700}>
           Gestione Dipendenti
         </Typography>
@@ -237,7 +254,11 @@ export default function Employees() {
             Esporta CSV
           </Button>
 
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenCreate(true)}
+          >
             Nuovo Dipendente
           </Button>
         </Stack>
@@ -258,60 +279,143 @@ export default function Employees() {
           }}
         />
       </Card>
-
       {/* MENU ⋮ */}
       <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
-        <MenuItem onClick={() => { setOpenEdit(true); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenEdit(true);
+            handleMenuClose();
+          }}
+        >
           Modifica dati attuali
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenNewContract(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenNewContract(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Nuovo Contratto
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenNewSalary(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenNewSalary(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Nuova RAL
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenNewDepartment(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenNewDepartment(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Nuovo Reparto
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenNewCostCenter(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenNewCostCenter(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Nuovo Cost Center
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenNewCompanyCar(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenNewCompanyCar(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Nuova Auto Aziendale
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenChangeSite(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenChangeSite(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Cambio Sito
         </MenuItem>
 
-        <MenuItem onClick={() => { setOpenChangeStatus(selectedEmployee); handleMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            setOpenChangeStatus(selectedEmployee);
+            handleMenuClose();
+          }}
+        >
           Cambio Stato Lavorativo
         </MenuItem>
       </Menu>
 
-      {/* MODALI HR */}
-      <EmployeeCreateModal open={openCreate} onClose={() => setOpenCreate(false)} onCreated={loadData} />
+      {/* MODALI HR — TUTTI CORRETTI PER EmployeeFull */}
+      <EmployeeCreateModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={loadData}
+      />
 
-      <EmployeeEditModal open={openEdit} onClose={() => setOpenEdit(false)} onSaved={loadData} employee={selectedEmployee} />
+      <EmployeeEditModal
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        onSaved={loadData}
+        employee={selectedEmployee}
+      />
 
-      <EmployeeNewContractModal open={!!openNewContract} employee={openNewContract} onClose={() => setOpenNewContract(null)} onSaved={loadData} />
+      <EmployeeNewContractModal
+        open={!!openNewContract}
+        employee={openNewContract}
+        onClose={() => setOpenNewContract(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeNewSalaryModal open={!!openNewSalary} employee={openNewSalary} onClose={() => setOpenNewSalary(null)} onSaved={loadData} />
+      <EmployeeNewSalaryModal
+        open={!!openNewSalary}
+        employee={openNewSalary}
+        onClose={() => setOpenNewSalary(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeNewDepartmentModal open={!!openNewDepartment} employee={openNewDepartment} onClose={() => setOpenNewDepartment(null)} onSaved={loadData} />
+      <EmployeeNewDepartmentModal
+        open={!!openNewDepartment}
+        employee={openNewDepartment}
+        onClose={() => setOpenNewDepartment(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeNewCostCenterModal open={!!openNewCostCenter} employee={openNewCostCenter} onClose={() => setOpenNewCostCenter(null)} onSaved={loadData} />
+      <EmployeeNewCostCenterModal
+        open={!!openNewCostCenter}
+        employee={openNewCostCenter}
+        onClose={() => setOpenNewCostCenter(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeNewCompanyCarModal open={!!openNewCompanyCar} employee={openNewCompanyCar} onClose={() => setOpenNewCompanyCar(null)} onSaved={loadData} />
+      <EmployeeNewCompanyCarModal
+        open={!!openNewCompanyCar}
+        employee={openNewCompanyCar}
+        onClose={() => setOpenNewCompanyCar(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeChangeSiteModal open={!!openChangeSite} employee={openChangeSite} onClose={() => setOpenChangeSite(null)} onSaved={loadData} />
+      <EmployeeChangeSiteModal
+        open={!!openChangeSite}
+        employee={openChangeSite}
+        onClose={() => setOpenChangeSite(null)}
+        onSaved={loadData}
+      />
 
-      <EmployeeChangeStatusModal open={!!openChangeStatus} employee={openChangeStatus} onClose={() => setOpenChangeStatus(null)} onSaved={loadData} />
+      <EmployeeChangeStatusModal
+        open={!!openChangeStatus}
+        employee={openChangeStatus}
+        onClose={() => setOpenChangeStatus(null)}
+        onSaved={loadData}
+      />
     </Box>
   );
 }

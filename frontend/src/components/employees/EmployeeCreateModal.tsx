@@ -51,9 +51,6 @@ interface Props {
 export default function EmployeeCreateModal({ open, onClose, onCreated }: Props) {
   const [activeStep, setActiveStep] = useState(0);
 
-  // ============================
-  // MENU A TENDINA (VALORI DA DB)
-  // ============================
   const [roles, setRoles] = useState<Role[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [workRegimes, setWorkRegimes] = useState<any[]>([]);
@@ -62,9 +59,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
   const [departmentsList, setDepartmentsList] = useState<any[]>([]);
   const [preposti, setPreposti] = useState<any[]>([]);
 
-  // ============================
-  // FORM PRINCIPALE
-  // ============================
   const [form, setForm] = useState<EmployeeCreate>({
     first_name: "",
     last_name: "",
@@ -79,12 +73,12 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     address_cap: "",
     lul_id: "",
     role_id: 1,
-    current_site_id: 1,
+
     hire_date: "",
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
-    preposto: false, // ⭐ ORA ESISTE NEL TIPO
+    preposto: false,
 
     contract: {
       work_regime_id: 1,
@@ -122,7 +116,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
 
     company_car: undefined,
   });
-
   // ============================
   // HANDLER CAMPI
   // ============================
@@ -248,7 +241,6 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
       console.error("Errore caricamento dropdown:", err);
     }
   };
-
   // ============================
   // SUBMIT
   // ============================
@@ -258,6 +250,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     onClose();
     setActiveStep(0);
   };
+
   // ============================
   // RENDER STEP
   // ============================
@@ -345,9 +338,7 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
               control={
                 <Checkbox
                   checked={form.preposto}
-                  onChange={(e) =>
-                    handleChange("preposto", e.target.checked)
-                  }
+                  onChange={(e) => handleChange("preposto", e.target.checked)}
                 />
               }
               label="Preposto"
@@ -391,13 +382,14 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
               ))}
             </TextField>
 
+            {/* ⭐ SITO — CORRETTO */}
             <TextField
               select
               label="Sito"
               fullWidth
-              value={form.current_site_id}
+              value={form.site_history.site_id}
               onChange={(e) =>
-                handleChange("current_site_id", Number(e.target.value))
+                handleSiteChange("site_id", Number(e.target.value))
               }
             >
               {sites.map((s) => (

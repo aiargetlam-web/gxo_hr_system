@@ -22,16 +22,21 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { useEffect, useState } from "react";
 import {
-  Employee,
-  CostCenterUpdate,
+  EmployeeFull,
+  CostCenterCreate,
+  ContractCreate,
+  SalaryCreate,
+  DepartmentCreate,
+  SiteAssignmentCreate,
+  CompanyCarCreate,
 } from "../../types";
 
 import { employeeService } from "../../services/employeeService";
 
 const steps = [
   "Anagrafica",
-  "Contratto attuale",
-  "RAL attuale",
+  "Contratto",
+  "RAL",
   "Reparto / Sito / Stato",
   "Cost center / Auto",
 ];
@@ -40,7 +45,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
-  employee: Employee | null;
+  employee: EmployeeFull | null;
 }
 
 export default function EmployeeEditModal({
@@ -67,7 +72,7 @@ export default function EmployeeEditModal({
   const [isProtectedCategory, setIsProtectedCategory] = useState(false);
   const [isDisadvantaged, setIsDisadvantaged] = useState(false);
 
-  // Contratto attuale
+  // Contratto
   const [contractWorkRegimeId, setContractWorkRegimeId] = useState<number>(1);
   const [contractNatureId, setContractNatureId] = useState<number>(1);
   const [contractWeeklyHours, setContractWeeklyHours] = useState<number>(40);
@@ -75,7 +80,7 @@ export default function EmployeeEditModal({
   const [contractTimeBand, setContractTimeBand] = useState<string>("");
   const [contractShiftType, setContractShiftType] = useState<string>("");
 
-  // RAL attuale
+  // RAL
   const [salaryRalAmount, setSalaryRalAmount] = useState<number>(0);
 
   // Reparto / Sito / Stato
@@ -83,16 +88,15 @@ export default function EmployeeEditModal({
   const [siteId, setSiteId] = useState<number>(1);
   const [statusTypeId, setStatusTypeId] = useState<number>(1);
 
-  // Cost center (array dinamico)
+  // Cost center
   const [costCenters, setCostCenters] = useState<
-    { id: number; cost_center_id: number; weight_percent: number; note?: string }[]
+    { cost_center_id: number; weight_percent: number; note?: string }[]
   >([]);
 
   // Auto aziendale
   const [hasCompanyCar, setHasCompanyCar] = useState<boolean>(false);
   const [companyCarModel, setCompanyCarModel] = useState<string>("");
   const [companyCarPlate, setCompanyCarPlate] = useState<string>("");
-
   // ============================
   // INIZIALIZZAZIONE DA employee
   // ============================
@@ -134,7 +138,7 @@ export default function EmployeeEditModal({
 
     // Sito
     if (employee.site) {
-      setSiteId(employee.site.site_id);
+      setSiteId(employee.site.id);   // ⭐ CORRETTO
     }
 
     // Stato
@@ -146,7 +150,6 @@ export default function EmployeeEditModal({
     if (employee.cost_centers) {
       setCostCenters(
         employee.cost_centers.map((cc) => ({
-          id: cc.id,
           cost_center_id: cc.cost_center_id,
           weight_percent: cc.weight_percent,
           note: cc.note ?? "",
@@ -165,7 +168,6 @@ export default function EmployeeEditModal({
       setCompanyCarPlate("");
     }
   }, [employee]);
-
   // ============================
   // RENDER STEP 0–3
   // ============================
@@ -349,14 +351,14 @@ export default function EmployeeEditModal({
   };
 
   if (!employee) return null;
-
   // ============================
-  // SUBMIT COMPLETO
+  // SUBMIT COMPLETO (solo endpoint storici)
   // ============================
 
   const handleSubmit = async () => {
     if (!employee) return;
 
+    // 1) Aggiorna ANAGRAFICA
     await employeeService.updateEmployee(employee.id, {
       first_name: firstName,
       last_name: lastName,
@@ -370,47 +372,64 @@ export default function EmployeeEditModal({
       is_disadvantaged: isDisadvantaged,
     });
 
-    await employeeService.updateCurrentContract(employee.id, {
+    // 2) Nuovo CONTRATTO
+    const contractPayload: ContractCreate = {
       work_regime_id: contractWorkRegimeId,
       contract_nature_id: contractNatureId,
       weekly_hours: contractWeeklyHours,
       fte: contractFte,
       time_band: contractTimeBand,
       shift_type: contractShiftType,
-    });
+      from_date: new Date().toISOString().split("T")[0],
+    };
+    await employeeService.addContract(employee.id, contractPayload);
 
-    await employeeService.updateCurrentSalary(employee.id, {
+    // 3) Nuova RAL
+    const salaryPayload: SalaryCreate = {
       ral_amount: salaryRalAmount,
-    });
+      from_date: new Date().toISOString().split("T")[0],
+    };
+    await employeeService.addSalary(employee.id, salaryPayload);
 
-    await employeeService.updateCurrentDepartment(employee.id, {
+    // 4) Nuovo REPARTO
+    const departmentPayload: DepartmentCreate = {
       department_id: departmentId,
-    });
+      from_date: new Date().toISOString().split("T")[0],
+    };
+    await employeeService.addDepartment(employee.id, departmentPayload);
 
-    await employeeService.updateCurrentSite(employee.id, {
+    // 5) Nuovo SITO
+    const sitePayload: SiteAssignmentCreate = {
       site_id: siteId,
-    });
+      from_date: new Date().toISOString().split("T")[0],
+    };
+    await employeeService.addSiteAssignment(employee.id, sitePayload);
 
-    await employeeService.updateCurrentStatus(employee.id, {
+    // 6) Nuovo STATO
+    await employeeService.addStatus(employee.id, {
       status_type_id: statusTypeId,
+      from_date: new Date().toISOString().split("T")[0],
     });
 
+    // 7) Cost center
     for (const cc of costCenters) {
-      const payload: CostCenterUpdate = {
-        id: cc.id,
+      const payload: CostCenterCreate = {
         cost_center_id: cc.cost_center_id,
         weight_percent: cc.weight_percent,
+        from_date: new Date().toISOString().split("T")[0],
         note: cc.note ?? "",
       };
-
-      await employeeService.updateCurrentCostCenters(employee.id, payload);
+      await employeeService.addCostCenter(employee.id, payload);
     }
 
+    // 8) Auto aziendale
     if (hasCompanyCar) {
-      await employeeService.updateCurrentCompanyCar(employee.id, {
+      const carPayload: CompanyCarCreate = {
         car_model: companyCarModel,
         plate: companyCarPlate,
-      });
+        from_date: new Date().toISOString().split("T")[0],
+      };
+      await employeeService.addCompanyCar(employee.id, carPayload);
     }
 
     onSaved();
@@ -432,10 +451,10 @@ export default function EmployeeEditModal({
         )}
 
         {costCenters.map((cc, index) => (
-          <Accordion key={cc.id}>
+          <Accordion key={index}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>
-                Cost Center #{cc.id} — {cc.cost_center_id} ({cc.weight_percent}%)
+                Cost Center #{index + 1} — {cc.cost_center_id} ({cc.weight_percent}%)
               </Typography>
             </AccordionSummary>
 

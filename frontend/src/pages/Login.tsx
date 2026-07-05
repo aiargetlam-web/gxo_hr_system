@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { LoginResponse } from '../types';
+import '../css/login.css'; // <-- IMPORT CORRETTO
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
@@ -21,53 +22,59 @@ export const Login: React.FC = () => {
 
       localStorage.setItem("user_email", email);
 
-      // Primo accesso
       if ("requires_password_change" in response) {
         navigate('/change-password');
         return;
       }
 
-      // Login normale
       if ("access_token" in response) {
         const user = await login(response.access_token);
-
-        if (user) {
-          navigate('/dashboard');
-        }
-
+        if (user) navigate('/dashboard');
         return;
       }
 
       setError("Risposta inattesa dal server.");
-
     } catch {
       setError('Credenziali non valide.');
     }
   };
 
   return (
-    <div style={{ display:'flex', height:'100vh', justifyContent:'center', alignItems:'center' }}>
-      <div className="card" style={{ width:'400px' }}>
-        <h2 style={{ textAlign:'center', marginBottom:'1.5rem' }}>GXO HR Portal</h2>
+    <div className="login-wrapper">
+      <div className="login-card">
 
-        {error && (
-          <div style={{ padding:'0.5rem', backgroundColor:'#f8d7da', color:'#721c24', marginBottom:'1rem' }}>
-            {error}
-          </div>
-        )}
+        <div className="login-header">
+          <h1>GXO HR Portal</h1>
+          <p>Accesso riservato</p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
+        {error && <div className="login-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="login-form">
 
           <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-control login-input"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width:'100%', marginTop:'1rem' }}>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-control login-input"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary login-btn">
             Accedi
           </button>
         </form>

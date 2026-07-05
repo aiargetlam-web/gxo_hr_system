@@ -743,3 +743,39 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
         );
     }
   };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle>Nuovo Dipendente</DialogTitle>
+
+      <DialogContent>
+        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        {renderStep()}
+      </DialogContent>
+
+      <DialogActions>
+        {activeStep > 0 && (
+          <Button onClick={() => setActiveStep(activeStep - 1)}>Indietro</Button>
+        )}
+
+        {activeStep < steps.length - 1 ? (
+          <Button variant="contained" onClick={() => setActiveStep(activeStep + 1)}>
+            Avanti
+          </Button>
+        ) : (
+          <Button variant="contained" onClick={handleSubmit}>
+            Crea Dipendente
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+}
+

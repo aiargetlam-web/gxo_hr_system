@@ -43,6 +43,7 @@ export interface Department {
   id: number;
   department_id: number;
   manager_employee_id?: number | null;
+  employee_id?: number;
   from_date: string;
   to_date?: string | null;
   note?: string;
@@ -190,14 +191,36 @@ export interface CompanyCarUpdate {
 }
 
 /* ============================
-   EMPLOYEE BASE
+   EMPLOYEE BASE (NUOVO BACKEND)
 ============================ */
 export interface Employee {
   id: number;
 
+  email: string;
   first_name: string;
   last_name: string;
-  email: string;
+
+  role: Role;
+
+  site: Site | null;
+
+  department: Department | null;
+
+  cost_centers: CostCenter[];
+
+  contract: Contract | null;
+
+  status: StatusHistory | null;
+
+  salary: Salary | null;
+
+  company_car: CompanyCar | null;
+}
+
+/* ============================
+   EMPLOYEE FULL (DETTAGLIO)
+============================ */
+export interface EmployeeFull extends Employee {
   phone?: string;
 
   fiscal_code?: string;
@@ -211,17 +234,6 @@ export interface Employee {
 
   lul_id?: string;
 
-  role_id: number;
-  role?: Role;
-
-  /* ⭐ PATCH: questi campi possono essere null o undefined */
-  current_site_id?: number | null;
-  current_department_id?: number | null;
-  current_contract_id?: number | null;
-  current_status_id?: number | null;
-
-  site?: Site;
-
   hire_date?: string;
   termination_date?: string;
 
@@ -233,14 +245,36 @@ export interface Employee {
 
   created_at: string;
   updated_at: string;
+}
 
-  current_contract?: Contract | null;
-  current_salary?: Salary | null;
-  current_department?: Department | null;
-  current_cost_centers?: CostCenter[] | null;
-  current_company_car?: CompanyCar | null;
-  current_site?: SiteHistory | null;
-  current_status?: StatusHistory | null;
+/* ============================
+   EMPLOYEE AUTH
+============================ */
+export interface EmployeeAuth extends Employee {
+  phone?: string | null;
+
+  fiscal_code?: string | null;
+  gender?: string | null;
+  birth_date?: string | null;
+  birth_place?: string | null;
+
+  address_street?: string | null;
+  address_city?: string | null;
+  address_cap?: string | null;
+
+  lul_id?: string | null;
+
+  hire_date?: string | null;
+  termination_date?: string | null;
+
+  is_protected_category: boolean;
+  is_disadvantaged: boolean;
+
+  is_active: boolean;
+  first_access: boolean;
+
+  created_at: string;
+  updated_at: string;
 }
 
 /* ============================
@@ -264,7 +298,6 @@ export interface EmployeeCreate {
   lul_id?: string;
 
   role_id: number;
-  current_site_id: number;
 
   hire_date?: string;
   termination_date?: string;
@@ -274,7 +307,6 @@ export interface EmployeeCreate {
 
   preposto: boolean;
 
-
   contract: ContractCreate;
   cost_centers: CostCenterCreate[];
   department: DepartmentCreate;
@@ -282,105 +314,6 @@ export interface EmployeeCreate {
   site_history: SiteAssignmentCreate;
   benefits: BenefitCreate[];
   company_car?: CompanyCarCreate;
-}
-
-/* ============================
-   AUTH
-============================ */
-export interface EmployeeAuth {
-  id: number;
-
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string | null;
-
-  fiscal_code?: string | null;
-  gender?: string | null;
-  birth_date?: string | null;
-  birth_place?: string | null;
-
-  address_street?: string | null;
-  address_city?: string | null;
-  address_cap?: string | null;
-
-  lul_id?: string | null;
-
-  role_id: number;
-  role?: Role;
-
-  current_site_id?: number | null;
-  site?: Site;
-
-  hire_date?: string | null;
-  termination_date?: string | null;
-
-  is_protected_category: boolean;
-  is_disadvantaged: boolean;
-
-  is_active: boolean;
-  first_access: boolean;
-
-  created_at: string;
-  updated_at: string;
-
-  current_contract?: Contract | null;
-  current_salary?: Salary | null;
-  current_department?: Department | null;
-  current_cost_centers?: CostCenter[] | null;
-  current_company_car?: CompanyCar | null;
-  current_site?: SiteHistory | null;
-  current_status?: StatusHistory | null;
-}
-
-/* ============================
-   EMPLOYEE FULL (DETTAGLIO)
-============================ */
-export interface EmployeeFull {
-  id: number;
-
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-
-  fiscal_code?: string;
-  gender?: string;
-  birth_date?: string;
-  birth_place?: string;
-
-  address_street?: string;
-  address_city?: string;
-  address_cap?: string;
-
-  lul_id?: string;
-
-  role_id: number;
-  role?: Role;
-
-  /* ⭐ PATCH: anche qui */
-  current_site_id?: number | null;
-  site?: Site;
-
-  hire_date?: string;
-  termination_date?: string;
-
-  is_protected_category: boolean;
-  is_disadvantaged: boolean;
-
-  is_active: boolean;
-  first_access: boolean;
-
-  created_at: string;
-  updated_at: string;
-
-  current_contract?: Contract | null;
-  current_salary?: Salary | null;
-  current_department?: Department | null;
-  current_cost_centers?: CostCenter[] | null;
-  current_company_car?: CompanyCar | null;
-  current_site?: SiteHistory | null;
-  current_status?: StatusHistory | null;
 }
 
 /* ============================

@@ -65,7 +65,7 @@ export default function EmployeeDetail() {
         </Typography>
 
         <Typography sx={{ mt: 1 }}>
-          <strong>Sito Attuale:</strong> {employee.current_site?.site_id ?? "-"}
+          <strong>Sito Attuale:</strong> {employee.site?.id ?? "-"}
         </Typography>
 
         <Typography sx={{ mt: 1 }}>
@@ -94,32 +94,32 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>Regime Lavorativo:</strong>{" "}
-          {employee.current_contract?.work_regime_id ?? "-"}
+          {employee.contract?.work_regime_id ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Natura Contratto:</strong>{" "}
-          {employee.current_contract?.contract_nature_id ?? "-"}
+          {employee.contract?.contract_nature_id ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Ore Settimanali:</strong>{" "}
-          {employee.current_contract?.weekly_hours ?? "-"}
+          {employee.contract?.weekly_hours ?? "-"}
         </Typography>
 
         <Typography>
           <strong>FTE:</strong>{" "}
-          {employee.current_contract?.fte ?? "-"}
+          {employee.contract?.fte ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Data Inizio:</strong>{" "}
-          {employee.current_contract?.from_date ?? "-"}
+          {employee.contract?.from_date ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Data Fine:</strong>{" "}
-          {employee.current_contract?.to_date ?? "-"}
+          {employee.contract?.to_date ?? "-"}
         </Typography>
       </Card>
 
@@ -132,17 +132,17 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>RAL:</strong>{" "}
-          {employee.current_salary?.ral_amount ?? "-"}
+          {employee.salary?.ral_amount ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Dal:</strong>{" "}
-          {employee.current_salary?.from_date ?? "-"}
+          {employee.salary?.from_date ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Al:</strong>{" "}
-          {employee.current_salary?.to_date ?? "-"}
+          {employee.salary?.to_date ?? "-"}
         </Typography>
       </Card>
 
@@ -155,22 +155,22 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>ID Reparto:</strong>{" "}
-          {employee.current_department?.department_id ?? "-"}
+          {employee.department?.department_id ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Manager:</strong>{" "}
-          {employee.current_department?.manager_employee_id ?? "-"}
+          {employee.department?.manager_employee_id ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Dal:</strong>{" "}
-          {employee.current_department?.from_date ?? "-"}
+          {employee.department?.from_date ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Al:</strong>{" "}
-          {employee.current_department?.to_date ?? "-"}
+          {employee.department?.to_date ?? "-"}
         </Typography>
       </Card>
 
@@ -183,17 +183,17 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>Status:</strong>{" "}
-          {employee.current_status?.status_type_id ?? "-"}
+          {employee.status?.status_type_id ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Dal:</strong>{" "}
-          {employee.current_status?.from_date ?? "-"}
+          {employee.status?.from_date ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Al:</strong>{" "}
-          {employee.current_status?.to_date ?? "-"}
+          {employee.status?.to_date ?? "-"}
         </Typography>
       </Card>
 
@@ -206,27 +206,27 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>Modello:</strong>{" "}
-          {employee.current_company_car?.car_model ?? "-"}
+          {employee.company_car?.car_model ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Targa:</strong>{" "}
-          {employee.current_company_car?.plate ?? "-"}
+          {employee.company_car?.plate ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Benefit:</strong>{" "}
-          {employee.current_company_car?.benefit_type ?? "-"}
+          {employee.company_car?.benefit_type ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Dal:</strong>{" "}
-          {employee.current_company_car?.from_date ?? "-"}
+          {employee.company_car?.from_date ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Al:</strong>{" "}
-          {employee.current_company_car?.to_date ?? "-"}
+          {employee.company_car?.to_date ?? "-"}
         </Typography>
       </Card>
     </Box>

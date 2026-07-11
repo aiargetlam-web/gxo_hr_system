@@ -19,28 +19,31 @@ export const Profile: React.FC = () => {
 
   if (!user || !employee) return null;
 
-  // 🔥 PATCH: ruolo basato su role_id
+  // ⭐ Ruolo corretto (role.id)
   const roleName =
-    employee.role_id === 1 ? "Admin" :
-    employee.role_id === 2 ? "HR" :
-    employee.role_id === 3 ? "Dipendente" :
+    employee.role?.id === 1 ? "Admin" :
+    employee.role?.id === 2 ? "HR" :
+    employee.role?.id === 3 ? "Dipendente" :
     "N/D";
 
-  // 🔥 PATCH: valori leggibili
-  const siteName = employee.current_site?.site_id
-    ? `Sito #${employee.current_site.site_id}`
+  // ⭐ Sito corretto (site.id)
+  const siteName = employee.site?.id
+    ? `Sito #${employee.site.id}`
     : "Non assegnato / Globale";
 
-  const departmentName = employee.current_department?.department_id
-    ? `Dept #${employee.current_department.department_id}`
+  // ⭐ Reparto corretto (department.department_id)
+  const departmentName = employee.department?.department_id
+    ? `Dept #${employee.department.department_id}`
     : "N/D";
 
-  const contractName = employee.current_contract?.work_regime_id
-    ? `Regime #${employee.current_contract.work_regime_id}`
+  // ⭐ Contratto corretto (contract.work_regime_id)
+  const contractName = employee.contract?.work_regime_id
+    ? `Regime #${employee.contract.work_regime_id}`
     : "N/D";
 
-  const statusName = employee.current_status?.status_type_id
-    ? `Status #${employee.current_status.status_type_id}`
+  // ⭐ Status corretto (status.status_type_id)
+  const statusName = employee.status?.status_type_id
+    ? `Status #${employee.status.status_type_id}`
     : "N/D";
 
   return (

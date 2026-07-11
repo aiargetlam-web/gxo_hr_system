@@ -10,10 +10,10 @@ export const PowerBIDashboard: React.FC = () => {
 
   if (!user) return null;
 
-  // 🔥 Mappo il ruolo tramite role_id
+  // ⭐ Ruolo corretto (role.id)
   const roleName =
-    user.role_id === 1 ? "admin" :
-    user.role_id === 2 ? "hr" :
+    user.role?.id === 1 ? "admin" :
+    user.role?.id === 2 ? "hr" :
     "employee";
 
   const [tokenConfig, setTokenConfig] = useState<{
@@ -33,7 +33,7 @@ export const PowerBIDashboard: React.FC = () => {
     }
   }, [roleName]);
 
-  // 🔥 Redirect se non autorizzato
+  // ⭐ Redirect corretto
   if (roleName !== "hr" && roleName !== "admin") {
     return <Navigate to="/dashboard" replace />;
   }

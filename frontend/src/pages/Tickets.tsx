@@ -17,10 +17,10 @@ export const Tickets: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 PATCH: ruolo basato su role_id
+  // ⭐ Ruolo corretto (role.id)
   const roleName =
-    user?.role_id === 1 ? "admin" :
-    user?.role_id === 2 ? "hr" :
+    user?.role?.id === 1 ? "admin" :
+    user?.role?.id === 2 ? "hr" :
     "employee";
 
   useEffect(() => {

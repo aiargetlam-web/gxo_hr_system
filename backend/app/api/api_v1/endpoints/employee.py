@@ -150,6 +150,8 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore creazione dipendente: {str(e)}")
+
+
 # ============================================================
 # NUOVO CONTRATTO
 # ============================================================
@@ -418,6 +420,8 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante il cambio sito: {str(e)}")
+
+
 # ============================================================
 # GET LISTA DIPENDENTI (FULL) — ROTTA AGGIUNTA
 # ============================================================
@@ -453,9 +457,7 @@ def list_employees(db: Session = Depends(get_db)):
 
     for emp in employees:
 
-        # ============================
-        # SITO ATTUALE
-        # ============================
+        # SITO
         site_hist = db.query(EmployeeSiteHistory).filter(
             EmployeeSiteHistory.employee_id == emp.id,
             EmployeeSiteHistory.to_date.is_(None)
@@ -467,12 +469,10 @@ def list_employees(db: Session = Depends(get_db)):
             if site_obj:
                 site = {
                     "id": site_obj.id,
-                    "name": site_obj.name,
+                    "name": site_obj.description or site_obj.code
                 }
 
-        # ============================
-        # REPARTO ATTUALE
-        # ============================
+        # REPARTO
         dep_hist = db.query(EmployeeDepartment).filter(
             EmployeeDepartment.employee_id == emp.id,
             EmployeeDepartment.to_date.is_(None)
@@ -484,12 +484,10 @@ def list_employees(db: Session = Depends(get_db)):
             if dep_obj:
                 department = {
                     "id": dep_obj.id,
-                    "name": dep_obj.name,
+                    "name": dep_obj.description or dep_obj.code
                 }
 
-        # ============================
-        # CONTRATTO ATTUALE
-        # ============================
+        # CONTRATTO
         contract_hist = db.query(EmployeeContract).filter(
             EmployeeContract.employee_id == emp.id,
             EmployeeContract.to_date.is_(None)
@@ -502,8 +500,8 @@ def list_employees(db: Session = Depends(get_db)):
 
             contract = {
                 "id": contract_hist.id,
-                "work_regime": wr.name if wr else None,
-                "contract_nature": cn.name if cn else None,
+                "work_regime": wr.description if wr else None,
+                "contract_nature": cn.description if cn else None,
                 "weekly_hours": contract_hist.weekly_hours,
                 "shift_type": contract_hist.shift_type,
                 "time_band": contract_hist.time_band,
@@ -512,9 +510,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": contract_hist.note,
             }
 
-        # ============================
-        # STATO ATTUALE
-        # ============================
+        # STATO
         status_hist = db.query(EmployeeStatusHistory).filter(
             EmployeeStatusHistory.employee_id == emp.id,
             EmployeeStatusHistory.to_date.is_(None)
@@ -528,14 +524,12 @@ def list_employees(db: Session = Depends(get_db)):
 
             status = {
                 "id": status_hist.id,
-                "name": st.name if st else None,
+                "name": st.description if st else None,
                 "from_date": status_hist.from_date,
                 "note": status_hist.note,
             }
 
-        # ============================
-        # RAL ATTUALE
-        # ============================
+        # RAL
         salary_hist = db.query(EmployeeSalary).filter(
             EmployeeSalary.employee_id == emp.id,
             EmployeeSalary.to_date.is_(None)
@@ -550,9 +544,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": salary_hist.note,
             }
 
-        # ============================
-        # AUTO AZIENDALE ATTIVA
-        # ============================
+        # AUTO
         car_hist = db.query(EmployeeCompanyCar).filter(
             EmployeeCompanyCar.employee_id == emp.id,
             EmployeeCompanyCar.to_date.is_(None)
@@ -569,14 +561,12 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": car_hist.note,
             }
 
-        # ============================
         # RUOLO
-        # ============================
         role = None
         if emp.role:
             role = {
                 "id": emp.role.id,
-                "name": emp.role.name,
+                "name": emp.role.description or emp.role.code
             }
 
         result.append({

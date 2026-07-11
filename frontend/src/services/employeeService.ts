@@ -16,7 +16,7 @@ export const employeeService = {
   // GET LISTA DIPENDENTI (FULL)
   // ============================
   getAll: async (): Promise<EmployeeFull[]> => {
-    const res = await api.get("/api/v1/employees/full");
+    const res = await api.get("/api/v1/employees");
     return res.data;
   },
 

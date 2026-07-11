@@ -8,16 +8,15 @@ import {
   DepartmentCreate,
   CostCenterCreate,
   SiteAssignmentCreate,
-  BenefitCreate,
   CompanyCarCreate,
 } from "../types";
 
 export const employeeService = {
   // ============================
-  // GET LISTA DIPENDENTI
+  // GET LISTA DIPENDENTI (FULL)
   // ============================
-  getAll: async (): Promise<Employee[]> => {
-    const res = await api.get("/api/v1/employees");
+  getAll: async (): Promise<EmployeeFull[]> => {
+    const res = await api.get("/api/v1/employees/full");
     return res.data;
   },
 
@@ -32,7 +31,7 @@ export const employeeService = {
   // ============================
   // CREATE DIPENDENTE (WIZARD)
   // ============================
-  createEmployee: async (data: EmployeeCreate): Promise<Employee> => {
+  createEmployee: async (data: EmployeeCreate): Promise<EmployeeFull> => {
     const res = await api.post("/api/v1/employees", data);
     return res.data;
   },
@@ -40,7 +39,7 @@ export const employeeService = {
   // ============================
   // UPDATE ANAGRAFICA DIPENDENTE
   // ============================
-  updateEmployee: async (id: number, data: any): Promise<Employee> => {
+  updateEmployee: async (id: number, data: any): Promise<EmployeeFull> => {
     const res = await api.put(`/api/v1/employees/${id}`, data);
     return res.data;
   },

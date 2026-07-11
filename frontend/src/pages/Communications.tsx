@@ -17,10 +17,10 @@ export const Communications: React.FC = () => {
   const [comms, setComms] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 PATCH: ruolo basato su role_id
+  // ⭐ Ruolo corretto (backend nuovo)
   const roleName =
-    user?.role_id === 1 ? "admin" :
-    user?.role_id === 2 ? "hr" :
+    user?.role?.id === 1 ? "admin" :
+    user?.role?.id === 2 ? "hr" :
     "employee";
 
   useEffect(() => {

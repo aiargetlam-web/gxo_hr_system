@@ -29,9 +29,10 @@ export const ActivityLogs: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
 
+  // ⭐ Ruolo corretto
   const roleName =
-    user?.role_id === 1 ? "admin" :
-    user?.role_id === 2 ? "hr" :
+    user?.role?.id === 1 ? "admin" :
+    user?.role?.id === 2 ? "hr" :
     "employee";
 
   useEffect(() => {
@@ -98,9 +99,10 @@ export const UserHistory: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [history, setHistory] = useState<UserHistoryLog[]>([]);
 
+  // ⭐ Ruolo corretto
   const roleName =
-    user?.role_id === 1 ? "admin" :
-    user?.role_id === 2 ? "hr" :
+    user?.role?.id === 1 ? "admin" :
+    user?.role?.id === 2 ? "hr" :
     "employee";
 
   useEffect(() => {
@@ -162,5 +164,5 @@ export const UserHistory: React.FC = () => {
   );
 };
 
-// 🔥 DEFAULT EXPORT (necessario per App.tsx)
+// 🔥 DEFAULT EXPORT
 export default ActivityLogs;

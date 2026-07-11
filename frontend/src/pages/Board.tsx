@@ -12,10 +12,10 @@ import Box from "@mui/material/Box";
 const Board: React.FC = () => {
   const { user } = useContext(AuthContext);
 
-  // 🔥 nuovo controllo ruolo
+  // 🔥 nuovo controllo ruolo (corretto)
   const roleName =
-    user?.role_id === 1 ? "admin" :
-    user?.role_id === 2 ? "hr" :
+    user?.role?.id === 1 ? "admin" :
+    user?.role?.id === 2 ? "hr" :
     "employee";
 
   const [files, setFiles] = useState<BoardFile[]>([]);

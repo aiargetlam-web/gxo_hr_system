@@ -70,6 +70,7 @@ export default function Employees() {
   useEffect(() => {
     loadData();
   }, []);
+
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLButtonElement>,
     emp: EmployeeFull
@@ -82,18 +83,18 @@ export default function Employees() {
     setAnchorEl(null);
   };
 
-  // Ruoli moderni con badge colorati
-  const getRoleName = (role_id: number) => {
-    if (role_id === 6) return "Amministratore";
-    if (role_id === 5) return "Risorse Umane";
-    if (role_id === 4) return "Operaio di Magazzino";
+  // ⭐ Ruoli moderni con badge colorati — CORRETTO
+  const getRoleName = (roleId: number) => {
+    if (roleId === 6) return "Amministratore";
+    if (roleId === 5) return "Risorse Umane";
+    if (roleId === 4) return "Operaio di Magazzino";
     return "Dipendente";
   };
 
-  const getRoleColor = (role_id: number) => {
-    if (role_id === 6) return "error";
-    if (role_id === 5) return "primary";
-    if (role_id === 4) return "success";
+  const getRoleColor = (roleId: number) => {
+    if (roleId === 6) return "error";
+    if (roleId === 5) return "primary";
+    if (roleId === 4) return "success";
     return "default";
   };
 
@@ -132,8 +133,8 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={getRoleName(params.row.role_id)}
-          color={getRoleColor(params.row.role_id)}
+          label={getRoleName(params.row.role?.id ?? 0)}
+          color={getRoleColor(params.row.role?.id ?? 0)}
           variant="outlined"
         />
       ),
@@ -150,7 +151,7 @@ export default function Employees() {
           : "-",
     },
 
-    // ⭐ SITE — CORRETTO (site.id, NON site_id)
+    // ⭐ SITE — CORRETTO (site.id)
     {
       field: "site",
       headerName: "Sito",
@@ -200,13 +201,14 @@ export default function Employees() {
       ),
     },
   ];
+
   // ⭐ Export CSV — CORRETTO PER EmployeeFull
   const handleExportCSV = () => {
     const rows = employees.map((e) => ({
       Nome: `${e.first_name} ${e.last_name}`,
-      Ruolo: getRoleName(e.role_id),
+      Ruolo: getRoleName(e.role?.id ?? 0),
       Reparto: e.department?.department_id || "-",
-      Sito: e.site?.id || "-", // ⭐ CORRETTO
+      Sito: e.site?.id || "-",
       Contratto: e.contract?.work_regime_id || "-",
       Stato: e.status?.status_type_id || "N/D",
     }));
@@ -227,7 +229,6 @@ export default function Employees() {
     link.click();
   };
 
-  // Import CSV (placeholder)
   const handleImportCSV = () => {
     alert("Funzione Import CSV da implementare (richiede backend)");
   };
@@ -279,6 +280,7 @@ export default function Employees() {
           }}
         />
       </Card>
+
       {/* MENU ⋮ */}
       <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
         <MenuItem
@@ -354,7 +356,7 @@ export default function Employees() {
         </MenuItem>
       </Menu>
 
-      {/* MODALI HR — TUTTI CORRETTI PER EmployeeFull */}
+      {/* MODALI HR */}
       <EmployeeCreateModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}

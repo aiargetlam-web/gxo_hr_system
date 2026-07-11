@@ -500,8 +500,8 @@ def list_employees(db: Session = Depends(get_db)):
 
             contract = {
                 "id": contract_hist.id,
-                "work_regime": wr.name if wr else None,
-                "contract_nature": cn.name if cn else None,
+                "work_regime": wr.description or wr.code if wr else None,
+		"contract_nature": cn.description or cn.code if cn else None,
                 "weekly_hours": contract_hist.weekly_hours,
                 "shift_type": contract_hist.shift_type,
                 "time_band": contract_hist.time_band,
@@ -661,7 +661,17 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "site": site,
         "department": department,
         "cost_centers": cost_centers,
-        "contract": contract,
+        "contract": {
+    		"id": contract.id,
+   		"work_regime": contract.work_regime.description or contract.work_regime.code if contract.work_regime else None,
+    		"contract_nature": contract.contract_nature.description or contract.contract_nature.code if contract.contract_nature else None,
+    		"weekly_hours": contract.weekly_hours,
+    		"shift_type": contract.shift_type,
+    		"time_band": contract.time_band,
+    		"fte": contract.fte,
+    		"from_date": contract.from_date,
+    		"note": contract.note,
+	} if contract else None,
         "status": status,
         "salary": salary,
         "company_car": car,
@@ -843,7 +853,17 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
 
     return {
         "employee": employee,
-        "contract": current_contract,
+        "contract": {
+    		"id": current_contract.id,
+    		"work_regime": current_contract.work_regime.description or current_contract.work_regime.code if current_contract.work_regime else None,
+    		"contract_nature": current_contract.contract_nature.description or current_contract.contract_nature.code if current_contract.contract_nature else None,
+    		"weekly_hours": current_contract.weekly_hours,
+    		"shift_type": current_contract.shift_type,
+    		"time_band": current_contract.time_band,
+    		"fte": current_contract.fte,
+    		"from_date": current_contract.from_date,
+   		"note": current_contract.note,
+	} if current_contract else None,
         "cost_centers": current_cc,
         "department": current_dep,
         "salary": current_salary,

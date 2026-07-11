@@ -469,7 +469,7 @@ def list_employees(db: Session = Depends(get_db)):
             if site_obj:
                 site = {
                     "id": site_obj.id,
-                    "name": site_obj.description or site_obj.code
+                    "name": site_obj.name or site_obj.code
                 }
 
         # REPARTO
@@ -484,7 +484,7 @@ def list_employees(db: Session = Depends(get_db)):
             if dep_obj:
                 department = {
                     "id": dep_obj.id,
-                    "name": dep_obj.description or dep_obj.code
+                    "name": dep_obj.name or dep_obj.code
                 }
 
         # CONTRATTO
@@ -500,8 +500,8 @@ def list_employees(db: Session = Depends(get_db)):
 
             contract = {
                 "id": contract_hist.id,
-                "work_regime": wr.description if wr else None,
-                "contract_nature": cn.description if cn else None,
+                "work_regime": wr.name if wr else None,
+                "contract_nature": cn.name if cn else None,
                 "weekly_hours": contract_hist.weekly_hours,
                 "shift_type": contract_hist.shift_type,
                 "time_band": contract_hist.time_band,
@@ -524,7 +524,7 @@ def list_employees(db: Session = Depends(get_db)):
 
             status = {
                 "id": status_hist.id,
-                "name": st.description if st else None,
+                "name": st.name if st else None,
                 "from_date": status_hist.from_date,
                 "note": status_hist.note,
             }
@@ -566,7 +566,7 @@ def list_employees(db: Session = Depends(get_db)):
         if emp.role:
             role = {
                 "id": emp.role.id,
-                "name": emp.role.description or emp.role.code
+                "name": emp.role.name or emp.role.code
             }
 
         result.append({

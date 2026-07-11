@@ -27,7 +27,6 @@ import {
   ContractCreate,
   SalaryCreate,
   DepartmentCreate,
-  SiteAssignmentCreate,
   CompanyCarCreate,
 } from "../../types";
 
@@ -97,6 +96,7 @@ export default function EmployeeEditModal({
   const [hasCompanyCar, setHasCompanyCar] = useState<boolean>(false);
   const [companyCarModel, setCompanyCarModel] = useState<string>("");
   const [companyCarPlate, setCompanyCarPlate] = useState<string>("");
+
   // ============================
   // INIZIALIZZAZIONE DA employee
   // ============================
@@ -138,7 +138,7 @@ export default function EmployeeEditModal({
 
     // Sito
     if (employee.site) {
-      setSiteId(employee.site.id);   // ⭐ CORRETTO
+      setSiteId(employee.site.id);
     }
 
     // Stato
@@ -168,6 +168,7 @@ export default function EmployeeEditModal({
       setCompanyCarPlate("");
     }
   }, [employee]);
+
   // ============================
   // RENDER STEP 0–3
   // ============================
@@ -351,8 +352,9 @@ export default function EmployeeEditModal({
   };
 
   if (!employee) return null;
+
   // ============================
-  // SUBMIT COMPLETO (solo endpoint storici)
+  // SUBMIT COMPLETO
   // ============================
 
   const handleSubmit = async () => {
@@ -398,18 +400,11 @@ export default function EmployeeEditModal({
     };
     await employeeService.addDepartment(employee.id, departmentPayload);
 
-    // 5) Nuovo SITO
-    const sitePayload: SiteAssignmentCreate = {
-      site_id: siteId,
-      from_date: new Date().toISOString().split("T")[0],
-    };
-    await employeeService.addSiteAssignment(employee.id, sitePayload);
+    // 5) Nuovo SITO — CORRETTO
+    await employeeService.changeSite(employee.id, siteId);
 
-    // 6) Nuovo STATO
-    await employeeService.addStatus(employee.id, {
-      status_type_id: statusTypeId,
-      from_date: new Date().toISOString().split("T")[0],
-    });
+    // 6) Nuovo STATO — CORRETTO
+    await employeeService.changeStatus(employee.id, statusTypeId);
 
     // 7) Cost center
     for (const cc of costCenters) {
@@ -543,18 +538,10 @@ export default function EmployeeEditModal({
     );
   };
 
-  // ============================
-  // RENDER STEP (include step 4)
-  // ============================
-
   const renderStepWithCostCenters = () => {
     if (activeStep === 4) return renderCostCentersAccordion();
     return renderStep();
   };
-
-  // ============================
-  // RENDER FINALE
-  // ============================
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">

@@ -20,8 +20,8 @@ export interface Site {
 ============================ */
 export interface Contract {
   id: number;
-  work_regime_id: number;
-  contract_nature_id: number;
+  work_regime: string | null;
+  contract_nature: string | null;
   from_date: string;
   to_date?: string | null;
   weekly_hours?: number;

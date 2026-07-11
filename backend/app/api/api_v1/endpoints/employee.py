@@ -150,8 +150,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore creazione dipendente: {str(e)}")
-
-
 # ============================================================
 # NUOVO CONTRATTO
 # ============================================================
@@ -420,53 +418,6 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante il cambio sito: {str(e)}")
-
-
-# ============================================================
-# CAMBIO STATO LAVORATIVO
-# ============================================================
-
-@router.post("/employees/{employee_id}/status")
-def change_status(employee_id: int, status_type_id: int, from_date: date, note: str | None = None, db: Session = Depends(get_db)):
-    from app.models.employee import Employee as EmployeeModel
-    from app.models.employee_status_history import EmployeeStatusHistory
-
-    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
-    if not employee:
-        raise HTTPException(status_code=404, detail="Dipendente non trovato")
-
-    try:
-        current_status = (
-            db.query(EmployeeStatusHistory)
-            .filter(
-                EmployeeStatusHistory.employee_id == employee_id,
-                EmployeeStatusHistory.to_date.is_(None)
-            )
-            .first()
-        )
-
-        if current_status:
-            current_status.to_date = from_date - timedelta(days=1)
-            db.add(current_status)
-
-        new_status = EmployeeStatusHistory(
-            employee_id=employee_id,
-            status_type_id=status_type_id,
-            from_date=from_date,
-            note=note
-        )
-
-        db.add(new_status)
-        db.commit()
-        db.refresh(new_status)
-
-        return {"message": "Cambio stato lavorativo registrato con successo", "status": new_status}
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore durante il cambio stato lavorativo: {str(e)}")
-
-
 # ============================================================
 # GET LISTA DIPENDENTI (FULL) — ROTTA AGGIUNTA
 # ============================================================
@@ -483,6 +434,12 @@ def get_employees_full(db: Session = Depends(get_db)):
 @router.get("/employees")
 def list_employees(db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.site import Site
+    from app.models.department import Department
+    from app.models.work_regime import WorkRegime
+    from app.models.contract_nature import ContractNature
+    from app.models.employment_status_type import EmploymentStatusType
+
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_departments import EmployeeDepartment
     from app.models.employee_cost_centers import EmployeeCostCenter
@@ -496,61 +453,144 @@ def list_employees(db: Session = Depends(get_db)):
 
     for emp in employees:
 
+        # ============================
         # SITO ATTUALE
-        site = db.query(EmployeeSiteHistory).filter(
+        # ============================
+        site_hist = db.query(EmployeeSiteHistory).filter(
             EmployeeSiteHistory.employee_id == emp.id,
             EmployeeSiteHistory.to_date.is_(None)
         ).first()
 
+        site = None
+        if site_hist:
+            site_obj = db.query(Site).filter(Site.id == site_hist.site_id).first()
+            if site_obj:
+                site = {
+                    "id": site_obj.id,
+                    "name": site_obj.name,
+                }
+
+        # ============================
         # REPARTO ATTUALE
-        department = db.query(EmployeeDepartment).filter(
+        # ============================
+        dep_hist = db.query(EmployeeDepartment).filter(
             EmployeeDepartment.employee_id == emp.id,
             EmployeeDepartment.to_date.is_(None)
         ).first()
 
-        # COST CENTER ATTUALI
-        cost_centers = db.query(EmployeeCostCenter).filter(
-            EmployeeCostCenter.employee_id == emp.id,
-            EmployeeCostCenter.to_date.is_(None)
-        ).all()
+        department = None
+        if dep_hist:
+            dep_obj = db.query(Department).filter(Department.id == dep_hist.department_id).first()
+            if dep_obj:
+                department = {
+                    "id": dep_obj.id,
+                    "name": dep_obj.name,
+                }
 
+        # ============================
         # CONTRATTO ATTUALE
-        contract = db.query(EmployeeContract).filter(
+        # ============================
+        contract_hist = db.query(EmployeeContract).filter(
             EmployeeContract.employee_id == emp.id,
             EmployeeContract.to_date.is_(None)
         ).first()
 
+        contract = None
+        if contract_hist:
+            wr = db.query(WorkRegime).filter(WorkRegime.id == contract_hist.work_regime_id).first()
+            cn = db.query(ContractNature).filter(ContractNature.id == contract_hist.contract_nature_id).first()
+
+            contract = {
+                "id": contract_hist.id,
+                "work_regime": wr.name if wr else None,
+                "contract_nature": cn.name if cn else None,
+                "weekly_hours": contract_hist.weekly_hours,
+                "shift_type": contract_hist.shift_type,
+                "time_band": contract_hist.time_band,
+                "fte": contract_hist.fte,
+                "from_date": contract_hist.from_date,
+                "note": contract_hist.note,
+            }
+
+        # ============================
         # STATO ATTUALE
-        status = db.query(EmployeeStatusHistory).filter(
+        # ============================
+        status_hist = db.query(EmployeeStatusHistory).filter(
             EmployeeStatusHistory.employee_id == emp.id,
             EmployeeStatusHistory.to_date.is_(None)
         ).first()
 
+        status = None
+        if status_hist:
+            st = db.query(EmploymentStatusType).filter(
+                EmploymentStatusType.id == status_hist.status_type_id
+            ).first()
+
+            status = {
+                "id": status_hist.id,
+                "name": st.name if st else None,
+                "from_date": status_hist.from_date,
+                "note": status_hist.note,
+            }
+
+        # ============================
         # RAL ATTUALE
-        salary = db.query(EmployeeSalary).filter(
+        # ============================
+        salary_hist = db.query(EmployeeSalary).filter(
             EmployeeSalary.employee_id == emp.id,
             EmployeeSalary.to_date.is_(None)
         ).first()
 
-        # AUTO AZIENDALE ATTUALE
-        car = db.query(EmployeeCompanyCar).filter(
+        salary = None
+        if salary_hist:
+            salary = {
+                "id": salary_hist.id,
+                "ral_amount": salary_hist.ral_amount,
+                "from_date": salary_hist.from_date,
+                "note": salary_hist.note,
+            }
+
+        # ============================
+        # AUTO AZIENDALE ATTIVA
+        # ============================
+        car_hist = db.query(EmployeeCompanyCar).filter(
             EmployeeCompanyCar.employee_id == emp.id,
             EmployeeCompanyCar.to_date.is_(None)
         ).first()
+
+        company_car = None
+        if car_hist:
+            company_car = {
+                "id": car_hist.id,
+                "car_model": car_hist.car_model,
+                "plate": car_hist.plate,
+                "benefit_type": car_hist.benefit_type,
+                "from_date": car_hist.from_date,
+                "note": car_hist.note,
+            }
+
+        # ============================
+        # RUOLO
+        # ============================
+        role = None
+        if emp.role:
+            role = {
+                "id": emp.role.id,
+                "name": emp.role.name,
+            }
 
         result.append({
             "id": emp.id,
             "email": emp.email,
             "first_name": emp.first_name,
             "last_name": emp.last_name,
-            "role": emp.role,
+            "role": role,
             "site": site,
             "department": department,
-            "cost_centers": cost_centers,
             "contract": contract,
             "status": status,
             "salary": salary,
-            "company_car": car,
+            "company_car": company_car,
         })
 
     return result
@@ -571,54 +611,45 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_salaries import EmployeeSalary
     from app.models.employee_company_cars import EmployeeCompanyCar
 
-    # DIPENDENTE BASE
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
-    # SITO ATTUALE
     site = db.query(EmployeeSiteHistory).filter(
         EmployeeSiteHistory.employee_id == employee_id,
         EmployeeSiteHistory.to_date.is_(None)
     ).first()
 
-    # REPARTO ATTUALE
     department = db.query(EmployeeDepartment).filter(
         EmployeeDepartment.employee_id == employee_id,
         EmployeeDepartment.to_date.is_(None)
     ).first()
 
-    # COST CENTER ATTUALI
     cost_centers = db.query(EmployeeCostCenter).filter(
         EmployeeCostCenter.employee_id == employee_id,
         EmployeeCostCenter.to_date.is_(None)
     ).all()
 
-    # CONTRATTO ATTUALE
     contract = db.query(EmployeeContract).filter(
         EmployeeContract.employee_id == employee_id,
         EmployeeContract.to_date.is_(None)
     ).first()
 
-    # STATO ATTUALE
     status = db.query(EmployeeStatusHistory).filter(
         EmployeeStatusHistory.employee_id == employee_id,
         EmployeeStatusHistory.to_date.is_(None)
     ).first()
 
-    # RAL ATTUALE
     salary = db.query(EmployeeSalary).filter(
         EmployeeSalary.employee_id == employee_id,
         EmployeeSalary.to_date.is_(None)
     ).first()
 
-    # AUTO AZIENDALE ATTUALE
     car = db.query(EmployeeCompanyCar).filter(
         EmployeeCompanyCar.employee_id == employee_id,
         EmployeeCompanyCar.to_date.is_(None)
     ).first()
 
-    # RISPOSTA COMPLETA
     return {
         "id": employee.id,
         "email": employee.email,

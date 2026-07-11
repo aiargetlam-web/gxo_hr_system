@@ -94,12 +94,12 @@ export default function EmployeeDetail() {
 
         <Typography>
           <strong>Regime Lavorativo:</strong>{" "}
-          {employee.contract?.work_regime_id ?? "-"}
+          {employee.contract?.work_regime ?? "-"}
         </Typography>
 
         <Typography>
           <strong>Natura Contratto:</strong>{" "}
-          {employee.contract?.contract_nature_id ?? "-"}
+          {employee.contract?.contract_nature ?? "-"}
         </Typography>
 
         <Typography>

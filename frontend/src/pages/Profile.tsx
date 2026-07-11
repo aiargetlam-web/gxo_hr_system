@@ -37,9 +37,10 @@ export const Profile: React.FC = () => {
     : "N/D";
 
   // ⭐ Contratto corretto (contract.work_regime_id)
-  const contractName = employee.contract?.work_regime_id
-    ? `Regime #${employee.contract.work_regime_id}`
-    : "N/D";
+  const contractName = employee.contract?.work_regime
+  ? employee.contract.work_regime
+  : "N/D";
+
 
   // ⭐ Status corretto (status.status_type_id)
   const statusName = employee.status?.status_type_id

@@ -119,8 +119,8 @@ export default function EmployeeEditModal({
 
     // Contratto attuale
     if (employee.contract) {
-      setContractWorkRegimeId(employee.contract.work_regime_id);
-      setContractNatureId(employee.contract.contract_nature_id);
+      setContractWorkRegimeId(Number(employee.contract.work_regime));
+	setContractNatureId(Number(employee.contract.contract_nature));
       setContractWeeklyHours(employee.contract.weekly_hours ?? 40);
       setContractFte(employee.contract.fte);
       setContractTimeBand(employee.contract.time_band ?? "");

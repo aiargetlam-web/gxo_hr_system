@@ -5,4 +5,5 @@ class WorkRegime(Base):
     __tablename__ = "work_regimes"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
+    code = Column(String(20), unique=True, nullable=False)
+    description = Column(String(255))

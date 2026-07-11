@@ -23,7 +23,6 @@ from app.schemas.employee import (
     CompanyCarUpdate,
 )
 
-# ⭐ PASSO 3 — SOLO QUESTA RIGA CAMBIATA
 router = APIRouter(tags=["Employees"])
 
 # ============================================================
@@ -469,6 +468,15 @@ def change_status(employee_id: int, status_type_id: int, from_date: date, note: 
 
 
 # ============================================================
+# GET LISTA DIPENDENTI (FULL) — ROTTA AGGIUNTA
+# ============================================================
+
+@router.get("/employees/full")
+def get_employees_full(db: Session = Depends(get_db)):
+    return list_employees(db)
+
+
+# ============================================================
 # GET LISTA DIPENDENTI (VERSIONE CORRETTA)
 # ============================================================
 
@@ -629,8 +637,6 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "is_active": employee.is_active,
         "hire_date": employee.hire_date,
         "termination_date": employee.termination_date,
-
-        # VALORI ATTUALI (history tables)
         "site": site,
         "department": department,
         "cost_centers": cost_centers,

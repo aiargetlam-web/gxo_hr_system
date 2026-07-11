@@ -404,7 +404,12 @@ export default function EmployeeEditModal({
     await employeeService.changeSite(employee.id, siteId);
 
     // 6) Nuovo STATO — CORRETTO
-    await employeeService.changeStatus(employee.id, statusTypeId);
+    await employeeService.changeStatus(
+      employee.id,
+      statusTypeId,
+      new Date().toISOString().split("T")[0],
+      ""
+    );
 
     // 7) Cost center
     for (const cc of costCenters) {

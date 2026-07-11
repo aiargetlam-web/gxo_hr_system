@@ -162,14 +162,15 @@ export default function Employees() {
 
     // ⭐ CONTRACT — CORRETTO
     {
-      field: "contract",
-      headerName: "Contratto",
-      flex: 1,
-      valueGetter: (params: any) =>
-        params.row.contract?.work_regime_id
-          ? `Regime #${params.row.contract.work_regime_id}`
-          : "-",
-    },
+  	field: "contract",
+  	headerName: "Contratto",
+  	flex: 1,
+  	valueGetter: (params: any) =>
+    		params.row.contract?.work_regime
+      			? params.row.contract.work_regime
+      			: "-",
+	},
+
 
     // ⭐ STATUS — CORRETTO
     {
@@ -209,7 +210,7 @@ export default function Employees() {
       Ruolo: getRoleName(e.role?.id ?? 0),
       Reparto: e.department?.department_id || "-",
       Sito: e.site?.id || "-",
-      Contratto: e.contract?.work_regime_id || "-",
+      Contratto: e.contract?.work_regime || "-",
       Stato: e.status?.status_type_id || "N/D",
     }));
 

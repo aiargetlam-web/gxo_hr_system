@@ -27,6 +27,7 @@ import {
   ContractCreate,
   SalaryCreate,
   DepartmentCreate,
+  SiteAssignmentCreate,
   CompanyCarCreate,
 } from "../../types";
 
@@ -400,8 +401,13 @@ export default function EmployeeEditModal({
     };
     await employeeService.addDepartment(employee.id, departmentPayload);
 
-    // 5) Nuovo SITO — CORRETTO
-    await employeeService.changeSite(employee.id, siteId);
+    // 5) Nuovo SITO — CORRETTO DEFINITIVO
+    const sitePayload: SiteAssignmentCreate = {
+      site_id: siteId,
+      from_date: new Date().toISOString().split("T")[0],
+    };
+
+    await employeeService.changeSite(employee.id, sitePayload);
 
     // 6) Nuovo STATO — CORRETTO
     await employeeService.changeStatus(

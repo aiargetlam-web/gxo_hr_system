@@ -134,37 +134,37 @@ export const employeeService = {
   // MENU A TENDINA – VALORI DA DB
   // ============================
   getWorkRegimes: async () => {
-    const res = await api.get("/api/v1/work-regimes");
+    const res = await api.get("/api/v1/work-regimes/");
     return res.data;
   },
 
   getContractNatures: async () => {
-    const res = await api.get("/api/v1/contract-natures");
+    const res = await api.get("/api/v1/contract-natures/");
     return res.data;
   },
 
   getCostCenters: async () => {
-    const res = await api.get("/api/v1/cost-centers");
+    const res = await api.get("/api/v1/cost-centers/");
     return res.data;
   },
 
   getDepartments: async () => {
-    const res = await api.get("/api/v1/departments");
+    const res = await api.get("/api/v1/departments/");
     return res.data;
   },
 
   getSites: async () => {
-    const res = await api.get("/api/v1/sites");
+    const res = await api.get("/api/v1/sites/");
     return res.data;
   },
 
   getPreposti: async () => {
-    const res = await api.get("/api/v1/employees/preposti");
+    const res = await api.get("/api/v1/employees/preposti/");
     return res.data;
   },
 
   getAllRoles: async () => {
-    const res = await api.get("/api/v1/roles");
+    const res = await api.get("/api/v1/roles/");
     return res.data;
   },
 };

@@ -2,7 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 # ---------------------------------------------------------
-# BASE
+# BASE PER CRUD / CREAZIONE
 # ---------------------------------------------------------
 
 class SiteBase(BaseModel):
@@ -19,7 +19,7 @@ class SiteCreate(SiteBase):
 
 
 # ---------------------------------------------------------
-# READ (OUTPUT)
+# READ (OUTPUT PER CRUD)
 # ---------------------------------------------------------
 
 class Site(SiteBase):
@@ -27,6 +27,17 @@ class Site(SiteBase):
 
     class Config:
         from_attributes = True
+
+
+# ---------------------------------------------------------
+# HR: DIZIONARIO (MENU A TENDINA)
+# ---------------------------------------------------------
+
+class SiteDict(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
 
 
 # ---------------------------------------------------------

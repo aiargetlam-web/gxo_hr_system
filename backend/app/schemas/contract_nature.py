@@ -1,7 +1,11 @@
 from pydantic import BaseModel
 
-class ContractNature(BaseModel):
+class ContractNatureBase(BaseModel):
     id: int
-    name: str
+    code: str
+    description: str
 
     model_config = {"from_attributes": True}
+
+class ContractNature(ContractNatureBase):
+    pass

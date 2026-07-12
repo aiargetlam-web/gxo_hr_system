@@ -5,3 +5,6 @@ class DepartmentBase(BaseModel):
     name: str
 
     model_config = {"from_attributes": True}
+
+class Department(DepartmentBase):
+    pass

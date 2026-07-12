@@ -13,6 +13,11 @@ from app.api.api_v1.endpoints import (
     roles,
     debug   # ⭐ AGGIUNTO
 )
+from app.api.v1.contract_natures import router as contract_natures_router
+from app.api.v1.work_regimes import router as work_regimes_router
+from app.api.v1.departments import router as departments_router
+from app.api.v1.cost_centers import router as cost_centers_router
+from app.api.v1.preposti import router as preposti_router
 
 api_router = APIRouter()
 
@@ -33,3 +38,9 @@ api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
 
 # ⭐ ROUTER DEBUG CORS
 api_router.include_router(debug.router, prefix="/debug", tags=["debug"])
+
+api_router.include_router(contract_natures_router)
+api_router.include_router(work_regimes_router)
+api_router.include_router(departments_router)
+api_router.include_router(cost_centers_router)
+api_router.include_router(preposti_router)

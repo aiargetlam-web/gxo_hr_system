@@ -3,11 +3,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.schemas.site import Site as SiteSchema
+from app.schemas.sites import SiteDict  # <-- CAMBIATO QUI
 
 router = APIRouter()
 
-@router.get("/", response_model=List[SiteSchema])
+@router.get("/", response_model=List[SiteDict])  # <-- CAMBIATO QUI
 def get_sites(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

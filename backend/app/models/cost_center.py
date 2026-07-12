@@ -6,6 +6,7 @@ class CostCenter(Base):
     __tablename__ = "cost_centers"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False, unique=True)
+    code = Column(String(50), unique=True, nullable=False)
+    description = Column(String(255), nullable=False)
 
     employees = relationship("EmployeeCostCenter", back_populates="cost_center")

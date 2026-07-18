@@ -223,10 +223,12 @@ class EmployeeBase(BaseModel):
     address_city: Optional[str] = None
     address_cap: Optional[str] = None
 
-    lul_id: Optional[str] = None
+    id_lul: Optional[str] = None
 
     role_id: Optional[int] = None
-    current_site_id: Optional[int] = None
+
+    # 🔥 SITO ATTUALE DEL DIPENDENTE
+    site_id: Optional[int] = None
 
     hire_date: Optional[date] = None
     termination_date: Optional[date] = None
@@ -252,7 +254,9 @@ class EmployeeCreate(EmployeeBase):
     first_name: str
     last_name: str
     role_id: int
-    current_site_id: int
+
+    # 🔥 Il sito attuale viene preso da site_history.site_id
+    # NON serve site_id qui
 
     contract: ContractCreate
     cost_centers: List[CostCenterAssignmentCreate]
@@ -285,6 +289,9 @@ class Employee(EmployeeInDBBase):
     updated_at: datetime
 
     role: Optional[Role] = None
+
+    # 🔥 SITO ATTUALE DEL DIPENDENTE
+    site_id: Optional[int] = None
 
     # 🔥 VALORI ATTUALI (history tables)
     site: Optional[SiteHistory] = None

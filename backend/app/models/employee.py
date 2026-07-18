@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -44,10 +44,10 @@ class Employee(Base):
     first_access = Column(Boolean, default=True)
 
     # ============================
-    # SITO ATTUALE (manteniamo perché lo usi nelle route)
+    # SITO ATTUALE (UNICO VALORE)
     # ============================
-    current_site_id = Column(Integer, ForeignKey("sites.id", ondelete="SET NULL"))
-    current_site = relationship("Site", back_populates="employees")
+    site_id = Column(Integer, ForeignKey("sites.id", ondelete="SET NULL"))
+    site = relationship("Site", back_populates="employees")
 
     # ============================
     # RUOLO
@@ -108,3 +108,8 @@ class Employee(Base):
 
     # Benefit
     benefits = relationship("EmployeeBenefit", back_populates="employee")
+
+    # ============================
+    # PREPOSTO
+    # ============================
+    preposto = Column(Boolean, default=False)

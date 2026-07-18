@@ -6,10 +6,6 @@ import {
 } from "../../services/employeeService";
 
 import { siteService } from "../../services/siteService";
-import { getWorkRegimes } from "../../services/contractService";
-import { getContractNatures } from "../../services/contractService";
-import { getCostCenters } from "../../services/costCenterService";
-import { getBenefits } from "../../services/benefitService";
 
 /* -----------------------------------------------------------
    TIPI — COMPLETI E CORRETTI
@@ -185,23 +181,23 @@ const EmployeeCreateModal = ({
     if (!isOpen) return;
 
     const loadData = async () => {
-      const [sitesRes, wrRes, cnRes, ccRes, benRes] = await Promise.all([
+      // ❗ RIMOSSI SERVIZI INESISTENTI
+      const [sitesRes] = await Promise.all([
         siteService.getSites(),
-        getWorkRegimes(),
-        getContractNatures(),
-        getCostCenters(),
-        getBenefits(),
       ]);
 
       setSites(sitesRes);
-      setWorkRegimes(wrRes);
-      setContractNatures(cnRes);
-      setCostCentersOptions(ccRes);
-      setBenefitTypes(benRes);
+
+      // ❗ Questi verranno sistemati nello step successivo
+      setWorkRegimes([]);
+      setContractNatures([]);
+      setCostCentersOptions([]);
+      setBenefitTypes([]);
     };
 
     loadData();
   }, [isOpen]);
+
   /* -----------------------------------------------------------
      HANDLER DI CAMPO (SIMPLE)
   ----------------------------------------------------------- */
@@ -215,18 +211,15 @@ const EmployeeCreateModal = ({
   /* -----------------------------------------------------------
      HANDLER DI CAMPO NIDIFICATO (contract, salary, department, ecc.)
   ----------------------------------------------------------- */
-  const handleNestedChange = <
-    T extends keyof EmployeeCreateForm,
-    K extends keyof EmployeeCreateForm[T]
-  >(
-    section: T,
-    field: K,
+  const handleNestedChange = (
+    section: keyof EmployeeCreateForm,
+    field: string,
     value: any
   ) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] || {}),
         [field]: value,
       },
     }));
@@ -235,17 +228,14 @@ const EmployeeCreateModal = ({
   /* -----------------------------------------------------------
      HANDLER ARRAY (cost_centers, benefits)
   ----------------------------------------------------------- */
-  const handleArrayChange = <
-    T extends keyof EmployeeCreateForm,
-    K extends keyof EmployeeCreateForm[T][number]
-  >(
-    section: T,
+  const handleArrayChange = (
+    section: keyof EmployeeCreateForm,
     index: number,
-    field: K,
+    field: string,
     value: any
   ) => {
-    setFormData((prev) => {
-      const arr = [...(prev[section] as any[])];
+    setFormData((prev: any) => {
+      const arr = Array.isArray(prev[section]) ? [...prev[section]] : [];
       arr[index] = {
         ...arr[index],
         [field]: value,
@@ -353,6 +343,10 @@ const EmployeeCreateModal = ({
       alert("Errore durante la creazione del dipendente");
     }
   };
+
+  /* -----------------------------------------------------------
+     RENDER STEP
+  ----------------------------------------------------------- */
   /* -----------------------------------------------------------
      RENDER STEP
   ----------------------------------------------------------- */
@@ -666,6 +660,9 @@ const EmployeeCreateModal = ({
           </div>
         );
 
+      /* -------------------------------------------------------
+         STEP 4 — SITO + REPARTO + PREPOSTO
+      ------------------------------------------------------- */
       /* -------------------------------------------------------
          STEP 4 — SITO + REPARTO + PREPOSTO
       ------------------------------------------------------- */

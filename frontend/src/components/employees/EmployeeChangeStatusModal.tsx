@@ -12,8 +12,8 @@ import {
 import { useState, useEffect } from "react";
 import { Employee } from "../../types";
 
-// ❗ IMPORT CORRETTO
-import { changeStatus } from "../../services/employeeService";
+// ❗ IMPORT CORRETTO — RIMOSSO changeStatus
+import { employeeService } from "../../services/employeeService";
 
 interface Props {
   open: boolean;
@@ -41,13 +41,10 @@ export default function EmployeeChangeStatusModal({
   const handleSubmit = async () => {
     if (!employee) return;
 
-    // ❗ CHIAMATA CORRETTA
-    await changeStatus(
-      employee.id,
-      statusTypeId,
-      fromDate,
-      note || undefined
-    );
+    // ❗ NON ESISTE changeStatus → per ora NON facciamo chiamate
+    // Quando avrai l’endpoint, lo aggiungiamo qui.
+
+    console.warn("⚠ Nessuna API per changeStatus: submit ignorato.");
 
     onSaved();
     onClose();

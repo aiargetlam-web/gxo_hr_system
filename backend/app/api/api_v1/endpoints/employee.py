@@ -26,7 +26,7 @@ from app.schemas.employee import (
 router = APIRouter(tags=["Employees"])
 
 # ============================================================
-# CREATE EMPLOYEE COMPLETO
+# CREATE EMPLOYEE COMPLETO (CORRETTO)
 # ============================================================
 
 @router.post("/employees", response_model=Employee)
@@ -56,9 +56,15 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             address_street=payload.address_street,
             address_city=payload.address_city,
             address_cap=payload.address_cap,
-            lul_id=payload.lul_id,
+
+            # 🔥 CORRETTO
+            id_lul=payload.id_lul,
+
             role_id=payload.role_id,
-            current_site_id=payload.current_site_id,
+
+            # 🔥 SITO ATTUALE = quello scelto allo step 0
+            site_id=payload.site_history.site_id,
+
             hire_date=payload.hire_date,
             termination_date=payload.termination_date,
             is_protected_category=payload.is_protected_category,
@@ -67,7 +73,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 
         db.add(employee)
         db.flush()
-
         contract = EmployeeContract(
             employee_id=employee.id,
             work_regime_id=payload.contract.work_regime_id,
@@ -150,8 +155,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore creazione dipendente: {str(e)}")
-
-
 # ============================================================
 # NUOVO CONTRATTO
 # ============================================================
@@ -372,10 +375,8 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'auto aziendale: {str(e)}")
-
-
 # ============================================================
-# CAMBIO SITO
+# CAMBIO SITO (CORRETTO)
 # ============================================================
 
 @router.post("/employees/{employee_id}/sites")
@@ -409,7 +410,8 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
         )
         db.add(new_site_hist)
 
-        employee.current_site_id = payload.site_id
+        # 🔥 CORRETTO: aggiorna il sito attuale
+        employee.site_id = payload.site_id
         db.add(employee)
 
         db.commit()
@@ -420,17 +422,13 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante il cambio sito: {str(e)}")
-
-
 # ============================================================
-# GET LISTA DIPENDENTI (FULL) — ROTTA AGGIUNTA
+# GET LISTA DIPENDENTI (FULL)
 # ============================================================
 
 @router.get("/employees/full")
 def get_employees_full(db: Session = Depends(get_db)):
     return list_employees(db)
-
-
 # ============================================================
 # GET LISTA DIPENDENTI (VERSIONE CORRETTA)
 # ============================================================
@@ -501,7 +499,7 @@ def list_employees(db: Session = Depends(get_db)):
             contract = {
                 "id": contract_hist.id,
                 "work_regime": wr.description or wr.code if wr else None,
-		"contract_nature": cn.description or cn.code if cn else None,
+                "contract_nature": cn.description or cn.code if cn else None,
                 "weekly_hours": contract_hist.weekly_hours,
                 "shift_type": contract_hist.shift_type,
                 "time_band": contract_hist.time_band,
@@ -584,8 +582,6 @@ def list_employees(db: Session = Depends(get_db)):
         })
 
     return result
-
-
 # ============================================================
 # GET DETTAGLIO DIPENDENTE (VERSIONE CORRETTA)
 # ============================================================
@@ -653,7 +649,10 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "address_street": employee.address_street,
         "address_city": employee.address_city,
         "address_cap": employee.address_cap,
-        "lul_id": employee.lul_id,
+
+        # 🔥 CORRETTO
+        "id_lul": employee.id_lul,
+
         "role": employee.role,
         "is_active": employee.is_active,
         "hire_date": employee.hire_date,
@@ -662,22 +661,20 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "department": department,
         "cost_centers": cost_centers,
         "contract": {
-    		"id": contract.id,
-   		"work_regime": contract.work_regime.description or contract.work_regime.code if contract.work_regime else None,
-    		"contract_nature": contract.contract_nature.description or contract.contract_nature.code if contract.contract_nature else None,
-    		"weekly_hours": contract.weekly_hours,
-    		"shift_type": contract.shift_type,
-    		"time_band": contract.time_band,
-    		"fte": contract.fte,
-    		"from_date": contract.from_date,
-    		"note": contract.note,
-	} if contract else None,
+            "id": contract.id,
+            "work_regime": contract.work_regime.description or contract.work_regime.code if contract.work_regime else None,
+            "contract_nature": contract.contract_nature.description or contract.contract_nature.code if contract.contract_nature else None,
+            "weekly_hours": contract.weekly_hours,
+            "shift_type": contract.shift_type,
+            "time_band": contract.time_band,
+            "fte": contract.fte,
+            "from_date": contract.from_date,
+            "note": contract.note,
+        } if contract else None,
         "status": status,
         "salary": salary,
         "company_car": car,
     }
-
-
 # ============================================================
 # GET STORICO CONTRATTI
 # ============================================================
@@ -693,8 +690,6 @@ def get_contracts(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return contracts
-
-
 # ============================================================
 # GET STORICO COST CENTER
 # ============================================================
@@ -710,8 +705,6 @@ def get_cost_centers(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return ccs
-
-
 # ============================================================
 # GET STORICO REPARTI
 # ============================================================
@@ -727,8 +720,6 @@ def get_departments(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return deps
-
-
 # ============================================================
 # GET STORICO RAL
 # ============================================================
@@ -744,8 +735,6 @@ def get_salaries(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return salaries
-
-
 # ============================================================
 # GET STORICO AUTO AZIENDALI
 # ============================================================
@@ -761,8 +750,6 @@ def get_company_cars(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return cars
-
-
 # ============================================================
 # GET STORICO SITI
 # ============================================================
@@ -778,8 +765,6 @@ def get_sites(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return sites
-
-
 # ============================================================
 # GET STORICO STATI LAVORATIVI
 # ============================================================
@@ -795,8 +780,6 @@ def get_status_history(employee_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return statuses
-
-
 # ============================================================
 # GET STATO ATTUALE COMPLETO
 # ============================================================
@@ -853,17 +836,7 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
 
     return {
         "employee": employee,
-        "contract": {
-    		"id": current_contract.id,
-    		"work_regime": current_contract.work_regime.description or current_contract.work_regime.code if current_contract.work_regime else None,
-    		"contract_nature": current_contract.contract_nature.description or current_contract.contract_nature.code if current_contract.contract_nature else None,
-    		"weekly_hours": current_contract.weekly_hours,
-    		"shift_type": current_contract.shift_type,
-    		"time_band": current_contract.time_band,
-    		"fte": current_contract.fte,
-    		"from_date": current_contract.from_date,
-   		"note": current_contract.note,
-	} if current_contract else None,
+        "contract": current_contract,
         "cost_centers": current_cc,
         "department": current_dep,
         "salary": current_salary,
@@ -871,36 +844,3 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
         "site": current_site,
         "status": current_status,
     }
-
-
-# ============================================================
-# UPDATE AUTO AZIENDALE ATTIVA
-# ============================================================
-
-@router.put("/employees/{employee_id}/company-cars/current")
-def update_current_company_car(employee_id: int, payload: CompanyCarUpdate, db: Session = Depends(get_db)):
-    from app.models.employee_company_cars import EmployeeCompanyCar
-
-    car = (
-        db.query(EmployeeCompanyCar)
-        .filter(
-            EmployeeCompanyCar.employee_id == employee_id,
-            EmployeeCompanyCar.to_date.is_(None)
-        )
-        .first()
-    )
-
-    if not car:
-        raise HTTPException(status_code=404, detail="Nessuna auto aziendale attiva trovata")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(car, field, value)
-
-        db.commit()
-        db.refresh(car)
-        return car
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")

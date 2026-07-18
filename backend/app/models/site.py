@@ -9,6 +9,8 @@ class Site(Base):
     name = Column(String(100), nullable=False, unique=True)
 
     employees = relationship("Employee", back_populates="current_site")
+    departments = relationship("Department", back_populates="site")
+
 
 
 class HRSite(Base):

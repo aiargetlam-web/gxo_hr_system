@@ -7,5 +7,8 @@ class Department(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False, unique=True)
+    site_id = Column(Integer, ForeignKey("sites.id"), nullable=False)
+    site = relationship("Site")
+
 
     employees = relationship("EmployeeDepartment", back_populates="department")

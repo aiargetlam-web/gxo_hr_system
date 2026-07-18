@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+# Import endpoints principali
 from app.api.api_v1.endpoints import (
     auth,
     employee,
@@ -14,23 +15,22 @@ from app.api.api_v1.endpoints import (
     debug
 )
 
-# ⭐ IMPORT CORRETTI
+# Import dizionari e tabelle di supporto
 from app.api.api_v1.endpoints.contract_natures import router as contract_natures_router
 from app.api.api_v1.endpoints.work_regimes import router as work_regimes_router
 from app.api.api_v1.endpoints.departments import router as departments_router
 from app.api.api_v1.endpoints.cost_centers import router as cost_centers_router
 from app.api.api_v1.endpoints.preposti import router as preposti_router
-from app.api.api_v1.endpoints.departments import router as departments_router
-from app.api.api_v1.endpoints.preposti import router as preposti_router
 
-api_router.include_router(departments_router, prefix="/departments")
-api_router.include_router(preposti_router, prefix="/employees/preposti")
-
-
+# ⭐ Devi DEFINIRE api_router PRIMA DI USARLO
 api_router = APIRouter()
 
+# ---------------------------------------------------------
+# ROUTER PRINCIPALI
+# ---------------------------------------------------------
+
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(employee.router)
+api_router.include_router(employee.router, prefix="/employees", tags=["employees"])
 api_router.include_router(communications.router, prefix="/communications", tags=["communications"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(sites.router, prefix="/sites", tags=["sites"])
@@ -41,9 +41,12 @@ api_router.include_router(export.router, prefix="/export", tags=["export"])
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
 api_router.include_router(debug.router, prefix="/debug", tags=["debug"])
 
-# ⭐ DIZIONARI
-api_router.include_router(contract_natures_router)
-api_router.include_router(work_regimes_router)
-api_router.include_router(departments_router)
-api_router.include_router(cost_centers_router)
-api_router.include_router(preposti_router)
+# ---------------------------------------------------------
+# ROUTER DIZIONARI / TABELLE DI SUPPORTO
+# ---------------------------------------------------------
+
+api_router.include_router(contract_natures_router, prefix="/contract-natures", tags=["contract-natures"])
+api_router.include_router(work_regimes_router, prefix="/work-regimes", tags=["work-regimes"])
+api_router.include_router(departments_router, prefix="/departments", tags=["departments"])
+api_router.include_router(cost_centers_router, prefix="/cost-centers", tags=["cost-centers"])
+api_router.include_router(preposti_router, prefix="/preposti", tags=["preposti"])

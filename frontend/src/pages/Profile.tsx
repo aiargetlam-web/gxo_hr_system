@@ -10,7 +10,10 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     const loadEmployee = async () => {
       if (!user) return;
-      const data = await employeeService.getById(user.id);
+
+      // ✅ CORRETTO: getEmployee esiste
+      const data = await employeeService.getEmployee(user.id);
+
       setEmployee(data);
     };
 
@@ -36,11 +39,10 @@ export const Profile: React.FC = () => {
     ? `Dept #${employee.department.department_id}`
     : "N/D";
 
-  // ⭐ Contratto corretto (contract.work_regime_id)
+  // ⭐ Contratto corretto (contract.work_regime)
   const contractName = employee.contract?.work_regime
-  ? employee.contract.work_regime
-  : "N/D";
-
+    ? employee.contract.work_regime
+    : "N/D";
 
   // ⭐ Status corretto (status.status_type_id)
   const statusName = employee.status?.status_type_id

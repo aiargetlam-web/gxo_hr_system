@@ -13,7 +13,10 @@ export default function EmployeeDetail() {
     const load = async () => {
       try {
         if (!id) return;
-        const data = await employeeService.getById(Number(id));
+
+        // ✅ CORRETTO: getEmployee esiste
+        const data = await employeeService.getEmployee(Number(id));
+
         setEmployee(data);
       } finally {
         setLoading(false);

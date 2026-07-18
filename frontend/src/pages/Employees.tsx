@@ -346,62 +346,62 @@ export default function Employees() {
 
       {/* MODALI HR */}
       <EmployeeCreateModal
-        isOpen={openCreate}
+        open={openCreate}
         onClose={() => setOpenCreate(false)}
         onCreated={loadData}
       />
 
       <EmployeeEditModal
-        isOpen={openEdit}
+        open={openEdit}
         onClose={() => setOpenEdit(false)}
         onSaved={loadData}
         employee={selectedEmployee}
       />
 
       <EmployeeNewContractModal
-        isOpen={!!openNewContract}
+        open={!!openNewContract}
         employee={openNewContract}
         onClose={() => setOpenNewContract(null)}
         onSaved={loadData}
       />
 
       <EmployeeNewSalaryModal
-        isOpen={!!openNewSalary}
+        open={!!openNewSalary}
         employee={openNewSalary}
         onClose={() => setOpenNewSalary(null)}
         onSaved={loadData}
       />
 
       <EmployeeNewDepartmentModal
-        isOpen={!!openNewDepartment}
+        open={!!openNewDepartment}
         employee={openNewDepartment}
         onClose={() => setOpenNewDepartment(null)}
         onSaved={loadData}
       />
 
       <EmployeeNewCostCenterModal
-        isOpen={!!openNewCostCenter}
+        open={!!openNewCostCenter}
         employee={openNewCostCenter}
         onClose={() => setOpenNewCostCenter(null)}
         onSaved={loadData}
       />
 
       <EmployeeNewCompanyCarModal
-        isOpen={!!openNewCompanyCar}
+        open={!!openNewCompanyCar}
         employee={openNewCompanyCar}
         onClose={() => setOpenNewCompanyCar(null)}
         onSaved={loadData}
       />
 
       <EmployeeChangeSiteModal
-        isOpen={!!openChangeSite}
+        open={!!openChangeSite}
         employee={openChangeSite}
         onClose={() => setOpenChangeSite(null)}
         onSaved={loadData}
       />
 
       <EmployeeChangeStatusModal
-        isOpen={!!openChangeStatus}
+        open={!!openChangeStatus}
         employee={openChangeStatus}
         onClose={() => setOpenChangeStatus(null)}
         onSaved={loadData}

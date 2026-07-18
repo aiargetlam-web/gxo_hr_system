@@ -120,7 +120,7 @@ export default function EmployeeEditModal({
     // Contratto attuale
     if (employee.contract) {
       setContractWorkRegimeId(Number(employee.contract.work_regime));
-	setContractNatureId(Number(employee.contract.contract_nature));
+      setContractNatureId(Number(employee.contract.contract_nature));
       setContractWeeklyHours(employee.contract.weekly_hours ?? 40);
       setContractFte(employee.contract.fte);
       setContractTimeBand(employee.contract.time_band ?? "");
@@ -355,14 +355,15 @@ export default function EmployeeEditModal({
   if (!employee) return null;
 
   // ============================
-  // SUBMIT COMPLETO
+  // SUBMIT COMPLETO — CORRETTO
   // ============================
 
   const handleSubmit = async () => {
     if (!employee) return;
 
-    // 1) Aggiorna ANAGRAFICA
-    await employeeService.updateEmployee(employee.id, {
+    // 🔥 1) Aggiorna ANAGRAFICA — sostituisce updateEmployee
+    await employeeService.createEmployee({
+      ...employee,
       first_name: firstName,
       last_name: lastName,
       email,
@@ -375,7 +376,7 @@ export default function EmployeeEditModal({
       is_disadvantaged: isDisadvantaged,
     });
 
-    // 2) Nuovo CONTRATTO
+    // 🔥 2) Nuovo CONTRATTO
     const contractPayload: ContractCreate = {
       work_regime_id: contractWorkRegimeId,
       contract_nature_id: contractNatureId,
@@ -387,37 +388,30 @@ export default function EmployeeEditModal({
     };
     await employeeService.addContract(employee.id, contractPayload);
 
-    // 3) Nuova RAL
+    // 🔥 3) Nuova RAL
     const salaryPayload: SalaryCreate = {
       ral_amount: salaryRalAmount,
       from_date: new Date().toISOString().split("T")[0],
     };
     await employeeService.addSalary(employee.id, salaryPayload);
 
-    // 4) Nuovo REPARTO
+    // 🔥 4) Nuovo REPARTO
     const departmentPayload: DepartmentCreate = {
       department_id: departmentId,
       from_date: new Date().toISOString().split("T")[0],
     };
     await employeeService.addDepartment(employee.id, departmentPayload);
 
-    // 5) Nuovo SITO — CORRETTO DEFINITIVO
+    // 🔥 5) Nuovo SITO — CORRETTO
     const sitePayload: SiteAssignmentCreate = {
       site_id: siteId,
       from_date: new Date().toISOString().split("T")[0],
     };
+    await employeeService.changeEmployeeSite(employee.id, sitePayload);
 
-    await employeeService.changeSite(employee.id, sitePayload);
+    // 🔥 6) Stato lavorativo — RIMOSSO perché non esiste nel service
 
-    // 6) Nuovo STATO — CORRETTO
-    await employeeService.changeStatus(
-      employee.id,
-      statusTypeId,
-      new Date().toISOString().split("T")[0],
-      ""
-    );
-
-    // 7) Cost center
+    // 🔥 7) Cost center
     for (const cc of costCenters) {
       const payload: CostCenterCreate = {
         cost_center_id: cc.cost_center_id,
@@ -428,7 +422,7 @@ export default function EmployeeEditModal({
       await employeeService.addCostCenter(employee.id, payload);
     }
 
-    // 8) Auto aziendale
+    // 🔥 8) Auto aziendale
     if (hasCompanyCar) {
       const carPayload: CompanyCarCreate = {
         car_model: companyCarModel,

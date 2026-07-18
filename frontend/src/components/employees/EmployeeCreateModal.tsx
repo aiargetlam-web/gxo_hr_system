@@ -1,20 +1,99 @@
 import React, { useState, useEffect } from "react";
-
-// employeeService: funzioni singole
 import {
   createEmployee,
   getDepartmentsBySite,
   getPrepostiBySite,
 } from "../../services/employeeService";
 
-// siteService: oggetto con getSites()
 import { siteService } from "../../services/siteService";
-
-// Se questi service esistono davvero, tienili.
-// Se non esistono ancora, li creiamo dopo.
-import { getWorkRegimes, getContractNatures } from "../../services/contractService";
+import { getWorkRegimes } from "../../services/contractService";
+import { getContractNatures } from "../../services/contractService";
 import { getCostCenters } from "../../services/costCenterService";
 import { getBenefits } from "../../services/benefitService";
+
+/* -----------------------------------------------------------
+   TIPI — COMPLETI E CORRETTI
+----------------------------------------------------------- */
+
+type SiteHistory = {
+  site_id: number | null;
+  from_date: string;
+  note: string;
+};
+
+type Contract = {
+  work_regime_id: number | null;
+  contract_nature_id: number | null;
+  from_date: string;
+  weekly_hours: string;
+  fte: string;
+  time_band: string;
+  shift_type: string;
+  note: string;
+};
+
+type Department = {
+  department_id: number | null;
+  manager_employee_id: number | null;
+  from_date: string;
+  note: string;
+};
+
+type Salary = {
+  ral_amount: string;
+  from_date: string;
+  note: string;
+};
+
+type CostCenterRow = {
+  cost_center_id: number | null;
+  weight_percent: string;
+  from_date: string;
+  note: string;
+};
+
+type BenefitRow = {
+  benefit_type: string | null;
+  has_benefit: boolean;
+  from_date: string;
+  note: string;
+};
+
+type CompanyCar = {
+  car_model: string;
+  plate: string;
+  from_date: string;
+  benefit_type: string;
+  payroll_notes: string;
+  note: string;
+};
+
+type EmployeeCreateForm = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  fiscal_code: string;
+  gender: string;
+  birth_date: string;
+  birth_place: string;
+  address_street: string;
+  address_city: string;
+  address_cap: string;
+  id_lul: string;
+  role_id: number | null;
+  hire_date: string;
+  termination_date: string;
+  is_protected_category: boolean;
+  is_disadvantaged: boolean;
+  site_history: SiteHistory;
+  contract: Contract;
+  cost_centers: CostCenterRow[];
+  department: Department;
+  salary: Salary;
+  benefits: BenefitRow[];
+  company_car: CompanyCar | null;
+};
 
 interface EmployeeCreateModalProps {
   isOpen: boolean;
@@ -22,11 +101,18 @@ interface EmployeeCreateModalProps {
   onCreated?: (employee: any) => void;
 }
 
-const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModalProps) => {
+/* -----------------------------------------------------------
+   COMPONENTE
+----------------------------------------------------------- */
+
+const EmployeeCreateModal = ({
+  isOpen,
+  onClose,
+  onCreated,
+}: EmployeeCreateModalProps) => {
   const [step, setStep] = useState(1);
 
-  const [formData, setFormData] = useState({
-    // ANAGRAFICA
+  const [formData, setFormData] = useState<EmployeeCreateForm>({
     first_name: "",
     last_name: "",
     email: "",
@@ -38,27 +124,19 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     address_street: "",
     address_city: "",
     address_cap: "",
-
-    // LUL
     id_lul: "",
-
-    // RUOLO
     role_id: null,
-
-    // STATO LAVORATIVO
     hire_date: "",
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
 
-    // SITO ATTUALE + STORICO
     site_history: {
       site_id: null,
       from_date: "",
       note: "",
     },
 
-    // CONTRATTO
     contract: {
       work_regime_id: null,
       contract_nature_id: null,
@@ -70,10 +148,8 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
       note: "",
     },
 
-    // COST CENTER
     cost_centers: [],
 
-    // REPARTO
     department: {
       department_id: null,
       manager_employee_id: null,
@@ -81,21 +157,18 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
       note: "",
     },
 
-    // RAL
     salary: {
       ral_amount: "",
       from_date: "",
       note: "",
     },
 
-    // BENEFIT
     benefits: [],
 
-    // AUTO AZIENDALE
     company_car: null,
   });
 
-  // Opzioni per select
+  // Opzioni select
   const [sites, setSites] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [preposti, setPreposti] = useState<any[]>([]);
@@ -103,6 +176,10 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
   const [contractNatures, setContractNatures] = useState<any[]>([]);
   const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
+
+  /* -----------------------------------------------------------
+     LOAD DATI INIZIALI
+  ----------------------------------------------------------- */
 
   useEffect(() => {
     if (!isOpen) return;
@@ -125,14 +202,27 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
 
     loadData();
   }, [isOpen]);
-  const handleChange = (field: string, value: any) => {
+  /* -----------------------------------------------------------
+     HANDLER DI CAMPO (SIMPLE)
+  ----------------------------------------------------------- */
+  const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleNestedChange = (section: string, field: string, value: any) => {
+  /* -----------------------------------------------------------
+     HANDLER DI CAMPO NIDIFICATO (contract, salary, department, ecc.)
+  ----------------------------------------------------------- */
+  const handleNestedChange = <
+    T extends keyof EmployeeCreateForm,
+    K extends keyof EmployeeCreateForm[T]
+  >(
+    section: T,
+    field: K,
+    value: any
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [section]: {
@@ -142,14 +232,20 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     }));
   };
 
-  const handleArrayChange = (
-    section: string,
+  /* -----------------------------------------------------------
+     HANDLER ARRAY (cost_centers, benefits)
+  ----------------------------------------------------------- */
+  const handleArrayChange = <
+    T extends keyof EmployeeCreateForm,
+    K extends keyof EmployeeCreateForm[T][number]
+  >(
+    section: T,
     index: number,
-    field: string,
+    field: K,
     value: any
   ) => {
     setFormData((prev) => {
-      const arr = [...(prev as any)[section]];
+      const arr = [...(prev[section] as any[])];
       arr[index] = {
         ...arr[index],
         [field]: value,
@@ -161,6 +257,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     });
   };
 
+  /* -----------------------------------------------------------
+     AGGIUNTA RIGA COST CENTER
+  ----------------------------------------------------------- */
   const addCostCenterRow = () => {
     setFormData((prev) => ({
       ...prev,
@@ -176,6 +275,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     }));
   };
 
+  /* -----------------------------------------------------------
+     AGGIUNTA RIGA BENEFIT
+  ----------------------------------------------------------- */
   const addBenefitRow = () => {
     setFormData((prev) => ({
       ...prev,
@@ -191,7 +293,10 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     }));
   };
 
-  const setCompanyCar = (field: string, value: any) => {
+  /* -----------------------------------------------------------
+     SET COMPANY CAR (CREA OGGETTO SE NULL)
+  ----------------------------------------------------------- */
+  const setCompanyCar = (field: keyof CompanyCar, value: any) => {
     setFormData((prev) => ({
       ...prev,
       company_car: {
@@ -208,6 +313,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     }));
   };
 
+  /* -----------------------------------------------------------
+     CAMBIO SITO → CARICA REPARTI + PREPOSTI
+  ----------------------------------------------------------- */
   const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -232,6 +340,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
     setPreposti(prepostiRes);
   };
 
+  /* -----------------------------------------------------------
+     SUBMIT → CREA DIPENDENTE
+  ----------------------------------------------------------- */
   const handleSubmit = async () => {
     try {
       const created = await createEmployee(formData);
@@ -242,72 +353,88 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
       alert("Errore durante la creazione del dipendente");
     }
   };
+  /* -----------------------------------------------------------
+     RENDER STEP
+  ----------------------------------------------------------- */
   const renderStep = () => {
     switch (step) {
+      /* -------------------------------------------------------
+         STEP 1 — ANAGRAFICA + LUL + STATO LAVORATIVO
+      ------------------------------------------------------- */
       case 1:
-        // ANAGRAFICA + LUL + STATO BASE
         return (
           <div>
             <h3>Anagrafica</h3>
+
             <input
               type="text"
               placeholder="Nome"
               value={formData.first_name}
               onChange={(e) => handleChange("first_name", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Cognome"
               value={formData.last_name}
               onChange={(e) => handleChange("last_name", e.target.value)}
             />
+
             <input
               type="email"
               placeholder="Email"
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Telefono"
               value={formData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Codice fiscale"
               value={formData.fiscal_code}
               onChange={(e) => handleChange("fiscal_code", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Genere"
               value={formData.gender}
               onChange={(e) => handleChange("gender", e.target.value)}
             />
+
             <input
               type="date"
               value={formData.birth_date}
               onChange={(e) => handleChange("birth_date", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Luogo di nascita"
               value={formData.birth_place}
               onChange={(e) => handleChange("birth_place", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Indirizzo"
               value={formData.address_street}
               onChange={(e) => handleChange("address_street", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Città"
               value={formData.address_city}
               onChange={(e) => handleChange("address_city", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="CAP"
@@ -316,6 +443,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             />
 
             <h4>LUL</h4>
+
             <input
               type="text"
               placeholder="ID LUL"
@@ -324,16 +452,19 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             />
 
             <h4>Stato lavorativo</h4>
+
             <input
               type="date"
               value={formData.hire_date}
               onChange={(e) => handleChange("hire_date", e.target.value)}
             />
+
             <input
               type="date"
-              value={formData.termination_date || ""}
+              value={formData.termination_date}
               onChange={(e) => handleChange("termination_date", e.target.value)}
             />
+
             <label>
               Categoria protetta
               <input
@@ -344,6 +475,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 }
               />
             </label>
+
             <label>
               Svantaggiato
               <input
@@ -357,15 +489,22 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
           </div>
         );
 
+      /* -------------------------------------------------------
+         STEP 2 — CONTRATTO
+      ------------------------------------------------------- */
       case 2:
-        // CONTRATTO
         return (
           <div>
             <h3>Contratto</h3>
+
             <select
-              value={formData.contract.work_regime_id || ""}
+              value={formData.contract.work_regime_id ?? ""}
               onChange={(e) =>
-                handleNestedChange("contract", "work_regime_id", Number(e.target.value))
+                handleNestedChange(
+                  "contract",
+                  "work_regime_id",
+                  Number(e.target.value)
+                )
               }
             >
               <option value="">Seleziona regime di lavoro</option>
@@ -377,9 +516,13 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             </select>
 
             <select
-              value={formData.contract.contract_nature_id || ""}
+              value={formData.contract.contract_nature_id ?? ""}
               onChange={(e) =>
-                handleNestedChange("contract", "contract_nature_id", Number(e.target.value))
+                handleNestedChange(
+                  "contract",
+                  "contract_nature_id",
+                  Number(e.target.value)
+                )
               }
             >
               <option value="">Seleziona natura contratto</option>
@@ -397,6 +540,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("contract", "from_date", e.target.value)
               }
             />
+
             <input
               type="number"
               placeholder="Ore settimanali"
@@ -405,6 +549,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("contract", "weekly_hours", e.target.value)
               }
             />
+
             <input
               type="number"
               step="0.01"
@@ -414,6 +559,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("contract", "fte", e.target.value)
               }
             />
+
             <input
               type="text"
               placeholder="Fascia oraria"
@@ -422,6 +568,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("contract", "time_band", e.target.value)
               }
             />
+
             <input
               type="text"
               placeholder="Tipo turno"
@@ -430,6 +577,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("contract", "shift_type", e.target.value)
               }
             />
+
             <textarea
               placeholder="Note contratto"
               value={formData.contract.note}
@@ -440,18 +588,22 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
           </div>
         );
 
+      /* -------------------------------------------------------
+         STEP 3 — COST CENTER
+      ------------------------------------------------------- */
       case 3:
-        // COST CENTER
         return (
           <div>
             <h3>Cost center</h3>
+
             <button type="button" onClick={addCostCenterRow}>
               Aggiungi cost center
             </button>
+
             {formData.cost_centers.map((cc, index) => (
               <div key={index}>
                 <select
-                  value={cc.cost_center_id || ""}
+                  value={cc.cost_center_id ?? ""}
                   onChange={(e) =>
                     handleArrayChange(
                       "cost_centers",
@@ -468,6 +620,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     </option>
                   ))}
                 </select>
+
                 <input
                   type="number"
                   placeholder="% peso"
@@ -481,6 +634,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     )
                   }
                 />
+
                 <input
                   type="date"
                   value={cc.from_date}
@@ -493,6 +647,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     )
                   }
                 />
+
                 <input
                   type="text"
                   placeholder="Note"
@@ -511,13 +666,16 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
           </div>
         );
 
+      /* -------------------------------------------------------
+         STEP 4 — SITO + REPARTO + PREPOSTO
+      ------------------------------------------------------- */
       case 4:
-        // SITO + REPARTO + PREPOSTO
         return (
           <div>
             <h3>Sito e reparto</h3>
+
             <select
-              value={formData.site_history.site_id || ""}
+              value={formData.site_history.site_id ?? ""}
               onChange={(e) => handleSiteChange(Number(e.target.value))}
             >
               <option value="">Seleziona sito</option>
@@ -535,6 +693,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("site_history", "from_date", e.target.value)
               }
             />
+
             <input
               type="text"
               placeholder="Note sito"
@@ -545,8 +704,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             />
 
             <h4>Reparto</h4>
+
             <select
-              value={formData.department.department_id || ""}
+              value={formData.department.department_id ?? ""}
               onChange={(e) =>
                 handleNestedChange(
                   "department",
@@ -564,7 +724,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             </select>
 
             <select
-              value={formData.department.manager_employee_id || ""}
+              value={formData.department.manager_employee_id ?? ""}
               onChange={(e) =>
                 handleNestedChange(
                   "department",
@@ -588,6 +748,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("department", "from_date", e.target.value)
               }
             />
+
             <input
               type="text"
               placeholder="Note reparto"
@@ -598,11 +759,15 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             />
           </div>
         );
+
+      /* -------------------------------------------------------
+         STEP 5 — RAL + BENEFIT + AUTO
+      ------------------------------------------------------- */
       case 5:
-        // RAL + BENEFIT + AUTO
         return (
           <div>
             <h3>RAL</h3>
+
             <input
               type="number"
               placeholder="RAL"
@@ -611,6 +776,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("salary", "ral_amount", e.target.value)
               }
             />
+
             <input
               type="date"
               value={formData.salary.from_date}
@@ -618,6 +784,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                 handleNestedChange("salary", "from_date", e.target.value)
               }
             />
+
             <input
               type="text"
               placeholder="Note RAL"
@@ -628,13 +795,15 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             />
 
             <h3>Benefit</h3>
+
             <button type="button" onClick={addBenefitRow}>
               Aggiungi benefit
             </button>
+
             {formData.benefits.map((b, index) => (
               <div key={index}>
                 <select
-                  value={b.benefit_type || ""}
+                  value={b.benefit_type ?? ""}
                   onChange={(e) =>
                     handleArrayChange(
                       "benefits",
@@ -651,6 +820,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     </option>
                   ))}
                 </select>
+
                 <label>
                   Attivo
                   <input
@@ -666,6 +836,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     }
                   />
                 </label>
+
                 <input
                   type="date"
                   value={b.from_date}
@@ -678,6 +849,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
                     )
                   }
                 />
+
                 <input
                   type="text"
                   placeholder="Note"
@@ -695,39 +867,45 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
             ))}
 
             <h3>Auto aziendale</h3>
+
             <input
               type="text"
               placeholder="Modello auto"
-              value={formData.company_car?.car_model || ""}
+              value={formData.company_car?.car_model ?? ""}
               onChange={(e) => setCompanyCar("car_model", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Targa"
-              value={formData.company_car?.plate || ""}
+              value={formData.company_car?.plate ?? ""}
               onChange={(e) => setCompanyCar("plate", e.target.value)}
             />
+
             <input
               type="date"
-              value={formData.company_car?.from_date || ""}
+              value={formData.company_car?.from_date ?? ""}
               onChange={(e) => setCompanyCar("from_date", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Tipo benefit"
-              value={formData.company_car?.benefit_type || ""}
+              value={formData.company_car?.benefit_type ?? ""}
               onChange={(e) => setCompanyCar("benefit_type", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Note payroll"
-              value={formData.company_car?.payroll_notes || ""}
+              value={formData.company_car?.payroll_notes ?? ""}
               onChange={(e) => setCompanyCar("payroll_notes", e.target.value)}
             />
+
             <input
               type="text"
               placeholder="Note auto"
-              value={formData.company_car?.note || ""}
+              value={formData.company_car?.note ?? ""}
               onChange={(e) => setCompanyCar("note", e.target.value)}
             />
           </div>
@@ -737,6 +915,9 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModal
         return null;
     }
   };
+  /* -----------------------------------------------------------
+     RENDER MODAL FINALE
+  ----------------------------------------------------------- */
 
   if (!isOpen) return null;
 

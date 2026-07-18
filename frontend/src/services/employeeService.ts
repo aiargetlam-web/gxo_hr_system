@@ -1,170 +1,239 @@
 import api from "./api";
-import {
-  EmployeeCreate,
-  Employee,
-  EmployeeFull,
-  ContractCreate,
-  SalaryCreate,
-  DepartmentCreate,
-  CostCenterCreate,
-  SiteAssignmentCreate,
-  CompanyCarCreate,
-} from "../types";
 
-export const employeeService = {
-  // ============================
-  // GET LISTA DIPENDENTI (FULL)
-  // ============================
-  getAll: async (): Promise<EmployeeFull[]> => {
-    const res = await api.get("/api/v1/employees");
-    return res.data;
-  },
+// ============================================================
+// GET LISTA DIPENDENTI
+// ============================================================
 
-  // ============================
-  // GET DETTAGLIO COMPLETO DIPENDENTE
-  // ============================
-  getById: async (id: number): Promise<EmployeeFull> => {
-    const res = await api.get(`/api/v1/employees/${id}`);
-    return res.data;
-  },
+export const getEmployees = async () => {
+  const response = await api.get("/employees");
+  return response.data;
+};
 
-  // ============================
-  // CREATE DIPENDENTE (WIZARD)
-  // ============================
-  createEmployee: async (data: EmployeeCreate): Promise<EmployeeFull> => {
-    const res = await api.post("/api/v1/employees", data);
-    return res.data;
-  },
+// ============================================================
+// GET DIPENDENTE SINGOLO
+// ============================================================
 
-  // ============================
-  // UPDATE ANAGRAFICA DIPENDENTE
-  // ============================
-  updateEmployee: async (id: number, data: any): Promise<EmployeeFull> => {
-    const res = await api.put(`/api/v1/employees/${id}`, data);
-    return res.data;
-  },
+export const getEmployee = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}`);
+  return response.data;
+};
 
-  // ============================
-  // CONTRATTO (storico)
-  // ============================
-  addContract: async (employeeId: number, data: ContractCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/contracts`,
-      data
-    );
-    return res.data;
-  },
+// ============================================================
+// CREATE EMPLOYEE (CORRETTO)
+// ============================================================
 
-  // ============================
-  // RAL (storico)
-  // ============================
-  addSalary: async (employeeId: number, data: SalaryCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/salaries`,
-      data
-    );
-    return res.data;
-  },
+export const createEmployee = async (formData) => {
+  const payload = {
+    first_name: formData.first_name,
+    last_name: formData.last_name,
+    email: formData.email,
+    phone: formData.phone,
+    fiscal_code: formData.fiscal_code,
+    gender: formData.gender,
+    birth_date: formData.birth_date,
+    birth_place: formData.birth_place,
+    address_street: formData.address_street,
+    address_city: formData.address_city,
+    address_cap: formData.address_cap,
 
-  // ============================
-  // REPARTO (storico)
-  // ============================
-  addDepartment: async (employeeId: number, data: DepartmentCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/departments`,
-      data
-    );
-    return res.data;
-  },
+    // 🔥 CORRETTO
+    id_lul: formData.id_lul,
 
-  // ============================
-  // COST CENTER (storico)
-  // ============================
-  addCostCenter: async (employeeId: number, data: CostCenterCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/cost-centers`,
-      data
-    );
-    return res.data;
-  },
+    role_id: formData.role_id,
+    hire_date: formData.hire_date,
+    termination_date: formData.termination_date,
+    is_protected_category: formData.is_protected_category,
+    is_disadvantaged: formData.is_disadvantaged,
 
-  // ============================
-  // CAMBIO SITO (storico)
-  // ============================
-  changeSite: async (employeeId: number, data: SiteAssignmentCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/sites`,
-      data
-    );
-    return res.data;
-  },
+    // 🔥 SITO ATTUALE = site_history.site_id
+    site_history: {
+      site_id: formData.site_history.site_id,
+      from_date: formData.site_history.from_date,
+      note: formData.site_history.note,
+    },
 
-  // ============================
-  // STATO LAVORATIVO (storico)
-  // ============================
-  changeStatus: async (
-    employeeId: number,
-    statusTypeId: number,
-    fromDate: string,
-    note?: string
-  ) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/status`,
-      {
-        status_type_id: statusTypeId,
-        from_date: fromDate,
-        note,
-      }
-    );
-    return res.data;
-  },
+    // CONTRATTO
+    contract: {
+      work_regime_id: formData.contract.work_regime_id,
+      contract_nature_id: formData.contract.contract_nature_id,
+      from_date: formData.contract.from_date,
+      weekly_hours: formData.contract.weekly_hours,
+      fte: formData.contract.fte,
+      time_band: formData.contract.time_band,
+      shift_type: formData.contract.shift_type,
+      note: formData.contract.note,
+    },
 
-  // ============================
-  // AUTO AZIENDALE (storico)
-  // ============================
-  addCompanyCar: async (employeeId: number, data: CompanyCarCreate) => {
-    const res = await api.post(
-      `/api/v1/employees/${employeeId}/company-cars`,
-      data
-    );
-    return res.data;
-  },
+    // COST CENTER
+    cost_centers: formData.cost_centers.map((cc) => ({
+      cost_center_id: cc.cost_center_id,
+      weight_percent: cc.weight_percent,
+      from_date: cc.from_date,
+      note: cc.note,
+    })),
 
-  // ============================
-  // MENU A TENDINA – VALORI DA DB
-  // ============================
-  getWorkRegimes: async () => {
-    const res = await api.get("/api/v1/work-regimes/");
-    return res.data;
-  },
+    // REPARTO
+    department: {
+      department_id: formData.department.department_id,
+      manager_employee_id: formData.department.manager_employee_id,
+      from_date: formData.department.from_date,
+      note: formData.department.note,
+    },
 
-  getContractNatures: async () => {
-    const res = await api.get("/api/v1/contract-natures/");
-    return res.data;
-  },
+    // RAL
+    salary: {
+      ral_amount: formData.salary.ral_amount,
+      from_date: formData.salary.from_date,
+      note: formData.salary.note,
+    },
 
-  getCostCenters: async () => {
-    const res = await api.get("/api/v1/cost-centers/");
-    return res.data;
-  },
+    // BENEFIT
+    benefits: formData.benefits.map((b) => ({
+      benefit_type: b.benefit_type,
+      has_benefit: b.has_benefit,
+      from_date: b.from_date,
+      note: b.note,
+    })),
 
-  getDepartments: async () => {
-    const res = await api.get("/api/v1/departments/");
-    return res.data;
-  },
+    // AUTO AZIENDALE
+    company_car: formData.company_car
+      ? {
+          car_model: formData.company_car.car_model,
+          plate: formData.company_car.plate,
+          from_date: formData.company_car.from_date,
+          benefit_type: formData.company_car.benefit_type,
+          payroll_notes: formData.company_car.payroll_notes,
+          note: formData.company_car.note,
+        }
+      : null,
+  };
 
-  getSites: async () => {
-    const res = await api.get("/api/v1/sites/");
-    return res.data;
-  },
+  const response = await api.post("/employees", payload);
+  return response.data;
+};
 
-  getPreposti: async () => {
-    const res = await api.get("/api/v1/employees/preposti/");
-    return res.data;
-  },
+// ============================================================
+// CAMBIO SITO (CORRETTO)
+// ============================================================
 
-  getAllRoles: async () => {
-    const res = await api.get("/api/v1/roles/");
-    return res.data;
-  },
+export const changeEmployeeSite = async (employeeId, data) => {
+  const payload = {
+    site_id: data.site_id,
+    from_date: data.from_date,
+    note: data.note,
+  };
+
+  const response = await api.post(`/employees/${employeeId}/sites`, payload);
+  return response.data;
+};
+
+// ============================================================
+// NUOVO CONTRATTO
+// ============================================================
+
+export const addContract = async (employeeId, data) => {
+  const response = await api.post(`/employees/${employeeId}/contracts`, data);
+  return response.data;
+};
+
+// ============================================================
+// NUOVO COST CENTER
+// ============================================================
+
+export const addCostCenter = async (employeeId, data) => {
+  const response = await api.post(`/employees/${employeeId}/cost-centers`, data);
+  return response.data;
+};
+
+// ============================================================
+// NUOVO REPARTO
+// ============================================================
+
+export const addDepartment = async (employeeId, data) => {
+  const response = await api.post(`/employees/${employeeId}/departments`, data);
+  return response.data;
+};
+
+// ============================================================
+// NUOVA RAL
+// ============================================================
+
+export const addSalary = async (employeeId, data) => {
+  const response = await api.post(`/employees/${employeeId}/salaries`, data);
+  return response.data;
+};
+
+// ============================================================
+// NUOVA AUTO AZIENDALE
+// ============================================================
+
+export const addCompanyCar = async (employeeId, data) => {
+  const response = await api.post(`/employees/${employeeId}/company-cars`, data);
+  return response.data;
+};
+
+// ============================================================
+// GET PREPOSTI PER SITO (CORRETTO)
+// ============================================================
+
+export const getPrepostiBySite = async (siteId) => {
+  const response = await api.get(`/employees/preposti?site_id=${siteId}`);
+  return response.data;
+};
+
+// ============================================================
+// GET REPARTI PER SITO (CORRETTO)
+// ============================================================
+
+export const getDepartmentsBySite = async (siteId) => {
+  const response = await api.get(`/departments?site_id=${siteId}`);
+  return response.data;
+};
+
+// ============================================================
+// STORICI
+// ============================================================
+
+export const getEmployeeContracts = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/contracts`);
+  return response.data;
+};
+
+export const getEmployeeCostCenters = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/cost-centers`);
+  return response.data;
+};
+
+export const getEmployeeDepartments = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/departments`);
+  return response.data;
+};
+
+export const getEmployeeSalaries = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/salaries`);
+  return response.data;
+};
+
+export const getEmployeeCompanyCars = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/company-cars`);
+  return response.data;
+};
+
+export const getEmployeeSites = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/sites`);
+  return response.data;
+};
+
+export const getEmployeeStatusHistory = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/status`);
+  return response.data;
+};
+
+// ============================================================
+// STATO ATTUALE
+// ============================================================
+
+export const getEmployeeCurrentStatus = async (employeeId) => {
+  const response = await api.get(`/employees/${employeeId}/current`);
+  return response.data;
 };

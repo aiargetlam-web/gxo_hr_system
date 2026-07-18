@@ -10,7 +10,9 @@ import {
 
 import { useState, useEffect } from "react";
 import { Employee, SiteAssignmentCreate } from "../../types";
-import { employeeService } from "../../services/employeeService";
+
+// ❗ IMPORT CORRETTO
+import { changeEmployeeSite } from "../../services/employeeService";
 
 interface Props {
   open: boolean;
@@ -34,7 +36,7 @@ export default function EmployeeChangeSiteModal({
   useEffect(() => {
     if (employee) {
       setForm({
-        site_id: employee.site?.id ?? 1,   // ⭐ CORRETTO
+        site_id: employee.site?.id ?? 1,
         from_date: "",
         note: "",
       });
@@ -47,7 +49,10 @@ export default function EmployeeChangeSiteModal({
 
   const handleSubmit = async () => {
     if (!employee) return;
-    await employeeService.changeSite(employee.id, form);
+
+    // ❗ CHIAMATA CORRETTA
+    await changeEmployeeSite(employee.id, form);
+
     onSaved();
     onClose();
   };

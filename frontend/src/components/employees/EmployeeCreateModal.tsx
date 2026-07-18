@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from "react";
+
+// employeeService: funzioni singole
 import {
   createEmployee,
   getDepartmentsBySite,
   getPrepostiBySite,
 } from "../../services/employeeService";
-import { getSites } from "../../services/siteService";
+
+// siteService: oggetto con getSites()
+import { siteService } from "../../services/siteService";
+
+// Se questi service esistono davvero, tienili.
+// Se non esistono ancora, li creiamo dopo.
 import { getWorkRegimes, getContractNatures } from "../../services/contractService";
 import { getCostCenters } from "../../services/costCenterService";
 import { getBenefits } from "../../services/benefitService";
 
-const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
+interface EmployeeCreateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated?: (employee: any) => void;
+}
+
+const EmployeeCreateModal = ({ isOpen, onClose, onCreated }: EmployeeCreateModalProps) => {
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -83,20 +96,20 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
   });
 
   // Opzioni per select
-  const [sites, setSites] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [preposti, setPreposti] = useState([]);
-  const [workRegimes, setWorkRegimes] = useState([]);
-  const [contractNatures, setContractNatures] = useState([]);
-  const [costCentersOptions, setCostCentersOptions] = useState([]);
-  const [benefitTypes, setBenefitTypes] = useState([]);
+  const [sites, setSites] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [preposti, setPreposti] = useState<any[]>([]);
+  const [workRegimes, setWorkRegimes] = useState<any[]>([]);
+  const [contractNatures, setContractNatures] = useState<any[]>([]);
+  const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
+  const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const loadData = async () => {
       const [sitesRes, wrRes, cnRes, ccRes, benRes] = await Promise.all([
-        getSites(),
+        siteService.getSites(),
         getWorkRegimes(),
         getContractNatures(),
         getCostCenters(),
@@ -112,14 +125,14 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
 
     loadData();
   }, [isOpen]);
-  const handleChange = (field, value) => {
+  const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleNestedChange = (section, field, value) => {
+  const handleNestedChange = (section: string, field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [section]: {
@@ -129,9 +142,14 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
     }));
   };
 
-  const handleArrayChange = (section, index, field, value) => {
+  const handleArrayChange = (
+    section: string,
+    index: number,
+    field: string,
+    value: any
+  ) => {
     setFormData((prev) => {
-      const arr = [...prev[section]];
+      const arr = [...(prev as any)[section]];
       arr[index] = {
         ...arr[index],
         [field]: value,
@@ -173,7 +191,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
     }));
   };
 
-  const setCompanyCar = (field, value) => {
+  const setCompanyCar = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       company_car: {
@@ -189,8 +207,8 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
       },
     }));
   };
-  const handleSiteChange = async (siteId) => {
-    // aggiorna site_history.site_id
+
+  const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
       ...prev,
       site_history: {
@@ -213,6 +231,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
     setDepartments(depsRes);
     setPreposti(prepostiRes);
   };
+
   const handleSubmit = async () => {
     try {
       const created = await createEmployee(formData);
@@ -579,7 +598,6 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
             />
           </div>
         );
-
       case 5:
         // RAL + BENEFIT + AUTO
         return (
@@ -719,6 +737,7 @@ const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
         return null;
     }
   };
+
   if (!isOpen) return null;
 
   return (

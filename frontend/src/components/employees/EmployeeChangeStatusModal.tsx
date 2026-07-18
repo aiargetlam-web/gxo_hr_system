@@ -11,7 +11,9 @@ import {
 
 import { useState, useEffect } from "react";
 import { Employee } from "../../types";
-import { employeeService } from "../../services/employeeService";
+
+// ❗ IMPORT CORRETTO
+import { changeStatus } from "../../services/employeeService";
 
 interface Props {
   open: boolean;
@@ -30,7 +32,6 @@ export default function EmployeeChangeStatusModal({
   const [fromDate, setFromDate] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
-  // ⭐ CORRETTO: sincronizziamo lo stato attuale del dipendente
   useEffect(() => {
     if (employee) {
       setStatusTypeId(employee.status?.status_type_id ?? 1);
@@ -40,7 +41,8 @@ export default function EmployeeChangeStatusModal({
   const handleSubmit = async () => {
     if (!employee) return;
 
-    await employeeService.changeStatus(
+    // ❗ CHIAMATA CORRETTA
+    await changeStatus(
       employee.id,
       statusTypeId,
       fromDate,
@@ -59,7 +61,6 @@ export default function EmployeeChangeStatusModal({
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* STATO */}
           <TextField
             select
             label="Nuovo stato"
@@ -74,7 +75,6 @@ export default function EmployeeChangeStatusModal({
             <MenuItem value={5}>Rientrato</MenuItem>
           </TextField>
 
-          {/* DATA */}
           <TextField
             label="Data decorrenza"
             type="date"
@@ -84,7 +84,6 @@ export default function EmployeeChangeStatusModal({
             onChange={(e) => setFromDate(e.target.value)}
           />
 
-          {/* NOTE */}
           <TextField
             label="Note"
             fullWidth

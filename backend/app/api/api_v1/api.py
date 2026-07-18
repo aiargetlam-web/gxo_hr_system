@@ -20,6 +20,12 @@ from app.api.api_v1.endpoints.work_regimes import router as work_regimes_router
 from app.api.api_v1.endpoints.departments import router as departments_router
 from app.api.api_v1.endpoints.cost_centers import router as cost_centers_router
 from app.api.api_v1.endpoints.preposti import router as preposti_router
+from app.api.api_v1.endpoints.departments import router as departments_router
+from app.api.api_v1.endpoints.preposti import router as preposti_router
+
+api_router.include_router(departments_router, prefix="/departments")
+api_router.include_router(preposti_router, prefix="/employees/preposti")
+
 
 api_router = APIRouter()
 

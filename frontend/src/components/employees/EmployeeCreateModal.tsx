@@ -8,7 +8,7 @@ import {
 import { siteService } from "../../services/siteService";
 
 /* -----------------------------------------------------------
-   TIPI — COMPLETI E CORRETTI
+   TIPI — COMPLETI
 ----------------------------------------------------------- */
 
 type SiteHistory = {
@@ -102,7 +102,7 @@ interface EmployeeCreateModalProps {
 ----------------------------------------------------------- */
 
 const EmployeeCreateModal = ({
-  isOpen,
+  open,
   onClose,
   onCreated,
 }: EmployeeCreateModalProps) => {
@@ -164,7 +164,6 @@ const EmployeeCreateModal = ({
     company_car: null,
   });
 
-  // Opzioni select
   const [sites, setSites] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [preposti, setPreposti] = useState<any[]>([]);
@@ -178,17 +177,16 @@ const EmployeeCreateModal = ({
   ----------------------------------------------------------- */
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
 
     const loadData = async () => {
-      // ❗ RIMOSSI SERVIZI INESISTENTI
       const [sitesRes] = await Promise.all([
         siteService.getSites(),
       ]);
 
       setSites(sitesRes);
 
-      // ❗ Questi verranno sistemati nello step successivo
+      // placeholder finché non agganci i servizi
       setWorkRegimes([]);
       setContractNatures([]);
       setCostCentersOptions([]);
@@ -196,11 +194,12 @@ const EmployeeCreateModal = ({
     };
 
     loadData();
-  }, [isOpen]);
+  }, [open]);
 
   /* -----------------------------------------------------------
-     HANDLER DI CAMPO (SIMPLE)
+     HANDLER CAMPI
   ----------------------------------------------------------- */
+
   const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -208,9 +207,6 @@ const EmployeeCreateModal = ({
     }));
   };
 
-  /* -----------------------------------------------------------
-     HANDLER DI CAMPO NIDIFICATO (contract, salary, department, ecc.)
-  ----------------------------------------------------------- */
   const handleNestedChange = (
     section: keyof EmployeeCreateForm,
     field: string,
@@ -225,9 +221,6 @@ const EmployeeCreateModal = ({
     }));
   };
 
-  /* -----------------------------------------------------------
-     HANDLER ARRAY (cost_centers, benefits)
-  ----------------------------------------------------------- */
   const handleArrayChange = (
     section: keyof EmployeeCreateForm,
     index: number,
@@ -247,9 +240,6 @@ const EmployeeCreateModal = ({
     });
   };
 
-  /* -----------------------------------------------------------
-     AGGIUNTA RIGA COST CENTER
-  ----------------------------------------------------------- */
   const addCostCenterRow = () => {
     setFormData((prev) => ({
       ...prev,
@@ -265,9 +255,6 @@ const EmployeeCreateModal = ({
     }));
   };
 
-  /* -----------------------------------------------------------
-     AGGIUNTA RIGA BENEFIT
-  ----------------------------------------------------------- */
   const addBenefitRow = () => {
     setFormData((prev) => ({
       ...prev,
@@ -283,9 +270,6 @@ const EmployeeCreateModal = ({
     }));
   };
 
-  /* -----------------------------------------------------------
-     SET COMPANY CAR (CREA OGGETTO SE NULL)
-  ----------------------------------------------------------- */
   const setCompanyCar = (field: keyof CompanyCar, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -303,9 +287,6 @@ const EmployeeCreateModal = ({
     }));
   };
 
-  /* -----------------------------------------------------------
-     CAMBIO SITO → CARICA REPARTI + PREPOSTI
-  ----------------------------------------------------------- */
   const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -330,9 +311,6 @@ const EmployeeCreateModal = ({
     setPreposti(prepostiRes);
   };
 
-  /* -----------------------------------------------------------
-     SUBMIT → CREA DIPENDENTE
-  ----------------------------------------------------------- */
   const handleSubmit = async () => {
     try {
       const created = await createEmployee(formData);
@@ -347,14 +325,10 @@ const EmployeeCreateModal = ({
   /* -----------------------------------------------------------
      RENDER STEP
   ----------------------------------------------------------- */
-  /* -----------------------------------------------------------
-     RENDER STEP
-  ----------------------------------------------------------- */
+
   const renderStep = () => {
     switch (step) {
-      /* -------------------------------------------------------
-         STEP 1 — ANAGRAFICA + LUL + STATO LAVORATIVO
-      ------------------------------------------------------- */
+      /* STEP 1 — ANAGRAFICA + LUL + STATO LAVORATIVO */
       case 1:
         return (
           <div>
@@ -456,7 +430,9 @@ const EmployeeCreateModal = ({
             <input
               type="date"
               value={formData.termination_date}
-              onChange={(e) => handleChange("termination_date", e.target.value)}
+              onChange={(e) =>
+                handleChange("termination_date", e.target.value)
+              }
             />
 
             <label>
@@ -483,9 +459,7 @@ const EmployeeCreateModal = ({
           </div>
         );
 
-      /* -------------------------------------------------------
-         STEP 2 — CONTRATTO
-      ------------------------------------------------------- */
+      /* STEP 2 — CONTRATTO */
       case 2:
         return (
           <div>
@@ -582,9 +556,7 @@ const EmployeeCreateModal = ({
           </div>
         );
 
-      /* -------------------------------------------------------
-         STEP 3 — COST CENTER
-      ------------------------------------------------------- */
+      /* STEP 3 — COST CENTER */
       case 3:
         return (
           <div>
@@ -660,12 +632,7 @@ const EmployeeCreateModal = ({
           </div>
         );
 
-      /* -------------------------------------------------------
-         STEP 4 — SITO + REPARTO + PREPOSTO
-      ------------------------------------------------------- */
-      /* -------------------------------------------------------
-         STEP 4 — SITO + REPARTO + PREPOSTO
-      ------------------------------------------------------- */
+      /* STEP 4 — SITO + REPARTO + PREPOSTO */
       case 4:
         return (
           <div>
@@ -757,9 +724,7 @@ const EmployeeCreateModal = ({
           </div>
         );
 
-      /* -------------------------------------------------------
-         STEP 5 — RAL + BENEFIT + AUTO
-      ------------------------------------------------------- */
+      /* STEP 5 — RAL + BENEFIT + AUTO */
       case 5:
         return (
           <div>
@@ -912,11 +877,12 @@ const EmployeeCreateModal = ({
         return null;
     }
   };
+
   /* -----------------------------------------------------------
      RENDER MODAL FINALE
   ----------------------------------------------------------- */
 
-  if (!isOpen) return null;
+  if (!open) return null;
 
   return (
     <div className="modal-backdrop">

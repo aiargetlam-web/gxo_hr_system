@@ -1,65 +1,19 @@
+import React, { useState, useEffect } from "react";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stepper,
-  Step,
-  StepLabel,
-  Stack,
-  TextField,
-  MenuItem,
-  Checkbox,
-  FormControlLabel,
-  Typography,
-  Card,
-  IconButton,
-} from "@mui/material";
+  createEmployee,
+  getDepartmentsBySite,
+  getPrepostiBySite,
+} from "../../services/employeeService";
+import { getSites } from "../../services/siteService";
+import { getWorkRegimes, getContractNatures } from "../../services/contractService";
+import { getCostCenters } from "../../services/costCenterService";
+import { getBenefits } from "../../services/benefitService";
 
-import { useEffect, useState } from "react";
-import {
-  EmployeeCreate,
-  ContractCreate,
-  CostCenterCreate,
-  DepartmentCreate,
-  SalaryCreate,
-  SiteAssignmentCreate,
-  BenefitCreate,
-  CompanyCarCreate,
-  Role,
-  Site,
-} from "../../types";
+const EmployeeCreateModal = ({ isOpen, onClose, onCreated }) => {
+  const [step, setStep] = useState(1);
 
-import { employeeService } from "../../services/employeeService";
-import DeleteIcon from "@mui/icons-material/Delete";
-
-const steps = [
-  "Anagrafica",
-  "Contratto",
-  "Cost Center",
-  "Reparto / RAL / Sito",
-  "Benefici / Auto",
-];
-
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  onCreated: () => void;
-}
-
-export default function EmployeeCreateModal({ open, onClose, onCreated }: Props) {
-  const [activeStep, setActiveStep] = useState(0);
-
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
-  const [workRegimes, setWorkRegimes] = useState<any[]>([]);
-  const [contractNatures, setContractNatures] = useState<any[]>([]);
-  const [costCentersList, setCostCentersList] = useState<any[]>([]);
-  const [departmentsList, setDepartmentsList] = useState<any[]>([]);
-  const [preposti, setPreposti] = useState<any[]>([]);
-
-  const [form, setForm] = useState<EmployeeCreate>({
+  const [formData, setFormData] = useState({
+    // ANAGRAFICA
     first_name: "",
     last_name: "",
     email: "",
@@ -71,97 +25,132 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     address_street: "",
     address_city: "",
     address_cap: "",
-    lul_id: "",
-    role_id: 1,
 
+    // LUL
+    id_lul: "",
+
+    // RUOLO
+    role_id: null,
+
+    // STATO LAVORATIVO
     hire_date: "",
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
-    preposto: false,
 
-    contract: {
-      work_regime_id: 1,
-      contract_nature_id: 1,
+    // SITO ATTUALE + STORICO
+    site_history: {
+      site_id: null,
       from_date: "",
-      weekly_hours: 40,
-      fte: 1,
+      note: "",
+    },
+
+    // CONTRATTO
+    contract: {
+      work_regime_id: null,
+      contract_nature_id: null,
+      from_date: "",
+      weekly_hours: "",
+      fte: "",
       time_band: "",
       shift_type: "",
       note: "",
     },
 
+    // COST CENTER
     cost_centers: [],
 
+    // REPARTO
     department: {
-      department_id: 1,
-      manager_employee_id: undefined,
+      department_id: null,
+      manager_employee_id: null,
       from_date: "",
       note: "",
     },
 
+    // RAL
     salary: {
-      ral_amount: 0,
+      ral_amount: "",
       from_date: "",
       note: "",
     },
 
-    site_history: {
-      site_id: 1,
-      from_date: "",
-      note: "",
-    },
-
+    // BENEFIT
     benefits: [],
 
-    company_car: undefined,
+    // AUTO AZIENDALE
+    company_car: null,
   });
-  // ============================
-  // HANDLER CAMPI
-  // ============================
-  const handleChange = (field: keyof EmployeeCreate, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
 
-  const handleContractChange = (field: keyof ContractCreate, value: any) => {
-    setForm((prev) => ({
+  // Opzioni per select
+  const [sites, setSites] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [preposti, setPreposti] = useState([]);
+  const [workRegimes, setWorkRegimes] = useState([]);
+  const [contractNatures, setContractNatures] = useState([]);
+  const [costCentersOptions, setCostCentersOptions] = useState([]);
+  const [benefitTypes, setBenefitTypes] = useState([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadData = async () => {
+      const [sitesRes, wrRes, cnRes, ccRes, benRes] = await Promise.all([
+        getSites(),
+        getWorkRegimes(),
+        getContractNatures(),
+        getCostCenters(),
+        getBenefits(),
+      ]);
+
+      setSites(sitesRes);
+      setWorkRegimes(wrRes);
+      setContractNatures(cnRes);
+      setCostCentersOptions(ccRes);
+      setBenefitTypes(benRes);
+    };
+
+    loadData();
+  }, [isOpen]);
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
       ...prev,
-      contract: { ...prev.contract, [field]: value },
+      [field]: value,
     }));
   };
 
-  const handleDepartmentChange = (field: keyof DepartmentCreate, value: any) => {
-    setForm((prev) => ({
+  const handleNestedChange = (section, field, value) => {
+    setFormData((prev) => ({
       ...prev,
-      department: { ...prev.department, [field]: value },
+      [section]: {
+        ...prev[section],
+        [field]: value,
+      },
     }));
   };
 
-  const handleSalaryChange = (field: keyof SalaryCreate, value: any) => {
-    setForm((prev) => ({
-      ...prev,
-      salary: { ...prev.salary, [field]: value },
-    }));
+  const handleArrayChange = (section, index, field, value) => {
+    setFormData((prev) => {
+      const arr = [...prev[section]];
+      arr[index] = {
+        ...arr[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        [section]: arr,
+      };
+    });
   };
 
-  const handleSiteChange = (field: keyof SiteAssignmentCreate, value: any) => {
-    setForm((prev) => ({
-      ...prev,
-      site_history: { ...prev.site_history, [field]: value },
-    }));
-  };
-
-  // ============================
-  // COST CENTER
-  // ============================
-  const addCostCenter = () => {
-    setForm((prev) => ({
+  const addCostCenterRow = () => {
+    setFormData((prev) => ({
       ...prev,
       cost_centers: [
         ...prev.cost_centers,
         {
-          cost_center_id: 1,
-          weight_percent: 100,
+          cost_center_id: null,
+          weight_percent: "",
           from_date: "",
           note: "",
         },
@@ -169,23 +158,13 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     }));
   };
 
-  const removeCostCenter = (index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      cost_centers: prev.cost_centers.filter((_, i) => i !== index),
-    }));
-  };
-
-  // ============================
-  // BENEFICI
-  // ============================
-  const addBenefit = () => {
-    setForm((prev) => ({
+  const addBenefitRow = () => {
+    setFormData((prev) => ({
       ...prev,
       benefits: [
         ...prev.benefits,
         {
-          benefit_type: "",
+          benefit_type: null,
           has_benefit: true,
           from_date: "",
           note: "",
@@ -194,582 +173,587 @@ export default function EmployeeCreateModal({ open, onClose, onCreated }: Props)
     }));
   };
 
-  const removeBenefit = (index: number) => {
-    setForm((prev) => ({
+  const setCompanyCar = (field, value) => {
+    setFormData((prev) => ({
       ...prev,
-      benefits: prev.benefits.filter((_, i) => i !== index),
+      company_car: {
+        ...(prev.company_car || {
+          car_model: "",
+          plate: "",
+          from_date: "",
+          benefit_type: "",
+          payroll_notes: "",
+          note: "",
+        }),
+        [field]: value,
+      },
     }));
   };
+  const handleSiteChange = async (siteId) => {
+    // aggiorna site_history.site_id
+    setFormData((prev) => ({
+      ...prev,
+      site_history: {
+        ...prev.site_history,
+        site_id: siteId,
+      },
+    }));
 
-  // ============================
-  // CARICAMENTO VALORI DAL DB
-  // ============================
-  useEffect(() => {
-    if (open) {
-      loadDropdowns();
+    if (!siteId) {
+      setDepartments([]);
+      setPreposti([]);
+      return;
     }
-  }, [open]);
 
-  const loadDropdowns = async () => {
-    try {
-      const [
-        rolesRes,
-        sitesRes,
-        wrRes,
-        cnRes,
-        ccRes,
-        depRes,
-        prepostiRes,
-      ] = await Promise.all([
-        employeeService.getAllRoles(),
-        employeeService.getSites(),
-        employeeService.getWorkRegimes(),
-        employeeService.getContractNatures(),
-        employeeService.getCostCenters(),
-        employeeService.getDepartments(),
-        employeeService.getPreposti(),
-      ]);
+    const [depsRes, prepostiRes] = await Promise.all([
+      getDepartmentsBySite(siteId),
+      getPrepostiBySite(siteId),
+    ]);
 
-      setRoles(rolesRes);
-      setSites(sitesRes);
-      setWorkRegimes(wrRes);
-      setContractNatures(cnRes);
-      setCostCentersList(ccRes);
-      setDepartmentsList(depRes);
-      setPreposti(prepostiRes);
-    } catch (err) {
-      console.error("Errore caricamento dropdown:", err);
-    }
+    setDepartments(depsRes);
+    setPreposti(prepostiRes);
   };
-  // ============================
-  // SUBMIT
-  // ============================
   const handleSubmit = async () => {
-    await employeeService.createEmployee(form);
-    onCreated();
-    onClose();
-    setActiveStep(0);
+    try {
+      const created = await createEmployee(formData);
+      if (onCreated) onCreated(created);
+      onClose();
+    } catch (err) {
+      console.error("Errore creazione dipendente", err);
+      alert("Errore durante la creazione del dipendente");
+    }
   };
-
-  // ============================
-  // RENDER STEP
-  // ============================
   const renderStep = () => {
-    switch (activeStep) {
-      case 0:
+    switch (step) {
+      case 1:
+        // ANAGRAFICA + LUL + STATO BASE
         return (
-          <Stack spacing={2}>
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Nome"
-                fullWidth
-                value={form.first_name}
-                onChange={(e) => handleChange("first_name", e.target.value)}
-              />
-              <TextField
-                label="Cognome"
-                fullWidth
-                value={form.last_name}
-                onChange={(e) => handleChange("last_name", e.target.value)}
-              />
-            </Stack>
-
-            <TextField
-              label="Email"
-              fullWidth
-              value={form.email}
+          <div>
+            <h3>Anagrafica</h3>
+            <input
+              type="text"
+              placeholder="Nome"
+              value={formData.first_name}
+              onChange={(e) => handleChange("first_name", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Cognome"
+              value={formData.last_name}
+              onChange={(e) => handleChange("last_name", e.target.value)}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
             />
-
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Telefono"
-                fullWidth
-                value={form.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-              />
-              <TextField
-                label="Codice Fiscale"
-                fullWidth
-                value={form.fiscal_code}
-                onChange={(e) => handleChange("fiscal_code", e.target.value)}
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Data di nascita"
-                type="date"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={form.birth_date}
-                onChange={(e) => handleChange("birth_date", e.target.value)}
-              />
-              <TextField
-                label="Luogo di nascita"
-                fullWidth
-                value={form.birth_place}
-                onChange={(e) => handleChange("birth_place", e.target.value)}
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Indirizzo"
-                fullWidth
-                value={form.address_street}
-                onChange={(e) => handleChange("address_street", e.target.value)}
-              />
-              <TextField
-                label="Città"
-                fullWidth
-                value={form.address_city}
-                onChange={(e) => handleChange("address_city", e.target.value)}
-              />
-              <TextField
-                label="CAP"
-                fullWidth
-                value={form.address_cap}
-                onChange={(e) => handleChange("address_cap", e.target.value)}
-              />
-            </Stack>
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={form.preposto}
-                  onChange={(e) => handleChange("preposto", e.target.checked)}
-                />
-              }
-              label="Preposto"
+            <input
+              type="text"
+              placeholder="Telefono"
+              value={formData.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
             />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={form.is_protected_category}
-                  onChange={(e) =>
-                    handleChange("is_protected_category", e.target.checked)
-                  }
-                />
-              }
-              label="Categoria protetta"
+            <input
+              type="text"
+              placeholder="Codice fiscale"
+              value={formData.fiscal_code}
+              onChange={(e) => handleChange("fiscal_code", e.target.value)}
             />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={form.is_disadvantaged}
-                  onChange={(e) =>
-                    handleChange("is_disadvantaged", e.target.checked)
-                  }
-                />
-              }
-              label="Svantaggiato"
+            <input
+              type="text"
+              placeholder="Genere"
+              value={formData.gender}
+              onChange={(e) => handleChange("gender", e.target.value)}
             />
-
-            <TextField
-              select
-              label="Ruolo"
-              fullWidth
-              value={form.role_id}
-              onChange={(e) => handleChange("role_id", Number(e.target.value))}
-            >
-              {roles.map((r) => (
-                <MenuItem key={r.id} value={r.id}>
-                  {r.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            {/* ⭐ SITO — CORRETTO */}
-            <TextField
-              select
-              label="Sito"
-              fullWidth
-              value={form.site_history.site_id}
-              onChange={(e) =>
-                handleSiteChange("site_id", Number(e.target.value))
-              }
-            >
-              {sites.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-        );
-
-      case 1:
-        return (
-          <Stack spacing={2}>
-            <TextField
-              label="Data inizio contratto"
+            <input
               type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.contract.from_date}
-              onChange={(e) => handleContractChange("from_date", e.target.value)}
+              value={formData.birth_date}
+              onChange={(e) => handleChange("birth_date", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Luogo di nascita"
+              value={formData.birth_place}
+              onChange={(e) => handleChange("birth_place", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Indirizzo"
+              value={formData.address_street}
+              onChange={(e) => handleChange("address_street", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Città"
+              value={formData.address_city}
+              onChange={(e) => handleChange("address_city", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="CAP"
+              value={formData.address_cap}
+              onChange={(e) => handleChange("address_cap", e.target.value)}
             />
 
-            <TextField
-              select
-              label="Regime di lavoro"
-              fullWidth
-              value={form.contract.work_regime_id}
-              onChange={(e) =>
-                handleContractChange("work_regime_id", Number(e.target.value))
-              }
-            >
-              {workRegimes.map((wr) => (
-                <MenuItem key={wr.id} value={wr.id}>
-                  {wr.code} - {wr.description}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              select
-              label="Natura contratto"
-              fullWidth
-              value={form.contract.contract_nature_id}
-              onChange={(e) =>
-                handleContractChange("contract_nature_id", Number(e.target.value))
-              }
-            >
-              {contractNatures.map((cn) => (
-                <MenuItem key={cn.id} value={cn.id}>
-                  {cn.code} - {cn.description}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Ore settimanali"
-              fullWidth
-              value={form.contract.weekly_hours}
-              onChange={(e) =>
-                handleContractChange("weekly_hours", Number(e.target.value))
-              }
+            <h4>LUL</h4>
+            <input
+              type="text"
+              placeholder="ID LUL"
+              value={formData.id_lul}
+              onChange={(e) => handleChange("id_lul", e.target.value)}
             />
 
-            <TextField
-              label="FTE"
-              fullWidth
-              value={form.contract.fte}
-              onChange={(e) =>
-                handleContractChange("fte", Number(e.target.value))
-              }
+            <h4>Stato lavorativo</h4>
+            <input
+              type="date"
+              value={formData.hire_date}
+              onChange={(e) => handleChange("hire_date", e.target.value)}
             />
-
-            <TextField
-              label="Fascia oraria"
-              fullWidth
-              value={form.contract.time_band}
-              onChange={(e) => handleContractChange("time_band", e.target.value)}
+            <input
+              type="date"
+              value={formData.termination_date || ""}
+              onChange={(e) => handleChange("termination_date", e.target.value)}
             />
-
-            <TextField
-              select
-              label="Turno"
-              fullWidth
-              value={form.contract.shift_type}
-              onChange={(e) => handleContractChange("shift_type", e.target.value)}
-            >
-              <MenuItem value="Giornata">Giornata</MenuItem>
-              <MenuItem value="Turnista">Turnista</MenuItem>
-            </TextField>
-          </Stack>
+            <label>
+              Categoria protetta
+              <input
+                type="checkbox"
+                checked={formData.is_protected_category}
+                onChange={(e) =>
+                  handleChange("is_protected_category", e.target.checked)
+                }
+              />
+            </label>
+            <label>
+              Svantaggiato
+              <input
+                type="checkbox"
+                checked={formData.is_disadvantaged}
+                onChange={(e) =>
+                  handleChange("is_disadvantaged", e.target.checked)
+                }
+              />
+            </label>
+          </div>
         );
 
       case 2:
+        // CONTRATTO
         return (
-          <Stack spacing={2}>
-            <Button variant="outlined" onClick={addCostCenter}>
-              Aggiungi Cost Center
-            </Button>
+          <div>
+            <h3>Contratto</h3>
+            <select
+              value={formData.contract.work_regime_id || ""}
+              onChange={(e) =>
+                handleNestedChange("contract", "work_regime_id", Number(e.target.value))
+              }
+            >
+              <option value="">Seleziona regime di lavoro</option>
+              {workRegimes.map((wr) => (
+                <option key={wr.id} value={wr.id}>
+                  {wr.description || wr.code}
+                </option>
+              ))}
+            </select>
 
-            {form.cost_centers.map((cc, index) => (
-              <Card key={index} sx={{ p: 2 }}>
-                <Stack spacing={2}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="subtitle1">
-                      Cost Center #{index + 1}
-                    </Typography>
-                    <IconButton onClick={() => removeCostCenter(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Stack>
+            <select
+              value={formData.contract.contract_nature_id || ""}
+              onChange={(e) =>
+                handleNestedChange("contract", "contract_nature_id", Number(e.target.value))
+              }
+            >
+              <option value="">Seleziona natura contratto</option>
+              {contractNatures.map((cn) => (
+                <option key={cn.id} value={cn.id}>
+                  {cn.description || cn.code}
+                </option>
+              ))}
+            </select>
 
-                  <TextField
-                    select
-                    label="Cost Center"
-                    fullWidth
-                    value={cc.cost_center_id}
-                    onChange={(e) => {
-                      const updated = [...form.cost_centers];
-                      updated[index].cost_center_id = Number(e.target.value);
-                      handleChange("cost_centers", updated);
-                    }}
-                  >
-                    {costCentersList.map((c) => (
-                      <MenuItem key={c.id} value={c.id}>
-                        {c.code} - {c.description}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    label="Percentuale"
-                    fullWidth
-                    value={cc.weight_percent}
-                    onChange={(e) => {
-                      const updated = [...form.cost_centers];
-                      updated[index].weight_percent = Number(e.target.value);
-                      handleChange("cost_centers", updated);
-                    }}
-                  />
-
-                  <TextField
-                    label="Data inizio"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    value={cc.from_date}
-                    onChange={(e) => {
-                      const updated = [...form.cost_centers];
-                      updated[index].from_date = e.target.value;
-                      handleChange("cost_centers", updated);
-                    }}
-                  />
-                </Stack>
-              </Card>
-            ))}
-          </Stack>
+            <input
+              type="date"
+              value={formData.contract.from_date}
+              onChange={(e) =>
+                handleNestedChange("contract", "from_date", e.target.value)
+              }
+            />
+            <input
+              type="number"
+              placeholder="Ore settimanali"
+              value={formData.contract.weekly_hours}
+              onChange={(e) =>
+                handleNestedChange("contract", "weekly_hours", e.target.value)
+              }
+            />
+            <input
+              type="number"
+              step="0.01"
+              placeholder="FTE"
+              value={formData.contract.fte}
+              onChange={(e) =>
+                handleNestedChange("contract", "fte", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Fascia oraria"
+              value={formData.contract.time_band}
+              onChange={(e) =>
+                handleNestedChange("contract", "time_band", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Tipo turno"
+              value={formData.contract.shift_type}
+              onChange={(e) =>
+                handleNestedChange("contract", "shift_type", e.target.value)
+              }
+            />
+            <textarea
+              placeholder="Note contratto"
+              value={formData.contract.note}
+              onChange={(e) =>
+                handleNestedChange("contract", "note", e.target.value)
+              }
+            />
+          </div>
         );
 
       case 3:
+        // COST CENTER
         return (
-          <Stack spacing={2}>
-            <TextField
-              select
-              label="Reparto"
-              fullWidth
-              value={form.department.department_id}
-              onChange={(e) =>
-                handleDepartmentChange("department_id", Number(e.target.value))
-              }
-            >
-              {departmentsList.map((d) => (
-                <MenuItem key={d.id} value={d.id}>
-                  {d.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              select
-              label="Responsabile"
-              fullWidth
-              value={form.department.manager_employee_id ?? ""}
-              onChange={(e) =>
-                handleDepartmentChange(
-                  "manager_employee_id",
-                  e.target.value === "" ? undefined : Number(e.target.value)
-                )
-              }
-            >
-              {preposti.map((p) => (
-                <MenuItem key={p.id} value={p.id}>
-                  {p.last_name} {p.first_name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Data inizio reparto"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.department.from_date}
-              onChange={(e) =>
-                handleDepartmentChange("from_date", e.target.value)
-              }
-            />
-
-            <TextField
-              label="RAL iniziale"
-              fullWidth
-              value={form.salary.ral_amount}
-              onChange={(e) =>
-                handleSalaryChange("ral_amount", Number(e.target.value))
-              }
-            />
-
-            <TextField
-              label="Data inizio RAL"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.salary.from_date}
-              onChange={(e) => handleSalaryChange("from_date", e.target.value)}
-            />
-
-            <TextField
-              select
-              label="Sito iniziale"
-              fullWidth
-              value={form.site_history.site_id}
-              onChange={(e) =>
-                handleSiteChange("site_id", Number(e.target.value))
-              }
-            >
-              {sites.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Data inizio sito"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.site_history.from_date}
-              onChange={(e) => handleSiteChange("from_date", e.target.value)}
-            />
-          </Stack>
+          <div>
+            <h3>Cost center</h3>
+            <button type="button" onClick={addCostCenterRow}>
+              Aggiungi cost center
+            </button>
+            {formData.cost_centers.map((cc, index) => (
+              <div key={index}>
+                <select
+                  value={cc.cost_center_id || ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "cost_centers",
+                      index,
+                      "cost_center_id",
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  <option value="">Seleziona cost center</option>
+                  {costCentersOptions.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name || c.code}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  placeholder="% peso"
+                  value={cc.weight_percent}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "cost_centers",
+                      index,
+                      "weight_percent",
+                      e.target.value
+                    )
+                  }
+                />
+                <input
+                  type="date"
+                  value={cc.from_date}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "cost_centers",
+                      index,
+                      "from_date",
+                      e.target.value
+                    )
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Note"
+                  value={cc.note}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "cost_centers",
+                      index,
+                      "note",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </div>
         );
 
       case 4:
+        // SITO + REPARTO + PREPOSTO
         return (
-          <Stack spacing={2}>
-            <Button variant="outlined" onClick={addBenefit}>
-              Aggiungi Beneficio
-            </Button>
+          <div>
+            <h3>Sito e reparto</h3>
+            <select
+              value={formData.site_history.site_id || ""}
+              onChange={(e) => handleSiteChange(Number(e.target.value))}
+            >
+              <option value="">Seleziona sito</option>
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name || s.code}
+                </option>
+              ))}
+            </select>
 
-            {form.benefits.map((b, index) => (
-              <Card key={index} sx={{ p: 2 }}>
-                <Stack spacing={2}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="subtitle1">
-                      Beneficio #{index + 1}
-                    </Typography>
-                    <IconButton onClick={() => removeBenefit(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Stack>
+            <input
+              type="date"
+              value={formData.site_history.from_date}
+              onChange={(e) =>
+                handleNestedChange("site_history", "from_date", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Note sito"
+              value={formData.site_history.note}
+              onChange={(e) =>
+                handleNestedChange("site_history", "note", e.target.value)
+              }
+            />
 
-                  <TextField
-                    label="Tipo beneficio"
-                    fullWidth
-                    value={b.benefit_type}
-                    onChange={(e) => {
-                      const updated = [...form.benefits];
-                      updated[index].benefit_type = e.target.value;
-                      handleChange("benefits", updated);
-                    }}
+            <h4>Reparto</h4>
+            <select
+              value={formData.department.department_id || ""}
+              onChange={(e) =>
+                handleNestedChange(
+                  "department",
+                  "department_id",
+                  Number(e.target.value)
+                )
+              }
+            >
+              <option value="">Seleziona reparto</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name || d.code}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={formData.department.manager_employee_id || ""}
+              onChange={(e) =>
+                handleNestedChange(
+                  "department",
+                  "manager_employee_id",
+                  Number(e.target.value)
+                )
+              }
+            >
+              <option value="">Seleziona preposto</option>
+              {preposti.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.last_name} {p.first_name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              value={formData.department.from_date}
+              onChange={(e) =>
+                handleNestedChange("department", "from_date", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Note reparto"
+              value={formData.department.note}
+              onChange={(e) =>
+                handleNestedChange("department", "note", e.target.value)
+              }
+            />
+          </div>
+        );
+
+      case 5:
+        // RAL + BENEFIT + AUTO
+        return (
+          <div>
+            <h3>RAL</h3>
+            <input
+              type="number"
+              placeholder="RAL"
+              value={formData.salary.ral_amount}
+              onChange={(e) =>
+                handleNestedChange("salary", "ral_amount", e.target.value)
+              }
+            />
+            <input
+              type="date"
+              value={formData.salary.from_date}
+              onChange={(e) =>
+                handleNestedChange("salary", "from_date", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Note RAL"
+              value={formData.salary.note}
+              onChange={(e) =>
+                handleNestedChange("salary", "note", e.target.value)
+              }
+            />
+
+            <h3>Benefit</h3>
+            <button type="button" onClick={addBenefitRow}>
+              Aggiungi benefit
+            </button>
+            {formData.benefits.map((b, index) => (
+              <div key={index}>
+                <select
+                  value={b.benefit_type || ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "benefits",
+                      index,
+                      "benefit_type",
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Seleziona benefit</option>
+                  {benefitTypes.map((bt) => (
+                    <option key={bt.id} value={bt.code}>
+                      {bt.description || bt.code}
+                    </option>
+                  ))}
+                </select>
+                <label>
+                  Attivo
+                  <input
+                    type="checkbox"
+                    checked={b.has_benefit}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "benefits",
+                        index,
+                        "has_benefit",
+                        e.target.checked
+                      )
+                    }
                   />
-
-                  <TextField
-                    label="Data inizio"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    value={b.from_date}
-                    onChange={(e) => {
-                      const updated = [...form.benefits];
-                      updated[index].from_date = e.target.value;
-                      handleChange("benefits", updated);
-                    }}
-                  />
-                </Stack>
-              </Card>
+                </label>
+                <input
+                  type="date"
+                  value={b.from_date}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "benefits",
+                      index,
+                      "from_date",
+                      e.target.value
+                    )
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Note"
+                  value={b.note}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "benefits",
+                      index,
+                      "note",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
             ))}
 
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Auto Aziendale (opzionale)
-            </Typography>
-
-            <TextField
-              label="Modello auto"
-              fullWidth
-              value={form.company_car?.car_model ?? ""}
-              onChange={(e) =>
-                handleChange("company_car", {
-                  ...(form.company_car ?? {}),
-                  car_model: e.target.value,
-                })
-              }
+            <h3>Auto aziendale</h3>
+            <input
+              type="text"
+              placeholder="Modello auto"
+              value={formData.company_car?.car_model || ""}
+              onChange={(e) => setCompanyCar("car_model", e.target.value)}
             />
-
-            <TextField
-              label="Targa"
-              fullWidth
-              value={form.company_car?.plate ?? ""}
-              onChange={(e) =>
-                handleChange("company_car", {
-                  ...(form.company_car ?? {}),
-                  plate: e.target.value,
-                })
-              }
+            <input
+              type="text"
+              placeholder="Targa"
+              value={formData.company_car?.plate || ""}
+              onChange={(e) => setCompanyCar("plate", e.target.value)}
             />
-
-            <TextField
-              label="Data inizio"
+            <input
               type="date"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={form.company_car?.from_date ?? ""}
-              onChange={(e) =>
-                handleChange("company_car", {
-                  ...(form.company_car ?? {}),
-                  from_date: e.target.value,
-                })
-              }
+              value={formData.company_car?.from_date || ""}
+              onChange={(e) => setCompanyCar("from_date", e.target.value)}
             />
-          </Stack>
+            <input
+              type="text"
+              placeholder="Tipo benefit"
+              value={formData.company_car?.benefit_type || ""}
+              onChange={(e) => setCompanyCar("benefit_type", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Note payroll"
+              value={formData.company_car?.payroll_notes || ""}
+              onChange={(e) => setCompanyCar("payroll_notes", e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Note auto"
+              value={formData.company_car?.note || ""}
+              onChange={(e) => setCompanyCar("note", e.target.value)}
+            />
+          </div>
         );
+
+      default:
+        return null;
     }
   };
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Nuovo Dipendente</DialogTitle>
+  if (!isOpen) return null;
 
-      <DialogContent>
-        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+  return (
+    <div className="modal-backdrop">
+      <div className="modal">
+        <h2>Nuovo dipendente</h2>
 
         {renderStep()}
-      </DialogContent>
 
-      <DialogActions>
-        {activeStep > 0 && (
-          <Button onClick={() => setActiveStep(activeStep - 1)}>
-            Indietro
-          </Button>
-        )}
+        <div className="modal-footer">
+          <button type="button" onClick={onClose}>
+            Annulla
+          </button>
 
-        {activeStep < steps.length - 1 ? (
-          <Button
-            variant="contained"
-            onClick={() => setActiveStep(activeStep + 1)}
-          >
-            Avanti
-          </Button>
-        ) : (
-          <Button variant="contained" onClick={handleSubmit}>
-            Crea Dipendente
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+          {step > 1 && (
+            <button type="button" onClick={() => setStep(step - 1)}>
+              Indietro
+            </button>
+          )}
+
+          {step < 5 && (
+            <button type="button" onClick={() => setStep(step + 1)}>
+              Avanti
+            </button>
+          )}
+
+          {step === 5 && (
+            <button type="button" onClick={handleSubmit}>
+              Conferma creazione
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default EmployeeCreateModal;

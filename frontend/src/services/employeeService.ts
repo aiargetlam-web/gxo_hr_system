@@ -13,7 +13,7 @@ export const getEmployees = async () => {
 // GET DIPENDENTE SINGOLO
 // ============================================================
 
-export const getEmployee = async (employeeId) => {
+export const getEmployee = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}`);
   return response.data;
 };
@@ -22,7 +22,7 @@ export const getEmployee = async (employeeId) => {
 // CREATE EMPLOYEE (CORRETTO)
 // ============================================================
 
-export const createEmployee = async (formData) => {
+export const createEmployee = async (formData: any) => {
   const payload = {
     first_name: formData.first_name,
     last_name: formData.last_name,
@@ -36,7 +36,6 @@ export const createEmployee = async (formData) => {
     address_city: formData.address_city,
     address_cap: formData.address_cap,
 
-    // 🔥 CORRETTO
     id_lul: formData.id_lul,
 
     role_id: formData.role_id,
@@ -45,14 +44,12 @@ export const createEmployee = async (formData) => {
     is_protected_category: formData.is_protected_category,
     is_disadvantaged: formData.is_disadvantaged,
 
-    // 🔥 SITO ATTUALE = site_history.site_id
     site_history: {
       site_id: formData.site_history.site_id,
       from_date: formData.site_history.from_date,
       note: formData.site_history.note,
     },
 
-    // CONTRATTO
     contract: {
       work_regime_id: formData.contract.work_regime_id,
       contract_nature_id: formData.contract.contract_nature_id,
@@ -64,15 +61,13 @@ export const createEmployee = async (formData) => {
       note: formData.contract.note,
     },
 
-    // COST CENTER
-    cost_centers: formData.cost_centers.map((cc) => ({
+    cost_centers: formData.cost_centers.map((cc: any) => ({
       cost_center_id: cc.cost_center_id,
       weight_percent: cc.weight_percent,
       from_date: cc.from_date,
       note: cc.note,
     })),
 
-    // REPARTO
     department: {
       department_id: formData.department.department_id,
       manager_employee_id: formData.department.manager_employee_id,
@@ -80,22 +75,19 @@ export const createEmployee = async (formData) => {
       note: formData.department.note,
     },
 
-    // RAL
     salary: {
       ral_amount: formData.salary.ral_amount,
       from_date: formData.salary.from_date,
       note: formData.salary.note,
     },
 
-    // BENEFIT
-    benefits: formData.benefits.map((b) => ({
+    benefits: formData.benefits.map((b: any) => ({
       benefit_type: b.benefit_type,
       has_benefit: b.has_benefit,
       from_date: b.from_date,
       note: b.note,
     })),
 
-    // AUTO AZIENDALE
     company_car: formData.company_car
       ? {
           car_model: formData.company_car.car_model,
@@ -116,7 +108,7 @@ export const createEmployee = async (formData) => {
 // CAMBIO SITO (CORRETTO)
 // ============================================================
 
-export const changeEmployeeSite = async (employeeId, data) => {
+export const changeEmployeeSite = async (employeeId: number, data: any) => {
   const payload = {
     site_id: data.site_id,
     from_date: data.from_date,
@@ -131,7 +123,7 @@ export const changeEmployeeSite = async (employeeId, data) => {
 // NUOVO CONTRATTO
 // ============================================================
 
-export const addContract = async (employeeId, data) => {
+export const addContract = async (employeeId: number, data: any) => {
   const response = await api.post(`/employees/${employeeId}/contracts`, data);
   return response.data;
 };
@@ -140,7 +132,7 @@ export const addContract = async (employeeId, data) => {
 // NUOVO COST CENTER
 // ============================================================
 
-export const addCostCenter = async (employeeId, data) => {
+export const addCostCenter = async (employeeId: number, data: any) => {
   const response = await api.post(`/employees/${employeeId}/cost-centers`, data);
   return response.data;
 };
@@ -149,7 +141,7 @@ export const addCostCenter = async (employeeId, data) => {
 // NUOVO REPARTO
 // ============================================================
 
-export const addDepartment = async (employeeId, data) => {
+export const addDepartment = async (employeeId: number, data: any) => {
   const response = await api.post(`/employees/${employeeId}/departments`, data);
   return response.data;
 };
@@ -158,7 +150,7 @@ export const addDepartment = async (employeeId, data) => {
 // NUOVA RAL
 // ============================================================
 
-export const addSalary = async (employeeId, data) => {
+export const addSalary = async (employeeId: number, data: any) => {
   const response = await api.post(`/employees/${employeeId}/salaries`, data);
   return response.data;
 };
@@ -167,7 +159,7 @@ export const addSalary = async (employeeId, data) => {
 // NUOVA AUTO AZIENDALE
 // ============================================================
 
-export const addCompanyCar = async (employeeId, data) => {
+export const addCompanyCar = async (employeeId: number, data: any) => {
   const response = await api.post(`/employees/${employeeId}/company-cars`, data);
   return response.data;
 };
@@ -176,7 +168,7 @@ export const addCompanyCar = async (employeeId, data) => {
 // GET PREPOSTI PER SITO (CORRETTO)
 // ============================================================
 
-export const getPrepostiBySite = async (siteId) => {
+export const getPrepostiBySite = async (siteId: number) => {
   const response = await api.get(`/employees/preposti?site_id=${siteId}`);
   return response.data;
 };
@@ -185,7 +177,7 @@ export const getPrepostiBySite = async (siteId) => {
 // GET REPARTI PER SITO (CORRETTO)
 // ============================================================
 
-export const getDepartmentsBySite = async (siteId) => {
+export const getDepartmentsBySite = async (siteId: number) => {
   const response = await api.get(`/departments?site_id=${siteId}`);
   return response.data;
 };
@@ -194,37 +186,37 @@ export const getDepartmentsBySite = async (siteId) => {
 // STORICI
 // ============================================================
 
-export const getEmployeeContracts = async (employeeId) => {
+export const getEmployeeContracts = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/contracts`);
   return response.data;
 };
 
-export const getEmployeeCostCenters = async (employeeId) => {
+export const getEmployeeCostCenters = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/cost-centers`);
   return response.data;
 };
 
-export const getEmployeeDepartments = async (employeeId) => {
+export const getEmployeeDepartments = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/departments`);
   return response.data;
 };
 
-export const getEmployeeSalaries = async (employeeId) => {
+export const getEmployeeSalaries = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/salaries`);
   return response.data;
 };
 
-export const getEmployeeCompanyCars = async (employeeId) => {
+export const getEmployeeCompanyCars = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/company-cars`);
   return response.data;
 };
 
-export const getEmployeeSites = async (employeeId) => {
+export const getEmployeeSites = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/sites`);
   return response.data;
 };
 
-export const getEmployeeStatusHistory = async (employeeId) => {
+export const getEmployeeStatusHistory = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/status`);
   return response.data;
 };
@@ -233,7 +225,33 @@ export const getEmployeeStatusHistory = async (employeeId) => {
 // STATO ATTUALE
 // ============================================================
 
-export const getEmployeeCurrentStatus = async (employeeId) => {
+export const getEmployeeCurrentStatus = async (employeeId: number) => {
   const response = await api.get(`/employees/${employeeId}/current`);
   return response.data;
+};
+
+// ============================================================
+// EXPORT OGGETTO (SE TI SERVE employeeService)
+// ============================================================
+
+export const employeeService = {
+  getEmployees,
+  getEmployee,
+  createEmployee,
+  changeEmployeeSite,
+  addContract,
+  addCostCenter,
+  addDepartment,
+  addSalary,
+  addCompanyCar,
+  getPrepostiBySite,
+  getDepartmentsBySite,
+  getEmployeeContracts,
+  getEmployeeCostCenters,
+  getEmployeeDepartments,
+  getEmployeeSalaries,
+  getEmployeeCompanyCars,
+  getEmployeeSites,
+  getEmployeeStatusHistory,
+  getEmployeeCurrentStatus,
 };

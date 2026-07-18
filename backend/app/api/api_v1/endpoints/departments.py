@@ -8,8 +8,14 @@ router = APIRouter(prefix="/departments", tags=["Departments"])
 
 @router.get("/", response_model=list[DepartmentSchema])
 def get_departments(
+    site_id: int,
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)
 ):
     from app.models.department import Department
-    return db.query(Department).order_by(Department.id).all()
+    return (
+        db.query(Department)
+        .filter(Department.site_id == site_id)
+        .order_by(Department.id)
+        .all()
+    )

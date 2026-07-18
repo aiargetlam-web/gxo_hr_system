@@ -92,7 +92,7 @@ type EmployeeCreateForm = {
 };
 
 interface EmployeeCreateModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   onCreated?: (employee: any) => void;
 }

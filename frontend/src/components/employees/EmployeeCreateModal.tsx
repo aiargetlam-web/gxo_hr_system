@@ -128,7 +128,7 @@ const steps = [
   "Anagrafica",
   "Contratto",
   "Cost Center",
-  "Sito e Reparto",
+  "Reparto",
   "RAL / Benefit / Auto",
 ];
 
@@ -218,9 +218,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
     loadData();
   }, [open]);
-
   /* -----------------------------------------------------------
-     HANDLER
+     HANDLER CAMPI
   ----------------------------------------------------------- */
 
   const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
@@ -288,6 +287,10 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     }));
   };
 
+  /* -----------------------------------------------------------
+     CAMBIO SITO → CARICA REPARTI E PREPOSTI
+  ----------------------------------------------------------- */
+
   const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -309,6 +312,10 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     setPreposti(prepostiRes);
   };
 
+  /* -----------------------------------------------------------
+     SUBMIT
+  ----------------------------------------------------------- */
+
   const handleSubmit = async () => {
     try {
       const created = await createEmployee(formData);
@@ -319,13 +326,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       alert("Errore durante la creazione del dipendente");
     }
   };
-
   /* -----------------------------------------------------------
      RENDER STEP
   ----------------------------------------------------------- */
 
   const renderStep = () => {
     switch (step) {
+
+      /* -----------------------------------------------------------
+         STEP 0 — ANAGRAFICA + SITO
+      ----------------------------------------------------------- */
       case 0:
         return (
           <Card sx={{ mb: 3 }}>
@@ -335,6 +345,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
+
+                {/* NOME */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -344,6 +356,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* COGNOME */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -353,6 +366,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* EMAIL */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -362,6 +376,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* TELEFONO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -371,6 +386,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* CODICE FISCALE */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -380,6 +396,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* GENERE */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -389,6 +406,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* DATA NASCITA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -400,6 +418,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* LUOGO NASCITA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -409,6 +428,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* INDIRIZZO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -420,6 +440,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* CITTA */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -431,6 +452,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* CAP */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -440,7 +462,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* SITO NELLO STEP 0 */}
+                {/* SITO */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     Sito di assegnazione
@@ -451,13 +473,21 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <FormControl fullWidth>
                     <InputLabel>Sito</InputLabel>
                     <Select
-                      value={formData.site_history.site_id ?? null}
+                      value={
+                        formData.site_history.site_id !== null
+                          ? String(formData.site_history.site_id)
+                          : ""
+                      }
                       label="Sito"
-                      onChange={(e) => handleSiteChange(Number(e.target.value))}
+                      onChange={(e) =>
+                        handleSiteChange(
+                          e.target.value === "" ? 0 : Number(e.target.value)
+                        )
+                      }
                     >
-                      <MenuItem value={null}>Seleziona</MenuItem>
+                      <MenuItem value="">Seleziona</MenuItem>
                       {sites.map((s) => (
-                        <MenuItem key={s.id} value={s.id}>
+                        <MenuItem key={s.id} value={String(s.id)}>
                           {s.name || s.code}
                         </MenuItem>
                       ))}
@@ -465,6 +495,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
+                {/* SITO DAL */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -482,6 +513,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* NOTE SITO */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -497,6 +529,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* LUL */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     LUL
@@ -512,6 +545,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* STATO LAVORATIVO */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     Stato lavorativo
@@ -542,6 +576,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* CHECKBOX */}
                 <Grid item xs={6}>
                   <FormControlLabel
                     control={
@@ -577,6 +612,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
+      /* -----------------------------------------------------------
+         STEP 1 — CONTRATTO
+      ----------------------------------------------------------- */
       case 1:
         return (
           <Card sx={{ mb: 3 }}>
@@ -586,23 +624,31 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
+
+                {/* REGIME DI LAVORO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
                     <InputLabel>Regime di lavoro</InputLabel>
                     <Select
-                      value={formData.contract.work_regime_id ?? null}
+                      value={
+                        formData.contract.work_regime_id !== null
+                          ? String(formData.contract.work_regime_id)
+                          : ""
+                      }
                       label="Regime di lavoro"
                       onChange={(e) =>
                         handleNestedChange(
                           "contract",
                           "work_regime_id",
-                          Number(e.target.value)
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
                         )
                       }
                     >
-                      <MenuItem value={null}>Seleziona</MenuItem>
+                      <MenuItem value="">Seleziona</MenuItem>
                       {workRegimes.map((wr) => (
-                        <MenuItem key={wr.id} value={wr.id}>
+                        <MenuItem key={wr.id} value={String(wr.id)}>
                           {wr.description || wr.code}
                         </MenuItem>
                       ))}
@@ -610,23 +656,30 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
+                {/* NATURA CONTRATTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
                     <InputLabel>Natura contratto</InputLabel>
                     <Select
-                      value={formData.contract.contract_nature_id ?? null}
+                      value={
+                        formData.contract.contract_nature_id !== null
+                          ? String(formData.contract.contract_nature_id)
+                          : ""
+                      }
                       label="Natura contratto"
                       onChange={(e) =>
                         handleNestedChange(
                           "contract",
                           "contract_nature_id",
-                          Number(e.target.value)
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
                         )
                       }
                     >
-                      <MenuItem value={null}>Seleziona</MenuItem>
+                      <MenuItem value="">Seleziona</MenuItem>
                       {contractNatures.map((cn) => (
-                        <MenuItem key={cn.id} value={cn.id}>
+                        <MenuItem key={cn.id} value={String(cn.id)}>
                           {cn.description || cn.code}
                         </MenuItem>
                       ))}
@@ -634,6 +687,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
+                {/* DATA INIZIO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -647,6 +701,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* ORE SETTIMANALI */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -663,6 +718,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* FTE */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -678,6 +734,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* FASCIA ORARIA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -693,6 +750,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* TIPO TURNO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -708,6 +766,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
+                {/* NOTE */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -725,6 +784,10 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
+      /* Il resto degli step arriva nelle parti 4 e 5 */
+      /* -----------------------------------------------------------
+         STEP 2 — COST CENTER
+      ----------------------------------------------------------- */
       case 2:
         return (
           <Card sx={{ mb: 3 }}>
@@ -739,24 +802,30 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
               {formData.cost_centers.map((cc, index) => (
                 <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  
+                  {/* COST CENTER */}
                   <Grid item xs={4}>
                     <FormControl fullWidth>
                       <InputLabel>Cost center</InputLabel>
                       <Select
-                        value={cc.cost_center_id ?? null}
+                        value={
+                          cc.cost_center_id !== null
+                            ? String(cc.cost_center_id)
+                            : ""
+                        }
                         label="Cost center"
                         onChange={(e) =>
                           handleArrayChange(
                             "cost_centers",
                             index,
                             "cost_center_id",
-                            Number(e.target.value)
+                            e.target.value === "" ? null : Number(e.target.value)
                           )
                         }
                       >
-                        <MenuItem value={null}>Seleziona</MenuItem>
+                        <MenuItem value="">Seleziona</MenuItem>
                         {costCentersOptions.map((c) => (
-                          <MenuItem key={c.id} value={c.id}>
+                          <MenuItem key={c.id} value={String(c.id)}>
                             {c.name || c.code}
                           </MenuItem>
                         ))}
@@ -764,6 +833,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     </FormControl>
                   </Grid>
 
+                  {/* PESO */}
                   <Grid item xs={2}>
                     <TextField
                       fullWidth
@@ -781,6 +851,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     />
                   </Grid>
 
+                  {/* DAL */}
                   <Grid item xs={3}>
                     <TextField
                       fullWidth
@@ -799,6 +870,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     />
                   </Grid>
 
+                  {/* NOTE */}
                   <Grid item xs={3}>
                     <TextField
                       fullWidth
@@ -820,38 +892,41 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
+      /* -----------------------------------------------------------
+         STEP 3 — REPARTO + PREPOSTO
+      ----------------------------------------------------------- */
       case 3:
         return (
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Sito e reparto
+                Reparto
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" sx={{ mt: 1 }}>
-                    Reparto
-                  </Typography>
-                </Grid>
 
+                {/* REPARTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
                     <InputLabel>Reparto</InputLabel>
                     <Select
-                      value={formData.department.department_id ?? null}
+                      value={
+                        formData.department.department_id !== null
+                          ? String(formData.department.department_id)
+                          : ""
+                      }
                       label="Reparto"
                       onChange={(e) =>
                         handleNestedChange(
                           "department",
                           "department_id",
-                          Number(e.target.value)
+                          e.target.value === "" ? null : Number(e.target.value)
                         )
                       }
                     >
-                      <MenuItem value={null}>Seleziona</MenuItem>
+                      <MenuItem value="">Seleziona</MenuItem>
                       {departments.map((d) => (
-                        <MenuItem key={d.id} value={d.id}>
+                        <MenuItem key={d.id} value={String(d.id)}>
                           {d.name || d.code}
                         </MenuItem>
                       ))}
@@ -859,23 +934,28 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
+                {/* PREPOSTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
                     <InputLabel>Preposto</InputLabel>
                     <Select
-                      value={formData.department.manager_employee_id ?? null}
+                      value={
+                        formData.department.manager_employee_id !== null
+                          ? String(formData.department.manager_employee_id)
+                          : ""
+                      }
                       label="Preposto"
                       onChange={(e) =>
                         handleNestedChange(
                           "department",
                           "manager_employee_id",
-                          Number(e.target.value)
+                          e.target.value === "" ? null : Number(e.target.value)
                         )
                       }
                     >
-                      <MenuItem value={null}>Seleziona</MenuItem>
+                      <MenuItem value="">Seleziona</MenuItem>
                       {preposti.map((p) => (
-                        <MenuItem key={p.id} value={p.id}>
+                        <MenuItem key={p.id} value={String(p.id)}>
                           {p.last_name} {p.first_name}
                         </MenuItem>
                       ))}
@@ -883,6 +963,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
+                {/* DAL */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -891,18 +972,27 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     InputLabelProps={{ shrink: true }}
                     value={formData.department.from_date}
                     onChange={(e) =>
-                      handleNestedChange("department", "from_date", e.target.value)
+                      handleNestedChange(
+                        "department",
+                        "from_date",
+                        e.target.value
+                      )
                     }
                   />
                 </Grid>
 
+                {/* NOTE */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
                     label="Note reparto"
                     value={formData.department.note}
                     onChange={(e) =>
-                      handleNestedChange("department", "note", e.target.value)
+                      handleNestedChange(
+                        "department",
+                        "note",
+                        e.target.value
+                      )
                     }
                   />
                 </Grid>
@@ -910,10 +1000,14 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
             </CardContent>
           </Card>
         );
-
+      /* -----------------------------------------------------------
+         STEP 4 — RAL / BENEFIT / AUTO
+      ----------------------------------------------------------- */
       case 4:
         return (
           <Box>
+
+            {/* RAL */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -960,6 +1054,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </CardContent>
             </Card>
 
+            {/* BENEFIT */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -972,6 +1067,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
                 {formData.benefits.map((b, index) => (
                   <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+
+                    {/* TIPO BENEFIT */}
                     <Grid item xs={4}>
                       <FormControl fullWidth>
                         <InputLabel>Benefit</InputLabel>
@@ -997,6 +1094,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       </FormControl>
                     </Grid>
 
+                    {/* ATTIVO */}
                     <Grid item xs={2}>
                       <FormControlLabel
                         control={
@@ -1016,6 +1114,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       />
                     </Grid>
 
+                    {/* DAL */}
                     <Grid item xs={3}>
                       <TextField
                         fullWidth
@@ -1034,6 +1133,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       />
                     </Grid>
 
+                    {/* NOTE */}
                     <Grid item xs={3}>
                       <TextField
                         fullWidth
@@ -1054,6 +1154,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </CardContent>
             </Card>
 
+            {/* AUTO AZIENDALE */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1061,6 +1162,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                 </Typography>
 
                 <Grid container spacing={2}>
+
                   <Grid item xs={4}>
                     <TextField
                       fullWidth
@@ -1120,9 +1222,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       onChange={(e) => setCompanyCar("note", e.target.value)}
                     />
                   </Grid>
+
                 </Grid>
               </CardContent>
             </Card>
+
           </Box>
         );
 
@@ -1130,6 +1234,10 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         return null;
     }
   };
+
+  /* -----------------------------------------------------------
+     DIALOG + STEPPER + ACTIONS
+  ----------------------------------------------------------- */
 
   if (!open) return null;
 

@@ -29,7 +29,7 @@ router = APIRouter(tags=["Employees"])
 # CREATE EMPLOYEE COMPLETO (CORRETTO)
 # ============================================================
 
-@router.post("/employees", response_model=Employee)
+@router.post("/", response_model=Employee)
 def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_contracts import EmployeeContract

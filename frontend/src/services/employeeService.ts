@@ -6,7 +6,7 @@ import { EmployeeFull } from "../types";
 ============================================================ */
 
 export const getEmployeesFull = async (): Promise<EmployeeFull[]> => {
-  const response = await api.get("/api/v1/employees");
+  const response = await api.get("/api/v1/employees/employees");
   return response.data;
 };
 

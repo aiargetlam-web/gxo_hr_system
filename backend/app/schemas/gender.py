@@ -5,5 +5,4 @@ class Gender(BaseModel):
     code: str
     description: str
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

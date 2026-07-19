@@ -1,11 +1,8 @@
 from pydantic import BaseModel
 
-class WorkRegimeBase(BaseModel):
+class WorkRegime(BaseModel):
     id: int
     code: str
-    description: str | None = None
+    description: str
 
     model_config = {"from_attributes": True}
-
-class WorkRegime(WorkRegimeBase):
-    pass

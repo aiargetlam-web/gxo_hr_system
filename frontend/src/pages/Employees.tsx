@@ -209,175 +209,151 @@ export default function Employees() {
     if (status.status_type_id === 2) return "warning";
     return "default";
   };
-  const columns = [
-    {
-      field: "avatar",
-      headerName: "",
-      width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: any) => (
-        <Avatar sx={{ bgcolor: "#1976d2" }}>
-          {params.row.first_name?.[0]}
-          {params.row.last_name?.[0]}
-        </Avatar>
+const columns = [
+  {
+    field: "avatar",
+    headerName: "",
+    width: 70,
+    sortable: false,
+    filterable: false,
+    renderCell: (params: any) => (
+      <Avatar sx={{ bgcolor: "#1976d2" }}>
+        {params.row.first_name?.[0]}
+        {params.row.last_name?.[0]}
+      </Avatar>
+    ),
+  },
+
+  {
+    field: "name",
+    headerName: "Nome",
+    flex: 1,
+    valueGetter: (params: any) =>
+      `${params.row.first_name} ${params.row.last_name}`,
+  },
+
+  { field: "email", headerName: "Email", flex: 1 },
+  { field: "phone", headerName: "Telefono", flex: 1 },
+  { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
+
+  {
+    field: "is_protected_category",
+    headerName: "Protetta",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.is_protected_category ? (
+        <Chip label="Protetta" color="error" />
+      ) : (
+        "-"
       ),
-    },
+  },
 
-    {
-      field: "name",
-      headerName: "Nome",
-      flex: 1,
-      valueGetter: (params: any) =>
-        `${params.row.first_name} ${params.row.last_name}`,
-    },
-
-    { field: "email", headerName: "Email", flex: 1 },
-    { field: "phone", headerName: "Telefono", flex: 1 },
-    { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
-
-    {
-      field: "ccnl_level",
-      headerName: "CCNL",
-      flex: 1,
-      renderCell: (params) => (
-        <Chip
-          label={`Livello ${params.row.ccnl_level}`}
-          color="primary"
-          variant="outlined"
-        />
+  {
+    field: "is_disadvantaged",
+    headerName: "Svantaggiato",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.is_disadvantaged ? (
+        <Chip label="Svantaggiato" color="warning" />
+      ) : (
+        "-"
       ),
-    },
+  },
 
-    {
-      field: "is_protected_category",
-      headerName: "Protetta",
-      flex: 1,
-      renderCell: (params) =>
-        params.row.is_protected_category ? (
-          <Chip label="Protetta" color="error" />
-        ) : (
-          "-"
-        ),
-    },
+  {
+    field: "role",
+    headerName: "Ruolo",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={getRoleName(params.row.role?.id ?? 0)}
+        color={getRoleColor(params.row.role?.id ?? 0)}
+        variant="outlined"
+      />
+    ),
+  },
 
-    {
-      field: "is_disadvantaged",
-      headerName: "Svantaggiato",
-      flex: 1,
-      renderCell: (params) =>
-        params.row.is_disadvantaged ? (
-          <Chip label="Svantaggiato" color="warning" />
-        ) : (
-          "-"
-        ),
-    },
+  {
+    field: "department",
+    headerName: "Reparto",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={
+          params.row.department?.department_id
+            ? `Dept #${params.row.department.department_id}`
+            : "-"
+        }
+        color="secondary"
+      />
+    ),
+  },
 
-    {
-      field: "preposto",
-      headerName: "Preposto",
-      flex: 1,
-      renderCell: (params) =>
-        params.row.preposto ? (
-          <Chip label="Preposto" color="success" />
-        ) : (
-          "-"
-        ),
-    },
+  {
+    field: "site",
+    headerName: "Sito",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={
+          params.row.site?.id
+            ? `Sito #${params.row.site.id}`
+            : "-"
+        }
+        color="info"
+      />
+    ),
+  },
 
-    {
-      field: "role",
-      headerName: "Ruolo",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={getRoleName(params.row.role?.id ?? 0)}
-          color={getRoleColor(params.row.role?.id ?? 0)}
-          variant="outlined"
-        />
-      ),
-    },
+  {
+    field: "contract",
+    headerName: "Contratto",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={
+          params.row.contract?.work_regime
+            ? `Regime #${params.row.contract.work_regime}`
+            : "-"
+        }
+        color="primary"
+      />
+    ),
+  },
 
-    {
-      field: "department",
-      headerName: "Reparto",
-      flex: 1,
-      renderCell: (params) => (
-        <Chip
-          label={
-            params.row.department?.department_id
-              ? `Dept #${params.row.department.department_id}`
-              : "-"
-          }
-          color="secondary"
-        />
-      ),
-    },
+  {
+    field: "status",
+    headerName: "Stato",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={
+          params.row.status?.status_type_id
+            ? `Status #${params.row.status.status_type_id}`
+            : "N/D"
+        }
+        color={getStatusColor(params.row.status)}
+      />
+    ),
+  },
 
-    {
-      field: "site",
-      headerName: "Sito",
-      flex: 1,
-      renderCell: (params) => (
-        <Chip
-          label={
-            params.row.site?.id
-              ? `Sito #${params.row.site.id}`
-              : "-"
-          }
-          color="info"
-        />
-      ),
-    },
+  { field: "hire_date", headerName: "Assunzione", flex: 1 },
+  { field: "termination_date", headerName: "Cessazione", flex: 1 },
 
-    {
-      field: "contract",
-      headerName: "Contratto",
-      flex: 1,
-      renderCell: (params) => (
-        <Chip
-          label={
-            params.row.contract?.work_regime_id
-              ? `Regime #${params.row.contract.work_regime_id}`
-              : "-"
-          }
-          color="primary"
-        />
-      ),
-    },
+  {
+    field: "actions",
+    headerName: "",
+    width: 60,
+    sortable: false,
+    filterable: false,
+    renderCell: (params: any) => (
+      <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
+        <MoreVertIcon />
+      </IconButton>
+    ),
+  },
+];
 
-    {
-      field: "status",
-      headerName: "Stato",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={
-            params.row.status?.status_type_id
-              ? `Status #${params.row.status.status_type_id}`
-              : "N/D"
-          }
-          color={getStatusColor(params.row.status)}
-        />
-      ),
-    },
-
-    { field: "hire_date", headerName: "Assunzione", flex: 1 },
-    { field: "termination_date", headerName: "Cessazione", flex: 1 },
-
-    {
-      field: "actions",
-      headerName: "",
-      width: 60,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: any) => (
-        <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
-          <MoreVertIcon />
-        </IconButton>
-      ),
-    },
-  ];
 
   // Applico i filtri HR ai dipendenti
   const filteredEmployees = employees.filter((e) => {

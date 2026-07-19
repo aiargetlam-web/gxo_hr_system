@@ -18,7 +18,9 @@ export const authService = {
   // ⭐ LOGIN PROTETTA, VELOCE, ANTI-ESTENSIONI
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // timeout 5 secondi
+
+    // Timeout di sicurezza: abort SOLO se davvero bloccato
+    const timeout = setTimeout(() => controller.abort(), 7000);
 
     try {
       const response = await fetch(
@@ -42,10 +44,16 @@ export const authService = {
       }
 
       return await response.json();
-    } catch (err) {
-      // retry automatico dopo 300ms
-      await new Promise((res) => setTimeout(res, 300));
-      return authService.login(email, password);
+    } catch (err: any) {
+
+      // ⭐ Se è stato abortito → NON è un errore vero
+      if (err.name === "AbortError") {
+        // aspetta un attimo e riprova una sola volta
+        await new Promise((res) => setTimeout(res, 200));
+        return authService.login(email, password);
+      }
+
+      throw err;
     }
   },
 

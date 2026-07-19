@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas.benefit_type import BenefitType as BenefitTypeSchema
 
-router = APIRouter(prefix="/benefit-types", tags=["Benefit Types"])
+router = APIRouter(tags=["Benefit Types"])
 
 @router.get("/", response_model=list[BenefitTypeSchema])
 def get_benefit_types(

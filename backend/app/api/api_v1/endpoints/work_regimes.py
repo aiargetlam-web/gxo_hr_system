@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas.work_regime import WorkRegime as WorkRegimeSchema
 
-router = APIRouter(prefix="/work-regimes", tags=["Work Regimes"])
+router = APIRouter(tags=["Work Regimes"])
 
 @router.get("/", response_model=list[WorkRegimeSchema])
 def get_work_regimes(

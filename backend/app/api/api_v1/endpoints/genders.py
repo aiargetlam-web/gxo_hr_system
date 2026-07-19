@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas.gender import Gender as GenderSchema
 
-router = APIRouter(prefix="/genders", tags=["Genders"])
+router = APIRouter(tags=["Genders"])
 
 @router.get("/", response_model=list[GenderSchema])
 def get_genders(

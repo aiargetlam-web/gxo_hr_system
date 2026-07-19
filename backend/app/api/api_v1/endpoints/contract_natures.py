@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas.contract_nature import ContractNature as ContractNatureSchema
 
-router = APIRouter(prefix="/contract-natures", tags=["Contract Natures"])
+router = APIRouter(tags=["Contract Natures"])
 
 @router.get("/", response_model=list[ContractNatureSchema])
 def get_contract_natures(

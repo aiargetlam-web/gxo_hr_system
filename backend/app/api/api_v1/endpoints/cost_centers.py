@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas.cost_center import CostCenter as CostCenterSchema
 
-router = APIRouter(prefix="/cost-centers", tags=["Cost Centers"])
+router = APIRouter(tags=["Cost Centers"])
 
 @router.get("/", response_model=list[CostCenterSchema])
 def get_cost_centers(

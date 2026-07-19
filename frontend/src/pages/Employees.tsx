@@ -10,7 +10,6 @@ import {
   MenuItem,
   Stack,
   Typography,
-  Select,
 } from "@mui/material";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -53,15 +52,6 @@ export default function Employees() {
   const [openChangeSite, setOpenChangeSite] = useState<EmployeeFull | null>(null);
   const [openChangeStatus, setOpenChangeStatus] = useState<EmployeeFull | null>(null);
 
-  // Filtri HR avanzati
-  const [filterSite, setFilterSite] = useState("");
-  const [filterRole, setFilterRole] = useState("");
-  const [filterDept, setFilterDept] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterProtetta, setFilterProtetta] = useState("");
-  const [filterSvantaggiato, setFilterSvantaggiato] = useState("");
-  const [filterCCNL, setFilterCCNL] = useState("");
-
   const loadData = async () => {
     setLoading(true);
     try {
@@ -92,92 +82,6 @@ export default function Employees() {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
-  // Pulsanti HR rapidi
-  const applyQuickFilter = (type: string) => {
-    if (type === "attivi") setFilterStatus("1");
-    if (type === "protetti") setFilterProtetta("yes");
-    if (type === "svantaggiati") setFilterSvantaggiato("yes");
-    if (type === "operai") setFilterRole("4");
-    if (type === "hr") setFilterRole("5");
-    if (type === "admin") setFilterRole("6");
-  };
-
-  const resetFilters = () => {
-    setFilterSite("");
-    setFilterRole("");
-    setFilterDept("");
-    setFilterStatus("");
-    setFilterProtetta("");
-    setFilterSvantaggiato("");
-    setFilterCCNL("");
-  };
-
-  // Toolbar HR personalizzata (2 righe)
-  const HRToolbar = () => (
-    <Stack spacing={1} sx={{ p: 1 }}>
-      {/* RIGA 1 — Pulsanti HR */}
-      <Stack direction="row" spacing={1}>
-        <Button variant="outlined" onClick={() => applyQuickFilter("attivi")}>Attivi</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("protetti")}>Protetti</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("svantaggiati")}>Svantaggiati</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("operai")}>Operai</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("hr")}>HR</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("admin")}>Admin</Button>
-        <Button variant="contained" color="error" onClick={resetFilters}>Reset</Button>
-      </Stack>
-
-      {/* RIGA 2 — Filtri HR */}
-      <Stack direction="row" spacing={1}>
-        <Select value={filterSite} onChange={(e) => setFilterSite(e.target.value)} displayEmpty>
-          <MenuItem value="">Sito</MenuItem>
-          <MenuItem value="1">Sito 1</MenuItem>
-          <MenuItem value="2">Sito 2</MenuItem>
-        </Select>
-
-        <Select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} displayEmpty>
-          <MenuItem value="">Ruolo</MenuItem>
-          <MenuItem value="4">Operaio</MenuItem>
-          <MenuItem value="5">HR</MenuItem>
-          <MenuItem value="6">Admin</MenuItem>
-        </Select>
-
-        <Select value={filterDept} onChange={(e) => setFilterDept(e.target.value)} displayEmpty>
-          <MenuItem value="">Reparto</MenuItem>
-          <MenuItem value="1">Reparto 1</MenuItem>
-          <MenuItem value="2">Reparto 2</MenuItem>
-        </Select>
-
-        <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} displayEmpty>
-          <MenuItem value="">Stato</MenuItem>
-          <MenuItem value="1">Attivo</MenuItem>
-          <MenuItem value="2">Sospeso</MenuItem>
-        </Select>
-
-        <Select value={filterProtetta} onChange={(e) => setFilterProtetta(e.target.value)} displayEmpty>
-          <MenuItem value="">Protetta</MenuItem>
-          <MenuItem value="yes">Sì</MenuItem>
-          <MenuItem value="no">No</MenuItem>
-        </Select>
-
-        <Select value={filterSvantaggiato} onChange={(e) => setFilterSvantaggiato(e.target.value)} displayEmpty>
-          <MenuItem value="">Svantaggiato</MenuItem>
-          <MenuItem value="yes">Sì</MenuItem>
-          <MenuItem value="no">No</MenuItem>
-        </Select>
-
-        <Select value={filterCCNL} onChange={(e) => setFilterCCNL(e.target.value)} displayEmpty>
-          <MenuItem value="">CCNL</MenuItem>
-          <MenuItem value="1">1° livello</MenuItem>
-          <MenuItem value="2">2° livello</MenuItem>
-          <MenuItem value="3">3° livello</MenuItem>
-        </Select>
-      </Stack>
-
-      {/* RIGA 3 — Toolbar standard */}
-      <GridToolbar />
-    </Stack>
-  );
 
   const getRoleName = (roleId: number) => {
     if (roleId === 6) return "Amministratore";
@@ -345,49 +249,6 @@ export default function Employees() {
     },
   ];
 
-  const filteredEmployees = employees.filter((e) => {
-    if (filterSite && String(e.site?.id) !== filterSite) return false;
-    if (filterRole && String(e.role?.id) !== filterRole) return false;
-    if (filterDept && String(e.department?.department_id) !== filterDept) return false;
-    if (filterStatus && String(e.status?.status_type_id) !== filterStatus) return false;
-    if (filterProtetta === "yes" && !e.is_protected_category) return false;
-    if (filterProtetta === "no" && e.is_protected_category) return false;
-    if (filterSvantaggiato === "yes" && !e.is_disadvantaged) return false;
-    if (filterSvantaggiato === "no" && e.is_disadvantaged) return false;
-    if (filterCCNL && String(e.contract?.work_regime) !== filterCCNL) return false;
-    return true;
-  });
-
-  const handleExportCSV = () => {
-    const rows = employees.map((e) => ({
-      Nome: `${e.first_name} ${e.last_name}`,
-      Ruolo: getRoleName(e.role?.id ?? 0),
-      Reparto: e.department?.department_id || "-",
-      Sito: e.site?.id || "-",
-      Contratto: e.contract?.work_regime || "-",
-      Stato: e.status?.status_type_id || "N/D",
-    }));
-
-    if (rows.length === 0) return;
-
-    const csv = [
-      Object.keys(rows[0]).join(";"),
-      ...rows.map((r) => Object.values(r).join(";")),
-    ].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "dipendenti.csv";
-    link.click();
-  };
-
-  const handleImportCSV = () => {
-    alert("Funzione Import CSV da implementare (richiede backend)");
-  };
-
   return (
     <Box p={3}>
       <Stack
@@ -401,11 +262,11 @@ export default function Employees() {
         </Typography>
 
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={handleImportCSV}>
+          <Button variant="outlined" onClick={() => alert("Import CSV non implementato")}>
             Importa CSV
           </Button>
 
-          <Button variant="outlined" onClick={handleExportCSV}>
+          <Button variant="outlined" onClick={() => alert("Export CSV non implementato")}>
             Esporta CSV
           </Button>
 
@@ -421,12 +282,12 @@ export default function Employees() {
 
       <Card sx={{ height: 650 }}>
         <DataGrid
-          rows={filteredEmployees}
+          rows={employees}
           columns={columns}
           loading={loading}
           disableSelectionOnClick
           pageSize={10}
-          components={{ Toolbar: HRToolbar }}
+          components={{ Toolbar: GridToolbar }}
           initialState={{
             pagination: { pageSize: 10 },
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
@@ -509,7 +370,7 @@ export default function Employees() {
         </MenuItem>
       </Menu>
 
-      {/* MODALI HR */}
+      {/* MODALI */}
       <EmployeeCreateModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}

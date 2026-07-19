@@ -21,10 +21,10 @@ from app.api.api_v1.endpoints.work_regimes import router as work_regimes_router
 from app.api.api_v1.endpoints.departments import router as departments_router
 from app.api.api_v1.endpoints.cost_centers import router as cost_centers_router
 from app.api.api_v1.endpoints.preposti import router as preposti_router
-from app.api.api_v1.endpoints import genders
-from app.api.api_v1.endpoints import benefit_types
 
-
+# Import nuovi endpoint corretti
+from app.api.api_v1.endpoints.genders import router as genders_router
+from app.api.api_v1.endpoints.benefit_types import router as benefit_types_router
 
 # ⭐ DEVE ESSERE LA PRIMA ISTRUZIONE
 api_router = APIRouter()
@@ -54,5 +54,7 @@ api_router.include_router(work_regimes_router, prefix="/work-regimes", tags=["wo
 api_router.include_router(departments_router, prefix="/departments", tags=["departments"])
 api_router.include_router(cost_centers_router, prefix="/cost-centers", tags=["cost-centers"])
 api_router.include_router(preposti_router, prefix="/preposti", tags=["preposti"])
-api_router.include_router(genders.router)
-api_router.include_router(benefit_types.router)
+
+# Nuovi endpoint correttamente registrati
+api_router.include_router(genders_router, prefix="/genders", tags=["genders"])
+api_router.include_router(benefit_types_router, prefix="/benefit-types", tags=["benefit-types"])

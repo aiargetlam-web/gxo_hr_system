@@ -22,7 +22,7 @@ from app.api.api_v1.endpoints.departments import router as departments_router
 from app.api.api_v1.endpoints.cost_centers import router as cost_centers_router
 from app.api.api_v1.endpoints.preposti import router as preposti_router
 
-# ⭐ Devi DEFINIRE api_router PRIMA DI USARLO
+# ⭐ DEVE ESSERE LA PRIMA ISTRUZIONE
 api_router = APIRouter()
 
 # ---------------------------------------------------------

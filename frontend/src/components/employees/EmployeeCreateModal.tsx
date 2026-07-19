@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  Grid,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+} from "@mui/material";
+
+import {
   createEmployee,
   getDepartmentsBySite,
   getPrepostiBySite,
@@ -8,7 +31,7 @@ import {
 import { siteService } from "../../services/siteService";
 
 /* -----------------------------------------------------------
-   TIPI — COMPLETI
+   TIPI — COMPLETI (identici ai tuoi)
 ----------------------------------------------------------- */
 
 type SiteHistory = {
@@ -98,15 +121,23 @@ interface EmployeeCreateModalProps {
 }
 
 /* -----------------------------------------------------------
+   STEPS
+----------------------------------------------------------- */
+
+const steps = [
+  "Anagrafica",
+  "Contratto",
+  "Cost Center",
+  "Sito e Reparto",
+  "RAL / Benefit / Auto",
+];
+
+/* -----------------------------------------------------------
    COMPONENTE
 ----------------------------------------------------------- */
 
-const EmployeeCreateModal = ({
-  open,
-  onClose,
-  onCreated,
-}: EmployeeCreateModalProps) => {
-  const [step, setStep] = useState(1);
+const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalProps) => {
+  const [step, setStep] = useState(0);
 
   const [formData, setFormData] = useState<EmployeeCreateForm>({
     first_name: "",
@@ -180,13 +211,10 @@ const EmployeeCreateModal = ({
     if (!open) return;
 
     const loadData = async () => {
-      const [sitesRes] = await Promise.all([
-        siteService.getSites(),
-      ]);
-
+      const [sitesRes] = await Promise.all([siteService.getSites()]);
       setSites(sitesRes);
 
-      // placeholder finché non agganci i servizi
+      // placeholder finché non agganci i servizi reali
       setWorkRegimes([]);
       setContractNatures([]);
       setCostCentersOptions([]);
@@ -197,27 +225,17 @@ const EmployeeCreateModal = ({
   }, [open]);
 
   /* -----------------------------------------------------------
-     HANDLER CAMPI
+     HANDLER CAMPI (identici ai tuoi)
   ----------------------------------------------------------- */
 
   const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNestedChange = (
-    section: keyof EmployeeCreateForm,
-    field: string,
-    value: any
-  ) => {
+  const handleNestedChange = (section: keyof EmployeeCreateForm, field: string, value: any) => {
     setFormData((prev: any) => ({
       ...prev,
-      [section]: {
-        ...(prev[section] || {}),
-        [field]: value,
-      },
+      [section]: { ...(prev[section] || {}), [field]: value },
     }));
   };
 
@@ -229,14 +247,8 @@ const EmployeeCreateModal = ({
   ) => {
     setFormData((prev: any) => {
       const arr = Array.isArray(prev[section]) ? [...prev[section]] : [];
-      arr[index] = {
-        ...arr[index],
-        [field]: value,
-      };
-      return {
-        ...prev,
-        [section]: arr,
-      };
+      arr[index] = { ...arr[index], [field]: value };
+      return { ...prev, [section]: arr };
     });
   };
 
@@ -245,12 +257,7 @@ const EmployeeCreateModal = ({
       ...prev,
       cost_centers: [
         ...prev.cost_centers,
-        {
-          cost_center_id: null,
-          weight_percent: "",
-          from_date: "",
-          note: "",
-        },
+        { cost_center_id: null, weight_percent: "", from_date: "", note: "" },
       ],
     }));
   };
@@ -260,12 +267,7 @@ const EmployeeCreateModal = ({
       ...prev,
       benefits: [
         ...prev.benefits,
-        {
-          benefit_type: null,
-          has_benefit: true,
-          from_date: "",
-          note: "",
-        },
+        { benefit_type: null, has_benefit: true, from_date: "", note: "" },
       ],
     }));
   };
@@ -290,10 +292,7 @@ const EmployeeCreateModal = ({
   const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
       ...prev,
-      site_history: {
-        ...prev.site_history,
-        site_id: siteId,
-      },
+      site_history: { ...prev.site_history, site_id: siteId },
     }));
 
     if (!siteId) {
@@ -323,554 +322,776 @@ const EmployeeCreateModal = ({
   };
 
   /* -----------------------------------------------------------
-     RENDER STEP
+     RENDER STEP — VERSIONE MODERNA
   ----------------------------------------------------------- */
 
   const renderStep = () => {
     switch (step) {
-      /* STEP 1 — ANAGRAFICA + LUL + STATO LAVORATIVO */
+      /* STEP 0 — ANAGRAFICA + LUL + STATO LAVORATIVO */
+      case 0:
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Anagrafica
+              </Typography>
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Nome"
+                    value={formData.first_name}
+                    onChange={(e) => handleChange("first_name", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Cognome"
+                    value={formData.last_name}
+                    onChange={(e) => handleChange("last_name", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    value={formData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Telefono"
+                    value={formData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Codice fiscale"
+                    value={formData.fiscal_code}
+                    onChange={(e) => handleChange("fiscal_code", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Genere"
+                    value={formData.gender}
+                    onChange={(e) => handleChange("gender", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data di nascita"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.birth_date}
+                    onChange={(e) => handleChange("birth_date", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Luogo di nascita"
+                    value={formData.birth_place}
+                    onChange={(e) => handleChange("birth_place", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Indirizzo"
+                    value={formData.address_street}
+                    onChange={(e) => handleChange("address_street", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Città"
+                    value={formData.address_city}
+                    onChange={(e) => handleChange("address_city", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="CAP"
+                    value={formData.address_cap}
+                    onChange={(e) => handleChange("address_cap", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    LUL
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="ID LUL"
+                    value={formData.id_lul}
+                    onChange={(e) => handleChange("id_lul", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    Stato lavorativo
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data assunzione"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.hire_date}
+                    onChange={(e) => handleChange("hire_date", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data cessazione"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.termination_date}
+                    onChange={(e) => handleChange("termination_date", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.is_protected_category}
+                        onChange={(e) =>
+                          handleChange("is_protected_category", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Categoria protetta"
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.is_disadvantaged}
+                        onChange={(e) =>
+                          handleChange("is_disadvantaged", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Svantaggiato"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+
+      /* STEP 1 — CONTRATTO */
       case 1:
         return (
-          <div>
-            <h3>Anagrafica</h3>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Contratto
+              </Typography>
 
-            <input
-              type="text"
-              placeholder="Nome"
-              value={formData.first_name}
-              onChange={(e) => handleChange("first_name", e.target.value)}
-            />
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Regime di lavoro</InputLabel>
+                    <Select
+                      value={formData.contract.work_regime_id ?? ""}
+                      label="Regime di lavoro"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "work_regime_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {workRegimes.map((wr) => (
+                        <MenuItem key={wr.id} value={wr.id}>
+                          {wr.description || wr.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <input
-              type="text"
-              placeholder="Cognome"
-              value={formData.last_name}
-              onChange={(e) => handleChange("last_name", e.target.value)}
-            />
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Natura contratto</InputLabel>
+                    <Select
+                      value={formData.contract.contract_nature_id ?? ""}
+                      label="Natura contratto"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "contract_nature_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {contractNatures.map((cn) => (
+                        <MenuItem key={cn.id} value={cn.id}>
+                          {cn.description || cn.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Telefono"
-              value={formData.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Codice fiscale"
-              value={formData.fiscal_code}
-              onChange={(e) => handleChange("fiscal_code", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Genere"
-              value={formData.gender}
-              onChange={(e) => handleChange("gender", e.target.value)}
-            />
-
-            <input
-              type="date"
-              value={formData.birth_date}
-              onChange={(e) => handleChange("birth_date", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Luogo di nascita"
-              value={formData.birth_place}
-              onChange={(e) => handleChange("birth_place", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Indirizzo"
-              value={formData.address_street}
-              onChange={(e) => handleChange("address_street", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="Città"
-              value={formData.address_city}
-              onChange={(e) => handleChange("address_city", e.target.value)}
-            />
-
-            <input
-              type="text"
-              placeholder="CAP"
-              value={formData.address_cap}
-              onChange={(e) => handleChange("address_cap", e.target.value)}
-            />
-
-            <h4>LUL</h4>
-
-            <input
-              type="text"
-              placeholder="ID LUL"
-              value={formData.id_lul}
-              onChange={(e) => handleChange("id_lul", e.target.value)}
-            />
-
-            <h4>Stato lavorativo</h4>
-
-            <input
-              type="date"
-              value={formData.hire_date}
-              onChange={(e) => handleChange("hire_date", e.target.value)}
-            />
-
-            <input
-              type="date"
-              value={formData.termination_date}
-              onChange={(e) =>
-                handleChange("termination_date", e.target.value)
-              }
-            />
-
-            <label>
-              Categoria protetta
-              <input
-                type="checkbox"
-                checked={formData.is_protected_category}
-                onChange={(e) =>
-                  handleChange("is_protected_category", e.target.checked)
-                }
-              />
-            </label>
-
-            <label>
-              Svantaggiato
-              <input
-                type="checkbox"
-                checked={formData.is_disadvantaged}
-                onChange={(e) =>
-                  handleChange("is_disadvantaged", e.target.checked)
-                }
-              />
-            </label>
-          </div>
-        );
-
-      /* STEP 2 — CONTRATTO */
-      case 2:
-        return (
-          <div>
-            <h3>Contratto</h3>
-
-            <select
-              value={formData.contract.work_regime_id ?? ""}
-              onChange={(e) =>
-                handleNestedChange(
-                  "contract",
-                  "work_regime_id",
-                  Number(e.target.value)
-                )
-              }
-            >
-              <option value="">Seleziona regime di lavoro</option>
-              {workRegimes.map((wr) => (
-                <option key={wr.id} value={wr.id}>
-                  {wr.description || wr.code}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={formData.contract.contract_nature_id ?? ""}
-              onChange={(e) =>
-                handleNestedChange(
-                  "contract",
-                  "contract_nature_id",
-                  Number(e.target.value)
-                )
-              }
-            >
-              <option value="">Seleziona natura contratto</option>
-              {contractNatures.map((cn) => (
-                <option key={cn.id} value={cn.id}>
-                  {cn.description || cn.code}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="date"
-              value={formData.contract.from_date}
-              onChange={(e) =>
-                handleNestedChange("contract", "from_date", e.target.value)
-              }
-            />
-
-            <input
-              type="number"
-              placeholder="Ore settimanali"
-              value={formData.contract.weekly_hours}
-              onChange={(e) =>
-                handleNestedChange("contract", "weekly_hours", e.target.value)
-              }
-            />
-
-            <input
-              type="number"
-              step="0.01"
-              placeholder="FTE"
-              value={formData.contract.fte}
-              onChange={(e) =>
-                handleNestedChange("contract", "fte", e.target.value)
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Fascia oraria"
-              value={formData.contract.time_band}
-              onChange={(e) =>
-                handleNestedChange("contract", "time_band", e.target.value)
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Tipo turno"
-              value={formData.contract.shift_type}
-              onChange={(e) =>
-                handleNestedChange("contract", "shift_type", e.target.value)
-              }
-            />
-
-            <textarea
-              placeholder="Note contratto"
-              value={formData.contract.note}
-              onChange={(e) =>
-                handleNestedChange("contract", "note", e.target.value)
-              }
-            />
-          </div>
-        );
-
-      /* STEP 3 — COST CENTER */
-      case 3:
-        return (
-          <div>
-            <h3>Cost center</h3>
-
-            <button type="button" onClick={addCostCenterRow}>
-              Aggiungi cost center
-            </button>
-
-            {formData.cost_centers.map((cc, index) => (
-              <div key={index}>
-                <select
-                  value={cc.cost_center_id ?? ""}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "cost_centers",
-                      index,
-                      "cost_center_id",
-                      Number(e.target.value)
-                    )
-                  }
-                >
-                  <option value="">Seleziona cost center</option>
-                  {costCentersOptions.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name || c.code}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="number"
-                  placeholder="% peso"
-                  value={cc.weight_percent}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "cost_centers",
-                      index,
-                      "weight_percent",
-                      e.target.value
-                    )
-                  }
-                />
-
-                <input
-                  type="date"
-                  value={cc.from_date}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "cost_centers",
-                      index,
-                      "from_date",
-                      e.target.value
-                    )
-                  }
-                />
-
-                <input
-                  type="text"
-                  placeholder="Note"
-                  value={cc.note}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "cost_centers",
-                      index,
-                      "note",
-                      e.target.value
-                    )
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        );
-
-      /* STEP 4 — SITO + REPARTO + PREPOSTO */
-      case 4:
-        return (
-          <div>
-            <h3>Sito e reparto</h3>
-
-            <select
-              value={formData.site_history.site_id ?? ""}
-              onChange={(e) => handleSiteChange(Number(e.target.value))}
-            >
-              <option value="">Seleziona sito</option>
-              {sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name || s.code}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="date"
-              value={formData.site_history.from_date}
-              onChange={(e) =>
-                handleNestedChange("site_history", "from_date", e.target.value)
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Note sito"
-              value={formData.site_history.note}
-              onChange={(e) =>
-                handleNestedChange("site_history", "note", e.target.value)
-              }
-            />
-
-            <h4>Reparto</h4>
-
-            <select
-              value={formData.department.department_id ?? ""}
-              onChange={(e) =>
-                handleNestedChange(
-                  "department",
-                  "department_id",
-                  Number(e.target.value)
-                )
-              }
-            >
-              <option value="">Seleziona reparto</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name || d.code}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={formData.department.manager_employee_id ?? ""}
-              onChange={(e) =>
-                handleNestedChange(
-                  "department",
-                  "manager_employee_id",
-                  Number(e.target.value)
-                )
-              }
-            >
-              <option value="">Seleziona preposto</option>
-              {preposti.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.last_name} {p.first_name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="date"
-              value={formData.department.from_date}
-              onChange={(e) =>
-                handleNestedChange("department", "from_date", e.target.value)
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Note reparto"
-              value={formData.department.note}
-              onChange={(e) =>
-                handleNestedChange("department", "note", e.target.value)
-              }
-            />
-          </div>
-        );
-
-      /* STEP 5 — RAL + BENEFIT + AUTO */
-      case 5:
-        return (
-          <div>
-            <h3>RAL</h3>
-
-            <input
-              type="number"
-              placeholder="RAL"
-              value={formData.salary.ral_amount}
-              onChange={(e) =>
-                handleNestedChange("salary", "ral_amount", e.target.value)
-              }
-            />
-
-            <input
-              type="date"
-              value={formData.salary.from_date}
-              onChange={(e) =>
-                handleNestedChange("salary", "from_date", e.target.value)
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Note RAL"
-              value={formData.salary.note}
-              onChange={(e) =>
-                handleNestedChange("salary", "note", e.target.value)
-              }
-            />
-
-            <h3>Benefit</h3>
-
-            <button type="button" onClick={addBenefitRow}>
-              Aggiungi benefit
-            </button>
-
-            {formData.benefits.map((b, index) => (
-              <div key={index}>
-                <select
-                  value={b.benefit_type ?? ""}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "benefits",
-                      index,
-                      "benefit_type",
-                      e.target.value
-                    )
-                  }
-                >
-                  <option value="">Seleziona benefit</option>
-                  {benefitTypes.map((bt) => (
-                    <option key={bt.id} value={bt.code}>
-                      {bt.description || bt.code}
-                    </option>
-                  ))}
-                </select>
-
-                <label>
-                  Attivo
-                  <input
-                    type="checkbox"
-                    checked={b.has_benefit}
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data inizio"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.contract.from_date}
                     onChange={(e) =>
-                      handleArrayChange(
-                        "benefits",
-                        index,
-                        "has_benefit",
-                        e.target.checked
-                      )
+                      handleNestedChange("contract", "from_date", e.target.value)
                     }
                   />
-                </label>
+                </Grid>
 
-                <input
-                  type="date"
-                  value={b.from_date}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "benefits",
-                      index,
-                      "from_date",
-                      e.target.value
-                    )
-                  }
-                />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Ore settimanali"
+                    value={formData.contract.weekly_hours}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "weekly_hours", e.target.value)
+                    }
+                  />
+                </Grid>
 
-                <input
-                  type="text"
-                  placeholder="Note"
-                  value={b.note}
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "benefits",
-                      index,
-                      "note",
-                      e.target.value
-                    )
-                  }
-                />
-              </div>
-            ))}
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    step="0.01"
+                    label="FTE"
+                    value={formData.contract.fte}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "fte", e.target.value)
+                    }
+                  />
+                </Grid>
 
-            <h3>Auto aziendale</h3>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Fascia oraria"
+                    value={formData.contract.time_band}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "time_band", e.target.value)
+                    }
+                  />
+                </Grid>
 
-            <input
-              type="text"
-              placeholder="Modello auto"
-              value={formData.company_car?.car_model ?? ""}
-              onChange={(e) => setCompanyCar("car_model", e.target.value)}
-            />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Tipo turno"
+                    value={formData.contract.shift_type}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "shift_type", e.target.value)
+                    }
+                  />
+                </Grid>
 
-            <input
-              type="text"
-              placeholder="Targa"
-              value={formData.company_car?.plate ?? ""}
-              onChange={(e) => setCompanyCar("plate", e.target.value)}
-            />
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label="Note contratto"
+                    value={formData.contract.note}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
 
-            <input
-              type="date"
-              value={formData.company_car?.from_date ?? ""}
-              onChange={(e) => setCompanyCar("from_date", e.target.value)}
-            />
+      /* STEP 2 — COST CENTER */
+      case 2:
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Cost Center
+              </Typography>
 
-            <input
-              type="text"
-              placeholder="Tipo benefit"
-              value={formData.company_car?.benefit_type ?? ""}
-              onChange={(e) => setCompanyCar("benefit_type", e.target.value)}
-            />
+              <Button variant="outlined" onClick={addCostCenterRow} sx={{ mb: 2 }}>
+                Aggiungi cost center
+              </Button>
 
-            <input
-              type="text"
-              placeholder="Note payroll"
-              value={formData.company_car?.payroll_notes ?? ""}
-              onChange={(e) => setCompanyCar("payroll_notes", e.target.value)}
-            />
+              {formData.cost_centers.map((cc, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cost center</InputLabel>
+                      <Select
+                        value={cc.cost_center_id ?? ""}
+                        label="Cost center"
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "cost_centers",
+                            index,
+                            "cost_center_id",
+                            Number(e.target.value)
+                          )
+                        }
+                      >
+                        <MenuItem value="">Seleziona</MenuItem>
+                        {costCentersOptions.map((c) => (
+                          <MenuItem key={c.id} value={c.id}>
+                            {c.name || c.code}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-            <input
-              type="text"
-              placeholder="Note auto"
-              value={formData.company_car?.note ?? ""}
-              onChange={(e) => setCompanyCar("note", e.target.value)}
-            />
-          </div>
+                  <Grid item xs={2}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="% peso"
+                      value={cc.weight_percent}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "weight_percent",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={cc.from_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "from_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={cc.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
+            </CardContent>
+          </Card>
+        );
+
+      /* STEP 3 — SITO + REPARTO + PREPOSTO */
+      case 3:
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Sito e reparto
+              </Typography>
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Sito</InputLabel>
+                    <Select
+                      value={formData.site_history.site_id ?? ""}
+                      label="Sito"
+                      onChange={(e) => handleSiteChange(Number(e.target.value))}
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {sites.map((s) => (
+                        <MenuItem key={s.id} value={s.id}>
+                          {s.name || s.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.site_history.from_date}
+                    onChange={(e) =>
+                      handleNestedChange("site_history", "from_date", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Note sito"
+                    value={formData.site_history.note}
+                    onChange={(e) =>
+                      handleNestedChange("site_history", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    Reparto
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Reparto</InputLabel>
+                    <Select
+                      value={formData.department.department_id ?? ""}
+                      label="Reparto"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "department",
+                          "department_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {departments.map((d) => (
+                        <MenuItem key={d.id} value={d.id}>
+                          {d.name || d.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Preposto</InputLabel>
+                    <Select
+                      value={formData.department.manager_employee_id ?? ""}
+                      label="Preposto"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "department",
+                          "manager_employee_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {preposti.map((p) => (
+                        <MenuItem key={p.id} value={p.id}>
+                          {p.last_name} {p.first_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.department.from_date}
+                    onChange={(e) =>
+                      handleNestedChange("department", "from_date", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Note reparto"
+                    value={formData.department.note}
+                    onChange={(e) =>
+                      handleNestedChange("department", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+
+      /* STEP 4 — RAL + BENEFIT + AUTO */
+      case 4:
+        return (
+          <Box>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  RAL
+                </Typography>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="RAL"
+                      value={formData.salary.ral_amount}
+                      onChange={(e) =>
+                        handleNestedChange("salary", "ral_amount", e.target.value)
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={formData.salary.from_date}
+                      onChange={(e) =>
+                        handleNestedChange("salary", "from_date", e.target.value)
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note RAL"
+                      value={formData.salary.note}
+                      onChange={(e) =>
+                        handleNestedChange("salary", "note", e.target.value)
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Benefit
+                </Typography>
+
+                <Button variant="outlined" onClick={addBenefitRow} sx={{ mb: 2 }}>
+                  Aggiungi benefit
+                </Button>
+
+                {formData.benefits.map((b, index) => (
+                  <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                    <Grid item xs={4}>
+                      <FormControl fullWidth>
+                        <InputLabel>Benefit</InputLabel>
+                        <Select
+                          value={b.benefit_type ?? ""}
+                          label="Benefit"
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "benefits",
+                              index,
+                              "benefit_type",
+                              e.target.value
+                            )
+                          }
+                        >
+                          <MenuItem value="">Seleziona</MenuItem>
+                          {benefitTypes.map((bt) => (
+                            <MenuItem key={bt.id} value={bt.code}>
+                              {bt.description || bt.code}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={2}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={b.has_benefit}
+                            onChange={(e) =>
+                              handleArrayChange(
+                                "benefits",
+                                index,
+                                "has_benefit",
+                                e.target.checked
+                              )
+                            }
+                          />
+                        }
+                        label="Attivo"
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Dal"
+                        InputLabelProps={{ shrink: true }}
+                        value={b.from_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "benefits",
+                            index,
+                            "from_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        label="Note"
+                        value={b.note}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "benefits",
+                            index,
+                            "note",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Auto aziendale
+                </Typography>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Modello auto"
+                      value={formData.company_car?.car_model ?? ""}
+                      onChange={(e) => setCompanyCar("car_model", e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Targa"
+                      value={formData.company_car?.plate ?? ""}
+                      onChange={(e) => setCompanyCar("plate", e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={formData.company_car?.from_date ?? ""}
+                      onChange={(e) => setCompanyCar("from_date", e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Tipo benefit"
+                      value={formData.company_car?.benefit_type ?? ""}
+                      onChange={(e) =>
+                        setCompanyCar("benefit_type", e.target.value)
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note payroll"
+                      value={formData.company_car?.payroll_notes ?? ""}
+                      onChange={(e) =>
+                        setCompanyCar("payroll_notes", e.target.value)
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note auto"
+                      value={formData.company_car?.note ?? ""}
+                      onChange={(e) => setCompanyCar("note", e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
         );
 
       default:
@@ -879,43 +1100,54 @@ const EmployeeCreateModal = ({
   };
 
   /* -----------------------------------------------------------
-     RENDER MODAL FINALE
+     RENDER MODAL FINALE — PREMIUM XL
   ----------------------------------------------------------- */
 
   if (!open) return null;
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal">
-        <h2>Nuovo dipendente</h2>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xl"
+    >
+      <DialogTitle>Nuovo dipendente</DialogTitle>
+
+      <DialogContent dividers sx={{ pt: 3 }}>
+        <Box sx={{ mb: 3 }}>
+          <Stepper activeStep={step} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
 
         {renderStep()}
+      </DialogContent>
 
-        <div className="modal-footer">
-          <button type="button" onClick={onClose}>
-            Annulla
-          </button>
+      <DialogActions>
+        <Button onClick={onClose}>Annulla</Button>
 
-          {step > 1 && (
-            <button type="button" onClick={() => setStep(step - 1)}>
-              Indietro
-            </button>
-          )}
+        {step > 0 && (
+          <Button onClick={() => setStep(step - 1)}>Indietro</Button>
+        )}
 
-          {step < 5 && (
-            <button type="button" onClick={() => setStep(step + 1)}>
-              Avanti
-            </button>
-          )}
+        {step < steps.length - 1 && (
+          <Button variant="contained" onClick={() => setStep(step + 1)}>
+            Avanti
+          </Button>
+        )}
 
-          {step === 5 && (
-            <button type="button" onClick={handleSubmit}>
-              Conferma creazione
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+        {step === steps.length - 1 && (
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Conferma creazione
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
   );
 };
 

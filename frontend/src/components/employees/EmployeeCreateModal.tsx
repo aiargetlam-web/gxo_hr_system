@@ -29,6 +29,10 @@ import {
 } from "../../services/employeeService";
 
 import { siteService } from "../../services/siteService";
+import { costCenterService } from "../../services/costCenterService";
+import { contractService } from "../../services/contractService";
+import { benefitService } from "../../services/benefitService";
+import { genderService } from "../../services/genderService";
 
 /* -----------------------------------------------------------
    TIPI
@@ -44,6 +48,7 @@ type Contract = {
   work_regime_id: number | null;
   contract_nature_id: number | null;
   from_date: string;
+  to_date: string;
   weekly_hours: string;
   fte: string;
   time_band: string;
@@ -102,7 +107,7 @@ type EmployeeCreateForm = {
   id_lul: string;
   role_id: number | null;
   hire_date: string;
-  termination_date: string;
+  termination_date: string; // resta vuota, non usata nel form
   is_protected_category: boolean;
   is_disadvantaged: boolean;
   site_history: SiteHistory;
@@ -168,6 +173,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       work_regime_id: null,
       contract_nature_id: null,
       from_date: "",
+      to_date: "",
       weekly_hours: "",
       fte: "",
       time_band: "",
@@ -202,22 +208,39 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [contractNatures, setContractNatures] = useState<any[]>([]);
   const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
+  const [genders, setGenders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!open) return;
 
     const loadData = async () => {
-      const [sitesRes] = await Promise.all([siteService.getSites()]);
-      setSites(sitesRes);
+      const [
+        sitesRes,
+        workRegRes,
+        contractNatRes,
+        costCentersRes,
+        benefitRes,
+        gendersRes,
+      ] = await Promise.all([
+        siteService.getSites(),
+        contractService.getWorkRegimes(),
+        contractService.getContractNatures(),
+        costCenterService.getCostCenters(),
+        benefitService.getBenefitTypes(),
+        genderService.getGenders(),
+      ]);
 
-      setWorkRegimes([]);
-      setContractNatures([]);
-      setCostCentersOptions([]);
-      setBenefitTypes([]);
+      setSites(sitesRes);
+      setWorkRegimes(workRegRes);
+      setContractNatures(contractNatRes);
+      setCostCentersOptions(costCentersRes);
+      setBenefitTypes(benefitRes);
+      setGenders(gendersRes);
     };
 
     loadData();
   }, [open]);
+
   /* -----------------------------------------------------------
      HANDLER CAMPI
   ----------------------------------------------------------- */
@@ -313,6 +336,42 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   };
 
   /* -----------------------------------------------------------
+     VALIDAZIONE MINIMA
+  ----------------------------------------------------------- */
+
+  const isStep0Valid = () =>
+    formData.first_name.trim() !== "" &&
+    formData.last_name.trim() !== "" &&
+    formData.email.trim() !== "" &&
+    formData.site_history.site_id !== null &&
+    formData.hire_date.trim() !== "" &&
+    formData.gender.trim() !== "";
+
+  const isStep1Valid = () =>
+    formData.contract.work_regime_id !== null &&
+    formData.contract.contract_nature_id !== null &&
+    formData.contract.from_date.trim() !== "" &&
+    formData.contract.to_date.trim() !== "";
+
+  const isStep2Valid = () =>
+    formData.cost_centers.length > 0 &&
+    formData.cost_centers.every(
+      (cc) =>
+        cc.cost_center_id !== null &&
+        cc.weight_percent.trim() !== "" &&
+        cc.from_date.trim() !== ""
+    );
+
+  const isStep3Valid = () =>
+    formData.department.department_id !== null &&
+    formData.department.manager_employee_id !== null &&
+    formData.department.from_date.trim() !== "";
+
+  const isStep4Valid = () =>
+    formData.salary.ral_amount.trim() !== "" &&
+    formData.salary.from_date.trim() !== "";
+
+  /* -----------------------------------------------------------
      SUBMIT
   ----------------------------------------------------------- */
 
@@ -326,16 +385,14 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       alert("Errore durante la creazione del dipendente");
     }
   };
+
   /* -----------------------------------------------------------
      RENDER STEP
   ----------------------------------------------------------- */
 
   const renderStep = () => {
     switch (step) {
-
-      /* -----------------------------------------------------------
-         STEP 0 — ANAGRAFICA + SITO
-      ----------------------------------------------------------- */
+      /* STEP 0 — ANAGRAFICA + SITO */
       case 0:
         return (
           <Card sx={{ mb: 3 }}>
@@ -345,38 +402,33 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
-
-                {/* NOME */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="Nome"
+                    label="Nome *"
                     value={formData.first_name}
                     onChange={(e) => handleChange("first_name", e.target.value)}
                   />
                 </Grid>
 
-                {/* COGNOME */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="Cognome"
+                    label="Cognome *"
                     value={formData.last_name}
                     onChange={(e) => handleChange("last_name", e.target.value)}
                   />
                 </Grid>
 
-                {/* EMAIL */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="Email"
+                    label="Email *"
                     value={formData.email}
                     onChange={(e) => handleChange("email", e.target.value)}
                   />
                 </Grid>
 
-                {/* TELEFONO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -386,7 +438,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* CODICE FISCALE */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -396,17 +447,24 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* GENERE */}
                 <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    label="Genere"
-                    value={formData.gender}
-                    onChange={(e) => handleChange("gender", e.target.value)}
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Genere *</InputLabel>
+                    <Select
+                      value={formData.gender}
+                      label="Genere *"
+                      onChange={(e) => handleChange("gender", e.target.value)}
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {genders.map((g) => (
+                        <MenuItem key={g.id} value={g.code}>
+                          {g.description}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
 
-                {/* DATA NASCITA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -418,7 +476,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* LUOGO NASCITA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -428,7 +485,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* INDIRIZZO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -440,7 +496,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* CITTA */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -452,7 +507,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* CAP */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -462,7 +516,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* SITO */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     Sito di assegnazione
@@ -471,14 +524,14 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
                 <Grid item xs={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Sito</InputLabel>
+                    <InputLabel>Sito *</InputLabel>
                     <Select
                       value={
                         formData.site_history.site_id !== null
                           ? String(formData.site_history.site_id)
                           : ""
                       }
-                      label="Sito"
+                      label="Sito *"
                       onChange={(e) =>
                         handleSiteChange(
                           e.target.value === "" ? 0 : Number(e.target.value)
@@ -495,7 +548,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
-                {/* SITO DAL */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -513,7 +565,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* NOTE SITO */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
@@ -529,7 +580,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* LUL */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     LUL
@@ -545,7 +595,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* STATO LAVORATIVO */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mt: 3 }}>
                     Stato lavorativo
@@ -556,27 +605,13 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <TextField
                     fullWidth
                     type="date"
-                    label="Data assunzione"
+                    label="Data assunzione *"
                     InputLabelProps={{ shrink: true }}
                     value={formData.hire_date}
                     onChange={(e) => handleChange("hire_date", e.target.value)}
                   />
                 </Grid>
 
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data cessazione"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.termination_date}
-                    onChange={(e) =>
-                      handleChange("termination_date", e.target.value)
-                    }
-                  />
-                </Grid>
-
-                {/* CHECKBOX */}
                 <Grid item xs={6}>
                   <FormControlLabel
                     control={
@@ -612,9 +647,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* -----------------------------------------------------------
-         STEP 1 — CONTRATTO
-      ----------------------------------------------------------- */
+      /* STEP 1 — CONTRATTO */
       case 1:
         return (
           <Card sx={{ mb: 3 }}>
@@ -624,18 +657,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
-
-                {/* REGIME DI LAVORO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Regime di lavoro</InputLabel>
+                    <InputLabel>Regime di lavoro *</InputLabel>
                     <Select
                       value={
                         formData.contract.work_regime_id !== null
                           ? String(formData.contract.work_regime_id)
                           : ""
                       }
-                      label="Regime di lavoro"
+                      label="Regime di lavoro *"
                       onChange={(e) =>
                         handleNestedChange(
                           "contract",
@@ -656,17 +687,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
-                {/* NATURA CONTRATTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Natura contratto</InputLabel>
+                    <InputLabel>Natura contratto *</InputLabel>
                     <Select
                       value={
                         formData.contract.contract_nature_id !== null
                           ? String(formData.contract.contract_nature_id)
                           : ""
                       }
-                      label="Natura contratto"
+                      label="Natura contratto *"
                       onChange={(e) =>
                         handleNestedChange(
                           "contract",
@@ -687,12 +717,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
-                {/* DATA INIZIO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
                     type="date"
-                    label="Data inizio"
+                    label="Data inizio contratto *"
                     InputLabelProps={{ shrink: true }}
                     value={formData.contract.from_date}
                     onChange={(e) =>
@@ -701,7 +730,19 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* ORE SETTIMANALI */}
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Scadenza contratto *"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.contract.to_date}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "to_date", e.target.value)
+                    }
+                  />
+                </Grid>
+
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -718,7 +759,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* FTE */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -734,7 +774,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* FASCIA ORARIA */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -750,7 +789,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* TIPO TURNO */}
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -766,7 +804,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* NOTE */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -784,10 +821,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* Il resto degli step arriva nelle parti 4 e 5 */
-      /* -----------------------------------------------------------
-         STEP 2 — COST CENTER
-      ----------------------------------------------------------- */
+      /* STEP 2 — COST CENTER */
       case 2:
         return (
           <Card sx={{ mb: 3 }}>
@@ -802,18 +836,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
               {formData.cost_centers.map((cc, index) => (
                 <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-                  
-                  {/* COST CENTER */}
                   <Grid item xs={4}>
                     <FormControl fullWidth>
-                      <InputLabel>Cost center</InputLabel>
+                      <InputLabel>Cost center *</InputLabel>
                       <Select
                         value={
                           cc.cost_center_id !== null
                             ? String(cc.cost_center_id)
                             : ""
                         }
-                        label="Cost center"
+                        label="Cost center *"
                         onChange={(e) =>
                           handleArrayChange(
                             "cost_centers",
@@ -833,12 +865,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     </FormControl>
                   </Grid>
 
-                  {/* PESO */}
                   <Grid item xs={2}>
                     <TextField
                       fullWidth
                       type="number"
-                      label="% peso"
+                      label="% peso *"
                       value={cc.weight_percent}
                       onChange={(e) =>
                         handleArrayChange(
@@ -851,12 +882,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     />
                   </Grid>
 
-                  {/* DAL */}
                   <Grid item xs={3}>
                     <TextField
                       fullWidth
                       type="date"
-                      label="Dal"
+                      label="Dal *"
                       InputLabelProps={{ shrink: true }}
                       value={cc.from_date}
                       onChange={(e) =>
@@ -870,7 +900,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     />
                   </Grid>
 
-                  {/* NOTE */}
                   <Grid item xs={3}>
                     <TextField
                       fullWidth
@@ -892,9 +921,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* -----------------------------------------------------------
-         STEP 3 — REPARTO + PREPOSTO
-      ----------------------------------------------------------- */
+      /* STEP 3 — REPARTO + PREPOSTO */
       case 3:
         return (
           <Card sx={{ mb: 3 }}>
@@ -904,18 +931,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
-
-                {/* REPARTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Reparto</InputLabel>
+                    <InputLabel>Reparto *</InputLabel>
                     <Select
                       value={
                         formData.department.department_id !== null
                           ? String(formData.department.department_id)
                           : ""
                       }
-                      label="Reparto"
+                      label="Reparto *"
                       onChange={(e) =>
                         handleNestedChange(
                           "department",
@@ -934,17 +959,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
-                {/* PREPOSTO */}
                 <Grid item xs={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Preposto</InputLabel>
+                    <InputLabel>Preposto *</InputLabel>
                     <Select
                       value={
                         formData.department.manager_employee_id !== null
                           ? String(formData.department.manager_employee_id)
                           : ""
                       }
-                      label="Preposto"
+                      label="Preposto *"
                       onChange={(e) =>
                         handleNestedChange(
                           "department",
@@ -963,12 +987,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   </FormControl>
                 </Grid>
 
-                {/* DAL */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
                     type="date"
-                    label="Dal"
+                    label="Dal *"
                     InputLabelProps={{ shrink: true }}
                     value={formData.department.from_date}
                     onChange={(e) =>
@@ -981,18 +1004,13 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   />
                 </Grid>
 
-                {/* NOTE */}
                 <Grid item xs={3}>
                   <TextField
                     fullWidth
                     label="Note reparto"
                     value={formData.department.note}
                     onChange={(e) =>
-                      handleNestedChange(
-                        "department",
-                        "note",
-                        e.target.value
-                      )
+                      handleNestedChange("department", "note", e.target.value)
                     }
                   />
                 </Grid>
@@ -1000,14 +1018,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
             </CardContent>
           </Card>
         );
-      /* -----------------------------------------------------------
-         STEP 4 — RAL / BENEFIT / AUTO
-      ----------------------------------------------------------- */
+
+      /* STEP 4 — RAL / BENEFIT / AUTO */
       case 4:
         return (
           <Box>
-
-            {/* RAL */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1019,7 +1034,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     <TextField
                       fullWidth
                       type="number"
-                      label="RAL"
+                      label="RAL *"
                       value={formData.salary.ral_amount}
                       onChange={(e) =>
                         handleNestedChange("salary", "ral_amount", e.target.value)
@@ -1031,7 +1046,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     <TextField
                       fullWidth
                       type="date"
-                      label="Dal"
+                      label="Dal *"
                       InputLabelProps={{ shrink: true }}
                       value={formData.salary.from_date}
                       onChange={(e) =>
@@ -1054,7 +1069,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </CardContent>
             </Card>
 
-            {/* BENEFIT */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1067,8 +1081,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
                 {formData.benefits.map((b, index) => (
                   <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-
-                    {/* TIPO BENEFIT */}
                     <Grid item xs={4}>
                       <FormControl fullWidth>
                         <InputLabel>Benefit</InputLabel>
@@ -1094,7 +1106,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       </FormControl>
                     </Grid>
 
-                    {/* ATTIVO */}
                     <Grid item xs={2}>
                       <FormControlLabel
                         control={
@@ -1114,7 +1125,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       />
                     </Grid>
 
-                    {/* DAL */}
                     <Grid item xs={3}>
                       <TextField
                         fullWidth
@@ -1133,7 +1143,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       />
                     </Grid>
 
-                    {/* NOTE */}
                     <Grid item xs={3}>
                       <TextField
                         fullWidth
@@ -1154,7 +1163,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </CardContent>
             </Card>
 
-            {/* AUTO AZIENDALE */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1162,7 +1170,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                 </Typography>
 
                 <Grid container spacing={2}>
-
                   <Grid item xs={4}>
                     <TextField
                       fullWidth
@@ -1222,11 +1229,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       onChange={(e) => setCompanyCar("note", e.target.value)}
                     />
                   </Grid>
-
                 </Grid>
               </CardContent>
             </Card>
-
           </Box>
         );
 
@@ -1234,10 +1239,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         return null;
     }
   };
-
-  /* -----------------------------------------------------------
-     DIALOG + STEPPER + ACTIONS
-  ----------------------------------------------------------- */
 
   if (!open) return null;
 
@@ -1267,7 +1268,16 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         )}
 
         {step < steps.length - 1 && (
-          <Button variant="contained" onClick={() => setStep(step + 1)}>
+          <Button
+            variant="contained"
+            onClick={() => setStep(step + 1)}
+            disabled={
+              (step === 0 && !isStep0Valid()) ||
+              (step === 1 && !isStep1Valid()) ||
+              (step === 2 && !isStep2Valid()) ||
+              (step === 3 && !isStep3Valid())
+            }
+          >
             Avanti
           </Button>
         )}
@@ -1277,6 +1287,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
             variant="contained"
             color="primary"
             onClick={handleSubmit}
+            disabled={!isStep4Valid()}
           >
             Conferma creazione
           </Button>

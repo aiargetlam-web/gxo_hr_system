@@ -61,7 +61,6 @@ export default function Employees() {
   const [filterProtetta, setFilterProtetta] = useState("");
   const [filterSvantaggiato, setFilterSvantaggiato] = useState("");
   const [filterCCNL, setFilterCCNL] = useState("");
-  const [filterPreposto, setFilterPreposto] = useState("");
 
   const loadData = async () => {
     setLoading(true);
@@ -99,7 +98,6 @@ export default function Employees() {
     if (type === "attivi") setFilterStatus("1");
     if (type === "protetti") setFilterProtetta("yes");
     if (type === "svantaggiati") setFilterSvantaggiato("yes");
-    if (type === "preposti") setFilterPreposto("yes");
     if (type === "operai") setFilterRole("4");
     if (type === "hr") setFilterRole("5");
     if (type === "admin") setFilterRole("6");
@@ -113,10 +111,9 @@ export default function Employees() {
     setFilterProtetta("");
     setFilterSvantaggiato("");
     setFilterCCNL("");
-    setFilterPreposto("");
   };
 
-  // Toolbar HR personalizzata (2 righe) + toolbar standard
+  // Toolbar HR personalizzata (2 righe)
   const HRToolbar = () => (
     <Stack spacing={1} sx={{ p: 1 }}>
       {/* RIGA 1 — Pulsanti HR */}
@@ -124,14 +121,13 @@ export default function Employees() {
         <Button variant="outlined" onClick={() => applyQuickFilter("attivi")}>Attivi</Button>
         <Button variant="outlined" onClick={() => applyQuickFilter("protetti")}>Protetti</Button>
         <Button variant="outlined" onClick={() => applyQuickFilter("svantaggiati")}>Svantaggiati</Button>
-        <Button variant="outlined" onClick={() => applyQuickFilter("preposti")}>Preposti</Button>
         <Button variant="outlined" onClick={() => applyQuickFilter("operai")}>Operai</Button>
         <Button variant="outlined" onClick={() => applyQuickFilter("hr")}>HR</Button>
         <Button variant="outlined" onClick={() => applyQuickFilter("admin")}>Admin</Button>
         <Button variant="contained" color="error" onClick={resetFilters}>Reset</Button>
       </Stack>
 
-      {/* RIGA 2 — Filtri HR avanzati */}
+      {/* RIGA 2 — Filtri HR */}
       <Stack direction="row" spacing={1}>
         <Select value={filterSite} onChange={(e) => setFilterSite(e.target.value)} displayEmpty>
           <MenuItem value="">Sito</MenuItem>
@@ -170,12 +166,6 @@ export default function Employees() {
           <MenuItem value="no">No</MenuItem>
         </Select>
 
-        <Select value={filterPreposto} onChange={(e) => setFilterPreposto(e.target.value)} displayEmpty>
-          <MenuItem value="">Preposto</MenuItem>
-          <MenuItem value="yes">Sì</MenuItem>
-          <MenuItem value="no">No</MenuItem>
-        </Select>
-
         <Select value={filterCCNL} onChange={(e) => setFilterCCNL(e.target.value)} displayEmpty>
           <MenuItem value="">CCNL</MenuItem>
           <MenuItem value="1">1° livello</MenuItem>
@@ -184,7 +174,7 @@ export default function Employees() {
         </Select>
       </Stack>
 
-      {/* RIGA 3 — Toolbar standard DataGrid */}
+      {/* RIGA 3 — Toolbar standard */}
       <GridToolbar />
     </Stack>
   );
@@ -209,154 +199,152 @@ export default function Employees() {
     if (status.status_type_id === 2) return "warning";
     return "default";
   };
-const columns = [
-  {
-    field: "avatar",
-    headerName: "",
-    width: 70,
-    sortable: false,
-    filterable: false,
-    renderCell: (params: any) => (
-      <Avatar sx={{ bgcolor: "#1976d2" }}>
-        {params.row.first_name?.[0]}
-        {params.row.last_name?.[0]}
-      </Avatar>
-    ),
-  },
 
-  {
-    field: "name",
-    headerName: "Nome",
-    flex: 1,
-    valueGetter: (params: any) =>
-      `${params.row.first_name} ${params.row.last_name}`,
-  },
-
-  { field: "email", headerName: "Email", flex: 1 },
-  { field: "phone", headerName: "Telefono", flex: 1 },
-  { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
-
-  {
-    field: "is_protected_category",
-    headerName: "Protetta",
-    flex: 1,
-    renderCell: (params: any) =>
-      params.row.is_protected_category ? (
-        <Chip label="Protetta" color="error" />
-      ) : (
-        "-"
+  const columns = [
+    {
+      field: "avatar",
+      headerName: "",
+      width: 70,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: any) => (
+        <Avatar sx={{ bgcolor: "#1976d2" }}>
+          {params.row.first_name?.[0]}
+          {params.row.last_name?.[0]}
+        </Avatar>
       ),
-  },
+    },
 
-  {
-    field: "is_disadvantaged",
-    headerName: "Svantaggiato",
-    flex: 1,
-    renderCell: (params: any) =>
-      params.row.is_disadvantaged ? (
-        <Chip label="Svantaggiato" color="warning" />
-      ) : (
-        "-"
+    {
+      field: "name",
+      headerName: "Nome",
+      flex: 1,
+      valueGetter: (params: any) =>
+        `${params.row.first_name} ${params.row.last_name}`,
+    },
+
+    { field: "email", headerName: "Email", flex: 1 },
+    { field: "phone", headerName: "Telefono", flex: 1 },
+    { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
+
+    {
+      field: "is_protected_category",
+      headerName: "Protetta",
+      flex: 1,
+      renderCell: (params: any) =>
+        params.row.is_protected_category ? (
+          <Chip label="Protetta" color="error" />
+        ) : (
+          "-"
+        ),
+    },
+
+    {
+      field: "is_disadvantaged",
+      headerName: "Svantaggiato",
+      flex: 1,
+      renderCell: (params: any) =>
+        params.row.is_disadvantaged ? (
+          <Chip label="Svantaggiato" color="warning" />
+        ) : (
+          "-"
+        ),
+    },
+
+    {
+      field: "role",
+      headerName: "Ruolo",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={getRoleName(params.row.role?.id ?? 0)}
+          color={getRoleColor(params.row.role?.id ?? 0)}
+          variant="outlined"
+        />
       ),
-  },
+    },
 
-  {
-    field: "role",
-    headerName: "Ruolo",
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={getRoleName(params.row.role?.id ?? 0)}
-        color={getRoleColor(params.row.role?.id ?? 0)}
-        variant="outlined"
-      />
-    ),
-  },
+    {
+      field: "department",
+      headerName: "Reparto",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={
+            params.row.department?.department_id
+              ? `Dept #${params.row.department.department_id}`
+              : "-"
+          }
+          color="secondary"
+        />
+      ),
+    },
 
-  {
-    field: "department",
-    headerName: "Reparto",
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={
-          params.row.department?.department_id
-            ? `Dept #${params.row.department.department_id}`
-            : "-"
-        }
-        color="secondary"
-      />
-    ),
-  },
+    {
+      field: "site",
+      headerName: "Sito",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={
+            params.row.site?.id
+              ? `Sito #${params.row.site.id}`
+              : "-"
+          }
+          color="info"
+        />
+      ),
+    },
 
-  {
-    field: "site",
-    headerName: "Sito",
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={
-          params.row.site?.id
-            ? `Sito #${params.row.site.id}`
-            : "-"
-        }
-        color="info"
-      />
-    ),
-  },
+    {
+      field: "contract",
+      headerName: "Contratto",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={
+            params.row.contract?.work_regime
+              ? `Regime #${params.row.contract.work_regime}`
+              : "-"
+          }
+          color="primary"
+        />
+      ),
+    },
 
-  {
-    field: "contract",
-    headerName: "Contratto",
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={
-          params.row.contract?.work_regime
-            ? `Regime #${params.row.contract.work_regime}`
-            : "-"
-        }
-        color="primary"
-      />
-    ),
-  },
+    {
+      field: "status",
+      headerName: "Stato",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={
+            params.row.status?.status_type_id
+              ? `Status #${params.row.status.status_type_id}`
+              : "N/D"
+          }
+          color={getStatusColor(params.row.status)}
+        />
+      ),
+    },
 
-  {
-    field: "status",
-    headerName: "Stato",
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={
-          params.row.status?.status_type_id
-            ? `Status #${params.row.status.status_type_id}`
-            : "N/D"
-        }
-        color={getStatusColor(params.row.status)}
-      />
-    ),
-  },
+    { field: "hire_date", headerName: "Assunzione", flex: 1 },
+    { field: "termination_date", headerName: "Cessazione", flex: 1 },
 
-  { field: "hire_date", headerName: "Assunzione", flex: 1 },
-  { field: "termination_date", headerName: "Cessazione", flex: 1 },
+    {
+      field: "actions",
+      headerName: "",
+      width: 60,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: any) => (
+        <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
+          <MoreVertIcon />
+        </IconButton>
+      ),
+    },
+  ];
 
-  {
-    field: "actions",
-    headerName: "",
-    width: 60,
-    sortable: false,
-    filterable: false,
-    renderCell: (params: any) => (
-      <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
-        <MoreVertIcon />
-      </IconButton>
-    ),
-  },
-];
-
-
-
-  // Applico i filtri HR ai dipendenti
   const filteredEmployees = employees.filter((e) => {
     if (filterSite && String(e.site?.id) !== filterSite) return false;
     if (filterRole && String(e.role?.id) !== filterRole) return false;
@@ -366,9 +354,7 @@ const columns = [
     if (filterProtetta === "no" && e.is_protected_category) return false;
     if (filterSvantaggiato === "yes" && !e.is_disadvantaged) return false;
     if (filterSvantaggiato === "no" && e.is_disadvantaged) return false;
-    if (filterPreposto === "yes" && !e.preposto) return false;
-    if (filterPreposto === "no" && e.preposto) return false;
-    if (filterCCNL && String(e.ccnl_level) !== filterCCNL) return false;
+    if (filterCCNL && String(e.contract?.work_regime) !== filterCCNL) return false;
     return true;
   });
 
@@ -378,7 +364,7 @@ const columns = [
       Ruolo: getRoleName(e.role?.id ?? 0),
       Reparto: e.department?.department_id || "-",
       Sito: e.site?.id || "-",
-      Contratto: e.contract?.work_regime_id || "-",
+      Contratto: e.contract?.work_regime || "-",
       Stato: e.status?.status_type_id || "N/D",
     }));
 
@@ -401,6 +387,7 @@ const columns = [
   const handleImportCSV = () => {
     alert("Funzione Import CSV da implementare (richiede backend)");
   };
+
   return (
     <Box p={3}>
       <Stack

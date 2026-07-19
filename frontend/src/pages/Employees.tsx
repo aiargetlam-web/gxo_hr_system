@@ -53,7 +53,7 @@ export default function Employees() {
   const [openChangeSite, setOpenChangeSite] = useState<EmployeeFull | null>(null);
   const [openChangeStatus, setOpenChangeStatus] = useState<EmployeeFull | null>(null);
 
-  // ⭐ Filtri HR avanzati
+  // Filtri HR avanzati
   const [filterSite, setFilterSite] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterDept, setFilterDept] = useState("");
@@ -61,6 +61,7 @@ export default function Employees() {
   const [filterProtetta, setFilterProtetta] = useState("");
   const [filterSvantaggiato, setFilterSvantaggiato] = useState("");
   const [filterCCNL, setFilterCCNL] = useState("");
+  const [filterPreposto, setFilterPreposto] = useState("");
 
   const loadData = async () => {
     setLoading(true);
@@ -92,12 +93,13 @@ export default function Employees() {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  // ⭐ Funzioni HR per pulsanti rapidi
+
+  // Pulsanti HR rapidi
   const applyQuickFilter = (type: string) => {
     if (type === "attivi") setFilterStatus("1");
     if (type === "protetti") setFilterProtetta("yes");
     if (type === "svantaggiati") setFilterSvantaggiato("yes");
-    if (type === "preposti") setFilterRole("preposto");
+    if (type === "preposti") setFilterPreposto("yes");
     if (type === "operai") setFilterRole("4");
     if (type === "hr") setFilterRole("5");
     if (type === "admin") setFilterRole("6");
@@ -111,12 +113,12 @@ export default function Employees() {
     setFilterProtetta("");
     setFilterSvantaggiato("");
     setFilterCCNL("");
+    setFilterPreposto("");
   };
 
-  // ⭐ Toolbar HR personalizzata (due righe)
+  // Toolbar HR personalizzata (2 righe) + toolbar standard
   const HRToolbar = () => (
     <Stack spacing={1} sx={{ p: 1 }}>
-      
       {/* RIGA 1 — Pulsanti HR */}
       <Stack direction="row" spacing={1}>
         <Button variant="outlined" onClick={() => applyQuickFilter("attivi")}>Attivi</Button>
@@ -168,6 +170,12 @@ export default function Employees() {
           <MenuItem value="no">No</MenuItem>
         </Select>
 
+        <Select value={filterPreposto} onChange={(e) => setFilterPreposto(e.target.value)} displayEmpty>
+          <MenuItem value="">Preposto</MenuItem>
+          <MenuItem value="yes">Sì</MenuItem>
+          <MenuItem value="no">No</MenuItem>
+        </Select>
+
         <Select value={filterCCNL} onChange={(e) => setFilterCCNL(e.target.value)} displayEmpty>
           <MenuItem value="">CCNL</MenuItem>
           <MenuItem value="1">1° livello</MenuItem>
@@ -176,10 +184,11 @@ export default function Employees() {
         </Select>
       </Stack>
 
-      {/* RIGA 3 — Toolbar standard */}
+      {/* RIGA 3 — Toolbar standard DataGrid */}
       <GridToolbar />
     </Stack>
   );
+
   const getRoleName = (roleId: number) => {
     if (roleId === 6) return "Amministratore";
     if (roleId === 5) return "Risorse Umane";
@@ -200,7 +209,6 @@ export default function Employees() {
     if (status.status_type_id === 2) return "warning";
     return "default";
   };
-
   const columns = [
     {
       field: "avatar",
@@ -296,7 +304,11 @@ export default function Employees() {
       flex: 1,
       renderCell: (params) => (
         <Chip
-          label={`Dept #${params.row.department?.department_id ?? "-"}`}
+          label={
+            params.row.department?.department_id
+              ? `Dept #${params.row.department.department_id}`
+              : "-"
+          }
           color="secondary"
         />
       ),
@@ -308,7 +320,11 @@ export default function Employees() {
       flex: 1,
       renderCell: (params) => (
         <Chip
-          label={`Sito #${params.row.site?.id ?? "-"}`}
+          label={
+            params.row.site?.id
+              ? `Sito #${params.row.site.id}`
+              : "-"
+          }
           color="info"
         />
       ),
@@ -320,7 +336,11 @@ export default function Employees() {
       flex: 1,
       renderCell: (params) => (
         <Chip
-          label={`Regime #${params.row.contract?.work_regime_id ?? "-"}`}
+          label={
+            params.row.contract?.work_regime_id
+              ? `Regime #${params.row.contract.work_regime_id}`
+              : "-"
+          }
           color="primary"
         />
       ),
@@ -358,6 +378,23 @@ export default function Employees() {
       ),
     },
   ];
+
+  // Applico i filtri HR ai dipendenti
+  const filteredEmployees = employees.filter((e) => {
+    if (filterSite && String(e.site?.id) !== filterSite) return false;
+    if (filterRole && String(e.role?.id) !== filterRole) return false;
+    if (filterDept && String(e.department?.department_id) !== filterDept) return false;
+    if (filterStatus && String(e.status?.status_type_id) !== filterStatus) return false;
+    if (filterProtetta === "yes" && !e.is_protected_category) return false;
+    if (filterProtetta === "no" && e.is_protected_category) return false;
+    if (filterSvantaggiato === "yes" && !e.is_disadvantaged) return false;
+    if (filterSvantaggiato === "no" && e.is_disadvantaged) return false;
+    if (filterPreposto === "yes" && !e.preposto) return false;
+    if (filterPreposto === "no" && e.preposto) return false;
+    if (filterCCNL && String(e.ccnl_level) !== filterCCNL) return false;
+    return true;
+  });
+
   const handleExportCSV = () => {
     const rows = employees.map((e) => ({
       Nome: `${e.first_name} ${e.last_name}`,
@@ -420,52 +457,7 @@ export default function Employees() {
 
       <Card sx={{ height: 650 }}>
         <DataGrid
-          rows={employees}
-          columns={columns}
-          loading={loading}
-          disableSelectionOnClick
-          pageSize={10}
-          components={{ Toolbar: HRToolbar }}
-          initialState={{
-            pagination: { pageSize: 10 },
-            sorting: { sortModel: [{ field: "name", sort: "asc" }] },
-          }}
-        />
-      </Card>
-  return (
-    <Box p={3}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 3 }}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Gestione Dipendenti
-        </Typography>
-
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={handleImportCSV}>
-            Importa CSV
-          </Button>
-
-          <Button variant="outlined" onClick={handleExportCSV}>
-            Esporta CSV
-          </Button>
-
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreate(true)}
-          >
-            Nuovo Dipendente
-          </Button>
-        </Stack>
-      </Stack>
-
-      <Card sx={{ height: 650 }}>
-        <DataGrid
-          rows={employees}
+          rows={filteredEmployees}
           columns={columns}
           loading={loading}
           disableSelectionOnClick

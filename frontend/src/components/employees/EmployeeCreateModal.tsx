@@ -223,7 +223,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
     loadData();
   }, [open]);
-
   /* -----------------------------------------------------------
      HANDLER CAMPI (identici ai tuoi)
   ----------------------------------------------------------- */
@@ -232,7 +231,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNestedChange = (section: keyof EmployeeCreateForm, field: string, value: any) => {
+  const handleNestedChange = (
+    section: keyof EmployeeCreateForm,
+    field: string,
+    value: any
+  ) => {
     setFormData((prev: any) => ({
       ...prev,
       [section]: { ...(prev[section] || {}), [field]: value },
@@ -320,7 +323,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       alert("Errore durante la creazione del dipendente");
     }
   };
-
   /* -----------------------------------------------------------
      RENDER STEP — VERSIONE MODERNA
   ----------------------------------------------------------- */
@@ -477,7 +479,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     label="Data cessazione"
                     InputLabelProps={{ shrink: true }}
                     value={formData.termination_date}
-                    onChange={(e) => handleChange("termination_date", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("termination_date", e.target.value)
+                    }
                   />
                 </Grid>
 
@@ -591,7 +595,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     label="Ore settimanali"
                     value={formData.contract.weekly_hours}
                     onChange={(e) =>
-                      handleNestedChange("contract", "weekly_hours", e.target.value)
+                      handleNestedChange(
+                        "contract",
+                        "weekly_hours",
+                        e.target.value
+                      )
                     }
                   />
                 </Grid>
@@ -600,12 +608,14 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <TextField
                     fullWidth
                     type="number"
-                    step="0.01"
                     label="FTE"
                     value={formData.contract.fte}
                     onChange={(e) =>
                       handleNestedChange("contract", "fte", e.target.value)
                     }
+                    InputProps={{
+                      inputProps: { step: "0.01" },
+                    }}
                   />
                 </Grid>
 
@@ -615,7 +625,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     label="Fascia oraria"
                     value={formData.contract.time_band}
                     onChange={(e) =>
-                      handleNestedChange("contract", "time_band", e.target.value)
+                      handleNestedChange(
+                        "contract",
+                        "time_band",
+                        e.target.value
+                      )
                     }
                   />
                 </Grid>
@@ -626,7 +640,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     label="Tipo turno"
                     value={formData.contract.shift_type}
                     onChange={(e) =>
-                      handleNestedChange("contract", "shift_type", e.target.value)
+                      handleNestedChange(
+                        "contract",
+                        "shift_type",
+                        e.target.value
+                      )
                     }
                   />
                 </Grid>
@@ -743,7 +761,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
             </CardContent>
           </Card>
         );
-
       /* STEP 3 — SITO + REPARTO + PREPOSTO */
       case 3:
         return (
@@ -1098,7 +1115,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         return null;
     }
   };
-
   /* -----------------------------------------------------------
      RENDER MODAL FINALE — PREMIUM XL
   ----------------------------------------------------------- */
@@ -1132,17 +1148,26 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         <Button onClick={onClose}>Annulla</Button>
 
         {step > 0 && (
-          <Button onClick={() => setStep(step - 1)}>Indietro</Button>
+          <Button onClick={() => setStep(step - 1)}>
+            Indietro
+          </Button>
         )}
 
         {step < steps.length - 1 && (
-          <Button variant="contained" onClick={() => setStep(step + 1)}>
+          <Button
+            variant="contained"
+            onClick={() => setStep(step + 1)}
+          >
             Avanti
           </Button>
         )}
 
         {step === steps.length - 1 && (
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+          >
             Conferma creazione
           </Button>
         )}

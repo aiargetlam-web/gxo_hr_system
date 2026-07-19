@@ -53,7 +53,8 @@ api_router.include_router(contract_natures_router, prefix="/contract-natures", t
 api_router.include_router(work_regimes_router, prefix="/work-regimes", tags=["work-regimes"])
 api_router.include_router(departments_router, prefix="/departments", tags=["departments"])
 api_router.include_router(cost_centers_router, prefix="/cost-centers", tags=["cost-centers"])
-api_router.include_router(preposti_router, prefix="/preposti", tags=["preposti"])
+api_router.include_router(preposti_router, prefix="/employees", tags=["preposti"])
+
 
 # Nuovi endpoint correttamente registrati
 api_router.include_router(genders_router, prefix="/genders", tags=["genders"])

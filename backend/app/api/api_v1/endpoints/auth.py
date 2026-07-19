@@ -51,11 +51,10 @@ def login_access_token(
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # 🔥 TOKEN CORRETTO: sub = ID numerico, email separata
     access_token = security.create_access_token(
         {
-            "sub": str(user.id),                 # <-- deve essere l'ID numerico
-            "email": user.email,                 # <-- email separata
+            "sub": str(user.id),
+            "email": user.email,
             "role_id": user.role_id,
             "role": user.role.name if user.role else None
         },
@@ -82,7 +81,7 @@ def read_current_user(
     user = (
         db.query(Employee)
         .options(
-            joinedload(Employee.current_site),
+            joinedload(Employee.site),   # 🔥 CORRETTO — prima era current_site
             joinedload(Employee.role)
         )
         .filter(Employee.id == current_user.id)

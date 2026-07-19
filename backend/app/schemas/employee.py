@@ -74,6 +74,14 @@ class SiteHistory(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# 🔥 SITO ATTUALE (MODELLO SEMPLICE)
+class Site(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
 class CompanyCar(BaseModel):
     id: int
     car_model: str
@@ -227,7 +235,7 @@ class EmployeeBase(BaseModel):
 
     role_id: Optional[int] = None
 
-    # 🔥 SITO ATTUALE DEL DIPENDENTE
+    # 🔥 SITO ATTUALE DEL DIPENDENTE (FK)
     site_id: Optional[int] = None
 
     hire_date: Optional[date] = None
@@ -254,9 +262,6 @@ class EmployeeCreate(EmployeeBase):
     first_name: str
     last_name: str
     role_id: int
-
-    # 🔥 Il sito attuale viene preso da site_history.site_id
-    # NON serve site_id qui
 
     contract: ContractCreate
     cost_centers: List[CostCenterAssignmentCreate]
@@ -291,10 +296,11 @@ class Employee(EmployeeInDBBase):
     role: Optional[Role] = None
 
     # 🔥 SITO ATTUALE DEL DIPENDENTE
-    site_id: Optional[int] = None
+    site: Optional[Site] = None
 
-    # 🔥 VALORI ATTUALI (history tables)
-    site: Optional[SiteHistory] = None
+    # 🔥 HISTORY COMPLETA
+    site_history: Optional[List[SiteHistory]] = None
+
     department: Optional[Department] = None
     cost_centers: Optional[List[CostCenter]] = None
     contract: Optional[Contract] = None

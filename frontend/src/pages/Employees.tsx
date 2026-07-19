@@ -55,9 +55,10 @@ export default function Employees() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await employeeService.getEmployees();
+      const data = await employeeService.getEmployeesFull();
 
-      data.sort((a: EmployeeFull, b: EmployeeFull) =>
+      // Ordina alfabeticamente
+      data.sort((a, b) =>
         `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
       );
 
@@ -83,24 +84,10 @@ export default function Employees() {
     setAnchorEl(null);
   };
 
-  const getRoleName = (roleId: number) => {
-    if (roleId === 6) return "Amministratore";
-    if (roleId === 5) return "Risorse Umane";
-    if (roleId === 4) return "Operaio di Magazzino";
-    return "Dipendente";
-  };
-
   const getRoleColor = (roleId: number) => {
     if (roleId === 6) return "error";
     if (roleId === 5) return "primary";
     if (roleId === 4) return "success";
-    return "default";
-  };
-
-  const getStatusColor = (status: any) => {
-    if (!status?.status_type_id) return "default";
-    if (status.status_type_id === 1) return "success";
-    if (status.status_type_id === 2) return "warning";
     return "default";
   };
 
@@ -161,7 +148,7 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={getRoleName(params.row.role?.id ?? 0)}
+          label={params.row.role?.name ?? "-"}
           color={getRoleColor(params.row.role?.id ?? 0)}
           variant="outlined"
         />
@@ -174,11 +161,7 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={
-            params.row.department?.department_id
-              ? `Dept #${params.row.department.department_id}`
-              : "-"
-          }
+          label={params.row.department?.name ?? "-"}
           color="secondary"
         />
       ),
@@ -190,11 +173,7 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={
-            params.row.site?.id
-              ? `Sito #${params.row.site.id}`
-              : "-"
-          }
+          label={params.row.site?.name ?? "-"}
           color="info"
         />
       ),
@@ -206,11 +185,7 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={
-            params.row.contract?.work_regime
-              ? `Regime #${params.row.contract.work_regime}`
-              : "-"
-          }
+          label={params.row.contract?.work_regime ?? "-"}
           color="primary"
         />
       ),
@@ -222,12 +197,36 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
+          label={params.row.status?.name ?? "N/D"}
+          color="success"
+        />
+      ),
+    },
+
+    {
+      field: "salary",
+      headerName: "RAL",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
           label={
-            params.row.status?.status_type_id
-              ? `Status #${params.row.status.status_type_id}`
-              : "N/D"
+            params.row.salary?.ral_amount
+              ? `${params.row.salary.ral_amount} €`
+              : "-"
           }
-          color={getStatusColor(params.row.status)}
+          color="warning"
+        />
+      ),
+    },
+
+    {
+      field: "company_car",
+      headerName: "Auto",
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={params.row.company_car?.car_model ?? "-"}
+          color="secondary"
         />
       ),
     },

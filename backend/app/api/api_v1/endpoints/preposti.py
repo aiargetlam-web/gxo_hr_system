@@ -4,15 +4,15 @@ from app.api import deps
 from app.schemas.employee import Employee as EmployeeSchema
 from app.models.employee import Employee
 
-router = APIRouter()
+router = APIRouter(prefix="/preposti", tags=["Preposti"])
 
 @router.get("/", response_model=list[EmployeeSchema])
 def get_preposti(
-    site_id: int,  # <-- OBBLIGATORIO
+    site_id: int,
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user),
 ):
-    preposti = (
+    return (
         db.query(Employee)
         .filter(
             Employee.preposto == True,
@@ -21,5 +21,3 @@ def get_preposti(
         .order_by(Employee.last_name)
         .all()
     )
-
-    return preposti

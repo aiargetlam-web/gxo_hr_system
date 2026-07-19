@@ -31,7 +31,7 @@ import {
 import { siteService } from "../../services/siteService";
 
 /* -----------------------------------------------------------
-   TIPI — COMPLETI (identici ai tuoi)
+   TIPI
 ----------------------------------------------------------- */
 
 type SiteHistory = {
@@ -203,10 +203,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
 
-  /* -----------------------------------------------------------
-     LOAD DATI INIZIALI
-  ----------------------------------------------------------- */
-
   useEffect(() => {
     if (!open) return;
 
@@ -214,7 +210,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       const [sitesRes] = await Promise.all([siteService.getSites()]);
       setSites(sitesRes);
 
-      // placeholder finché non agganci i servizi reali
       setWorkRegimes([]);
       setContractNatures([]);
       setCostCentersOptions([]);
@@ -223,8 +218,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
 
     loadData();
   }, [open]);
+
   /* -----------------------------------------------------------
-     HANDLER CAMPI (identici ai tuoi)
+     HANDLER
   ----------------------------------------------------------- */
 
   const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
@@ -323,13 +319,13 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       alert("Errore durante la creazione del dipendente");
     }
   };
+
   /* -----------------------------------------------------------
-     RENDER STEP — VERSIONE MODERNA
+     RENDER STEP
   ----------------------------------------------------------- */
 
   const renderStep = () => {
     switch (step) {
-      /* STEP 0 — ANAGRAFICA + LUL + STATO LAVORATIVO */
       case 0:
         return (
           <Card sx={{ mb: 3 }}>
@@ -418,7 +414,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     fullWidth
                     label="Indirizzo"
                     value={formData.address_street}
-                    onChange={(e) => handleChange("address_street", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("address_street", e.target.value)
+                    }
                   />
                 </Grid>
 
@@ -427,7 +425,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     fullWidth
                     label="Città"
                     value={formData.address_city}
-                    onChange={(e) => handleChange("address_city", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("address_city", e.target.value)
+                    }
                   />
                 </Grid>
 
@@ -437,6 +437,63 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     label="CAP"
                     value={formData.address_cap}
                     onChange={(e) => handleChange("address_cap", e.target.value)}
+                  />
+                </Grid>
+
+                {/* SITO NELLO STEP 0 */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    Sito di assegnazione
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Sito</InputLabel>
+                    <Select
+                      value={formData.site_history.site_id ?? null}
+                      label="Sito"
+                      onChange={(e) => handleSiteChange(Number(e.target.value))}
+                    >
+                      <MenuItem value={null}>Seleziona</MenuItem>
+                      {sites.map((s) => (
+                        <MenuItem key={s.id} value={s.id}>
+                          {s.name || s.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.site_history.from_date}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "site_history",
+                        "from_date",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Note sito"
+                    value={formData.site_history.note}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "site_history",
+                        "note",
+                        e.target.value
+                      )
+                    }
                   />
                 </Grid>
 
@@ -491,7 +548,10 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                       <Checkbox
                         checked={formData.is_protected_category}
                         onChange={(e) =>
-                          handleChange("is_protected_category", e.target.checked)
+                          handleChange(
+                            "is_protected_category",
+                            e.target.checked
+                          )
                         }
                       />
                     }
@@ -517,7 +577,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* STEP 1 — CONTRATTO */
       case 1:
         return (
           <Card sx={{ mb: 3 }}>
@@ -531,7 +590,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <FormControl fullWidth>
                     <InputLabel>Regime di lavoro</InputLabel>
                     <Select
-                      value={formData.contract.work_regime_id ?? ""}
+                      value={formData.contract.work_regime_id ?? null}
                       label="Regime di lavoro"
                       onChange={(e) =>
                         handleNestedChange(
@@ -541,7 +600,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                         )
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={null}>Seleziona</MenuItem>
                       {workRegimes.map((wr) => (
                         <MenuItem key={wr.id} value={wr.id}>
                           {wr.description || wr.code}
@@ -555,7 +614,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <FormControl fullWidth>
                     <InputLabel>Natura contratto</InputLabel>
                     <Select
-                      value={formData.contract.contract_nature_id ?? ""}
+                      value={formData.contract.contract_nature_id ?? null}
                       label="Natura contratto"
                       onChange={(e) =>
                         handleNestedChange(
@@ -565,7 +624,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                         )
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={null}>Seleziona</MenuItem>
                       {contractNatures.map((cn) => (
                         <MenuItem key={cn.id} value={cn.id}>
                           {cn.description || cn.code}
@@ -666,7 +725,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* STEP 2 — COST CENTER */
       case 2:
         return (
           <Card sx={{ mb: 3 }}>
@@ -685,7 +743,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                     <FormControl fullWidth>
                       <InputLabel>Cost center</InputLabel>
                       <Select
-                        value={cc.cost_center_id ?? ""}
+                        value={cc.cost_center_id ?? null}
                         label="Cost center"
                         onChange={(e) =>
                           handleArrayChange(
@@ -696,7 +754,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                           )
                         }
                       >
-                        <MenuItem value="">Seleziona</MenuItem>
+                        <MenuItem value={null}>Seleziona</MenuItem>
                         {costCentersOptions.map((c) => (
                           <MenuItem key={c.id} value={c.id}>
                             {c.name || c.code}
@@ -761,7 +819,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
             </CardContent>
           </Card>
         );
-      /* STEP 3 — SITO + REPARTO + PREPOSTO */
+
       case 3:
         return (
           <Card sx={{ mb: 3 }}>
@@ -771,50 +829,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Sito</InputLabel>
-                    <Select
-                      value={formData.site_history.site_id ?? ""}
-                      label="Sito"
-                      onChange={(e) => handleSiteChange(Number(e.target.value))}
-                    >
-                      <MenuItem value="">Seleziona</MenuItem>
-                      {sites.map((s) => (
-                        <MenuItem key={s.id} value={s.id}>
-                          {s.name || s.code}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={3}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Dal"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.site_history.from_date}
-                    onChange={(e) =>
-                      handleNestedChange("site_history", "from_date", e.target.value)
-                    }
-                  />
-                </Grid>
-
-                <Grid item xs={3}>
-                  <TextField
-                    fullWidth
-                    label="Note sito"
-                    value={formData.site_history.note}
-                    onChange={(e) =>
-                      handleNestedChange("site_history", "note", e.target.value)
-                    }
-                  />
-                </Grid>
-
                 <Grid item xs={12}>
-                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                  <Typography variant="subtitle1" sx={{ mt: 1 }}>
                     Reparto
                   </Typography>
                 </Grid>
@@ -823,7 +839,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <FormControl fullWidth>
                     <InputLabel>Reparto</InputLabel>
                     <Select
-                      value={formData.department.department_id ?? ""}
+                      value={formData.department.department_id ?? null}
                       label="Reparto"
                       onChange={(e) =>
                         handleNestedChange(
@@ -833,7 +849,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                         )
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={null}>Seleziona</MenuItem>
                       {departments.map((d) => (
                         <MenuItem key={d.id} value={d.id}>
                           {d.name || d.code}
@@ -847,7 +863,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                   <FormControl fullWidth>
                     <InputLabel>Preposto</InputLabel>
                     <Select
-                      value={formData.department.manager_employee_id ?? ""}
+                      value={formData.department.manager_employee_id ?? null}
                       label="Preposto"
                       onChange={(e) =>
                         handleNestedChange(
@@ -857,7 +873,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
                         )
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={null}>Seleziona</MenuItem>
                       {preposti.map((p) => (
                         <MenuItem key={p.id} value={p.id}>
                           {p.last_name} {p.first_name}
@@ -895,7 +911,6 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
           </Card>
         );
 
-      /* STEP 4 — RAL + BENEFIT + AUTO */
       case 4:
         return (
           <Box>
@@ -1115,19 +1130,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         return null;
     }
   };
-  /* -----------------------------------------------------------
-     RENDER MODAL FINALE — PREMIUM XL
-  ----------------------------------------------------------- */
 
   if (!open) return null;
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="xl"
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl">
       <DialogTitle>Nuovo dipendente</DialogTitle>
 
       <DialogContent dividers sx={{ pt: 3 }}>
@@ -1148,16 +1155,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
         <Button onClick={onClose}>Annulla</Button>
 
         {step > 0 && (
-          <Button onClick={() => setStep(step - 1)}>
-            Indietro
-          </Button>
+          <Button onClick={() => setStep(step - 1)}>Indietro</Button>
         )}
 
         {step < steps.length - 1 && (
-          <Button
-            variant="contained"
-            onClick={() => setStep(step + 1)}
-          >
+          <Button variant="contained" onClick={() => setStep(step + 1)}>
             Avanti
           </Button>
         )}

@@ -16,7 +16,7 @@ def get_preposti(
         db.query(Employee)
         .filter(
             Employee.preposto == True,
-            Employee.current_site_id == site_id
+            Employee.site_id == site_id   # <-- CORRETTO
         )
         .order_by(Employee.last_name)
         .all()

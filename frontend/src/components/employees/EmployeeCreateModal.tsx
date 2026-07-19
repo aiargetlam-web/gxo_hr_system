@@ -330,6 +330,37 @@ const setCompanyCar = (field: keyof CompanyCar, value: any) => {
   }));
 };
 /* ============================================================
+   CAMBIO SITO → CARICA REPARTI E PREPOSTI
+============================================================ */
+
+const handleSiteChange = async (siteId: number) => {
+  // aggiorna il sito selezionato
+  setFormData((prev) => ({
+    ...prev,
+    site_history: { ...prev.site_history, site_id: siteId },
+  }));
+
+  // se non c’è sito, svuota reparti e preposti
+  if (!siteId) {
+    setDepartments([]);
+    setPreposti([]);
+    return;
+  }
+
+  try {
+    const [depsRes, prepostiRes] = await Promise.all([
+      getDepartmentsBySite(siteId),
+      getPrepostiBySite(siteId),
+    ]);
+
+    setDepartments(depsRes);
+    setPreposti(prepostiRes);
+  } catch (err) {
+    console.error("Errore caricamento reparti/preposti:", err);
+  }
+};
+
+/* ============================================================
    VALIDAZIONE MINIMA
 ============================================================ */
 

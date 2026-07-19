@@ -34,9 +34,9 @@ import { contractService } from "../../services/contractService";
 import { benefitService } from "../../services/benefitService";
 import { genderService } from "../../services/genderService";
 
-/* -----------------------------------------------------------
+/* ============================================================
    TIPI
------------------------------------------------------------ */
+============================================================ */
 
 type SiteHistory = {
   site_id: number | null;
@@ -125,9 +125,9 @@ interface EmployeeCreateModalProps {
   onCreated?: (employee: any) => void;
 }
 
-/* -----------------------------------------------------------
+/* ============================================================
    STEPS
------------------------------------------------------------ */
+============================================================ */
 
 const steps = [
   "Anagrafica",
@@ -137,9 +137,9 @@ const steps = [
   "RAL / Benefit / Auto",
 ];
 
-/* -----------------------------------------------------------
+/* ============================================================
    COMPONENTE
------------------------------------------------------------ */
+============================================================ */
 
 const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalProps) => {
   const [step, setStep] = useState(0);
@@ -162,13 +162,11 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     termination_date: "",
     is_protected_category: false,
     is_disadvantaged: false,
-
     site_history: {
       site_id: null,
       from_date: "",
       note: "",
     },
-
     contract: {
       work_regime_id: null,
       contract_nature_id: null,
@@ -180,24 +178,19 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       shift_type: "",
       note: "",
     },
-
     cost_centers: [],
-
     department: {
       department_id: null,
       manager_employee_id: null,
       from_date: "",
       note: "",
     },
-
     salary: {
       ral_amount: "",
       from_date: "",
       note: "",
     },
-
     benefits: [],
-
     company_car: null,
   });
 
@@ -241,9 +234,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     loadData();
   }, [open]);
 
-  /* -----------------------------------------------------------
+  /* ============================================================
      HANDLER CAMPI
-  ----------------------------------------------------------- */
+  ============================================================ */
 
   const handleChange = (field: keyof EmployeeCreateForm, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -310,9 +303,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     }));
   };
 
-  /* -----------------------------------------------------------
+  /* ============================================================
      CAMBIO SITO → CARICA REPARTI E PREPOSTI
-  ----------------------------------------------------------- */
+  ============================================================ */
 
   const handleSiteChange = async (siteId: number) => {
     setFormData((prev) => ({
@@ -335,9 +328,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     setPreposti(prepostiRes);
   };
 
-  /* -----------------------------------------------------------
+  /* ============================================================
      VALIDAZIONE MINIMA
-  ----------------------------------------------------------- */
+  ============================================================ */
 
   const isStep0Valid = () =>
     formData.first_name.trim() !== "" &&
@@ -371,9 +364,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     formData.salary.ral_amount.trim() !== "" &&
     formData.salary.from_date.trim() !== "";
 
-  /* -----------------------------------------------------------
+  /* ============================================================
      SUBMIT
-  ----------------------------------------------------------- */
+  ============================================================ */
 
   const handleSubmit = async () => {
     try {
@@ -386,9 +379,9 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     }
   };
 
-  /* -----------------------------------------------------------
+  /* ============================================================
      RENDER STEP
-  ----------------------------------------------------------- */
+  ============================================================ */
 
   const renderStep = () => {
     switch (step) {

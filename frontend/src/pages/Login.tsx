@@ -29,10 +29,11 @@ export const Login: React.FC = () => {
       }
 
       if ("access_token" in response) {
-        const user = await login(response.access_token);
-        if (user) navigate('/dashboard');
-        return;
-      }
+        await login(response.access_token);
+        navigate('/'); // sidebar garantita
+      return;
+     }
+
 
       setError("Risposta inattesa dal server.");
     } catch {

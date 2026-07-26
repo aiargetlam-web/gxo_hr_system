@@ -27,8 +27,17 @@
 
 /* Card login */
 .login-card {
-  margin-top: 200px; /* aggiunto per evitare sovrapposizione */
-  animation: slideUp 0.8s ease-out;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  width: 380px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 20;
+
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  animation: slideUp 0.8s ease-out forwards;
 }
 
 @keyframes slideUp {
@@ -127,7 +136,7 @@
 }
 
 .login-header-outside h1 {
-  font-size: 5.5rem;
+  font-size: 6rem;
   font-weight: 800;
   color: var(--color-primary);
   letter-spacing: 2px;
@@ -148,7 +157,7 @@
   }
 }
 .login-header-outside p {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   margin: 0;
   color: #f0f0f0;
   text-shadow: 0 0 10px rgba(255, 106, 0, 0.4);

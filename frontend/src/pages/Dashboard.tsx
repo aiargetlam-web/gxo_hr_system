@@ -1,5 +1,6 @@
 import React from "react";
-import "./dashboard.css";
+import "../css/dashboard.css";
+
 
 export const Dashboard: React.FC = () => {
   const today = new Date();

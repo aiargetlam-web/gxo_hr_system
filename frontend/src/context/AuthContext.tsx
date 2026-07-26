@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // 🔥 1) Caricamento iniziale (refresh pagina)
   useEffect(() => {
     const initAuth = async () => {
       if (token) {
@@ -36,12 +37,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           logout();
         }
       }
-      setIsLoading(false);
+
+      setIsLoading(false); // 🔥 fondamentale per ProtectedRoute
     };
 
     initAuth();
   }, [token]);
 
+  // 🔥 2) Login
   const login = async (newToken: string): Promise<EmployeeAuth | null> => {
     localStorage.setItem('access_token', newToken);
     setToken(newToken);
@@ -51,13 +54,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const userData = await authService.getCurrentUser();
       setUser(userData);
-      return userData; // 🔥 ritorna l’utente, NON naviga
+      return userData; // 🔥 ritorna l’utente
     } catch {
       logout();
       return null;
     }
   };
 
+  // 🔥 3) Logout
   const logout = () => {
     localStorage.removeItem('access_token');
     setToken(null);

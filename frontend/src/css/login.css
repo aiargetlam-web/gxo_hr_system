@@ -27,6 +27,7 @@
 
 /* Card login */
 .login-card {
+  margin-top: 200px; /* aggiunto per evitare sovrapposizione */
   animation: slideUp 0.8s ease-out;
 }
 
@@ -119,14 +120,14 @@
 
 .login-header-outside {
   position: absolute;
-  top: 120px;
+  top: 110px;
   text-align: center;
   width: 100%;
   color: white;
 }
 
 .login-header-outside h1 {
-  font-size: 4.5rem;
+  font-size: 5.5rem;
   font-weight: 800;
   color: var(--color-primary);
   letter-spacing: 2px;
@@ -147,7 +148,7 @@
   }
 }
 .login-header-outside p {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   margin: 0;
   color: #f0f0f0;
   text-shadow: 0 0 10px rgba(255, 106, 0, 0.4);

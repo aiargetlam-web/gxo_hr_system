@@ -1,0 +1,50 @@
+/* ========================= */
+/* TOPBAR - GXO PRIMORDIA    */
+/* ========================= */
+
+.topbar {
+  height: 60px;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #1A1A1A;
+  padding: 0.25rem;
+  display: none;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.topbar-user span {
+  font-weight: 500;
+}
+
+.topbar .btn-secondary {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: block;
+  }
+}

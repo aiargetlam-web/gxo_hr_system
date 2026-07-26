@@ -1,0 +1,66 @@
+/* ========================= */
+/* BOARD UPLOAD - PRIMORDIA  */
+/* ========================= */
+
+.board-upload-wrapper h3 {
+  color: #FF6A00;
+  margin-bottom: 1rem;
+}
+
+.board-dropzone {
+  border: 2px dashed #CCCCCC;
+  background: #FAFAFA;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.board-dropzone.drag-active {
+  border-color: #FF6A00;
+  background: #FFF3E6;
+}
+
+.board-dropzone p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.board-file-selected {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.board-sites-list label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.board-sites-list input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #FF6A00;
+}
+
+.board-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.board-actions .btn-outline {
+  border: 1px solid #CCCCCC;
+  background: transparent;
+  color: #333;
+}
+
+.board-actions .btn-outline:hover {
+  background: #E0E0E0;
+}

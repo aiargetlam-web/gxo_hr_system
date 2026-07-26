@@ -1,0 +1,83 @@
+/* ========================= */
+/* SIDEBAR - GXO PRIMORDIA   */
+/* ========================= */
+
+.sidebar {
+  width: 250px;
+  background-color: #000000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #FF6A00;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.sidebar-user-info {
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: rgba(255,255,255,0.85);
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255,255,255,0.1);
+  color: #FFFFFF;
+}
+
+.sidebar-link.active {
+  background-color: rgba(255,255,255,0.15);
+  border-left: 4px solid #FF6A00;
+  color: #FFFFFF;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+.sidebar-backdrop.show {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 220px;
+  }
+}

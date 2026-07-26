@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export const ProtectedRoute = () => {
-  const { user, isLoading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
   // ⏳ 1) Caricamento iniziale → NON fare redirect
-  if (isLoading) {
+  if (loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Caricamento...</div>;
   }
 

@@ -4,6 +4,8 @@ import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { LoginResponse } from '../types';
 import '../css/login.css'; // <-- IMPORT CORRETTO
+import bg from "../assets/images/background-primordia.jpg";
+
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
@@ -40,7 +42,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-wrapper">
+    <div className="login-wrapper" style={{ backgroundImage: `url(${bg})` }}>
       <div className="login-card">
 
         {/* HEADER AGGIORNATO STILE PRIMORDIA */}

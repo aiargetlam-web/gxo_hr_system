@@ -42,51 +42,49 @@ export const Login: React.FC = () => {
 
   return (
     <div className="login-wrapper" style={{ backgroundImage: `url(${bg})` }}>
-      <div className="login-card">
-	<div className="login-header-outside">
-          <h1>GXO Primordia</h1>
-    	  <p>Dove nasce la tua organizzazione.</p>
-          <p>L’origine dei processi HR.</p>
-        </div>
-        {/* HEADER AGGIORNATO STILE PRIMORDIA */}
-        <div className="login-header">
-          <h1>Login</h1>
-        </div>
 
-        {/* ERRORE — NON TOCCATO */}
-        {error && <div className="login-error">{error}</div>}
+  {/* HEADER FUORI DAL BOX */}
+  <div className="login-header-outside">
+    <h1>GXO Primordia</h1>
+    <p>Dove nasce la tua organizzazione.</p>
+    <p>L’origine dei processi HR.</p>
+  </div>
 
-        {/* FORM — IDENTICO, SOLO STILE */}
-        <form onSubmit={handleSubmit} className="login-form">
+  {/* BOX LOGIN */}
+  <div className="login-card">
+    {error && <div className="login-error">{error}</div>}
 
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className="form-control login-input"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control login-input"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary login-btn">
-            Accedi
-          </button>
-        </form>
+    <form onSubmit={handleSubmit} className="login-form">
+      <div className="form-group">
+        <label className="form-label">Email</label>
+        <input
+          type="email"
+          className="form-control login-input"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
       </div>
-    </div>
+
+      <div className="form-group">
+        <label className="form-label">Password</label>
+        <input
+          type="password"
+          className="form-control login-input"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <button type="submit" className="btn btn-primary login-btn">
+        Accedi
+      </button>
+    </form>
+  </div>
+
+</div>
+
   );
 };
 

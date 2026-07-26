@@ -160,7 +160,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     id_lul: "",
     role_id: null,
     hire_date: "",
-    termination_date: null;
+    termination_date: null,
     is_protected_category: false,
     is_disadvantaged: false,
     site_history: {

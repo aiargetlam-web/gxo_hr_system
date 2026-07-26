@@ -121,7 +121,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         db.add(site_history)
 
         for b in payload.benefits:
-    	  db.add(EmployeeBenefit(
+          db.add(EmployeeBenefit(
             employee_id=employee.id,
             benefit_type_id=b.benefit_type_id,
             has_benefit=b.has_benefit,
@@ -131,7 +131,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 
 
         if payload.company_car:
-    	  db.add(EmployeeCompanyCar(
+          db.add(EmployeeCompanyCar(
             employee_id=employee.id,
             car_model=payload.company_car.car_model,
             plate=payload.company_car.plate,

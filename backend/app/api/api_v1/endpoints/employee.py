@@ -121,24 +121,24 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         db.add(site_history)
 
         for b in payload.benefits:
-            db.add(EmployeeBenefit(
-                employee_id=employee.id,
-                benefit_type=b.benefit_type,
-                has_benefit=b.has_benefit,
-                from_date=b.from_date,
-                note=b.note
-            ))
+    		db.add(EmployeeBenefit(
+        		employee_id=employee.id,
+        		benefit_type_id=b.benefit_type_id,
+        		has_benefit=b.has_benefit,
+        		from_date=b.from_date,
+        		note=b.note
+    		))
+
 
         if payload.company_car:
-            db.add(EmployeeCompanyCar(
-                employee_id=employee.id,
-                car_model=payload.company_car.car_model,
-                plate=payload.company_car.plate,
-                from_date=payload.company_car.from_date,
-                benefit_type=payload.company_car.benefit_type,
-                payroll_notes=payload.company_car.payroll_notes,
-                note=payload.company_car.note
-            ))
+    		db.add(EmployeeCompanyCar(
+        		employee_id=employee.id,
+        		car_model=payload.company_car.car_model,
+        		plate=payload.company_car.plate,
+        		from_date=payload.company_car.from_date,
+        		note=payload.company_car.note
+    		))
+
 
         status = EmployeeStatusHistory(
             employee_id=employee.id,
@@ -357,14 +357,13 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
             db.add(current_car)
 
         new_car = EmployeeCompanyCar(
-            employee_id=employee_id,
-            car_model=payload.car_model,
-            plate=payload.plate,
-            from_date=payload.from_date,
-            benefit_type=payload.benefit_type,
-            payroll_notes=payload.payroll_notes,
-            note=payload.note
-        )
+   		employee_id=employee_id,
+    		car_model=payload.car_model,
+    		plate=payload.plate,
+    		from_date=payload.from_date,
+    		note=payload.note
+	)
+
 
         db.add(new_car)
         db.commit()
@@ -554,7 +553,6 @@ def list_employees(db: Session = Depends(get_db)):
                 "id": car_hist.id,
                 "car_model": car_hist.car_model,
                 "plate": car_hist.plate,
-                "benefit_type": car_hist.benefit_type,
                 "from_date": car_hist.from_date,
                 "note": car_hist.note,
             }

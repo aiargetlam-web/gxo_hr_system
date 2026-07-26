@@ -132,43 +132,6 @@ a:hover {
   overflow: hidden;
 }
 
-.sidebar {
-  width: 250px;
-  min-width: 250px;
-  height: 100vh;
-  background-color: var(--color-secondary);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 10;
-}
-
-.sidebar-header {
-  padding: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 1rem 0;
-}
-
-.sidebar-link {
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: rgba(255,255,255,0.8);
-  transition: all 0.2s;
-}
-
-.sidebar-link:hover,
-.sidebar-link.active {
-  background-color: rgba(255,255,255,0.1);
-  color: white;
-  border-left: 4px solid var(--color-primary);
-}
 
 .main-content {
   flex: 1;

@@ -30,7 +30,7 @@ export const Login: React.FC = () => {
 
       if ("access_token" in response) {
         await login(response.access_token);
-        navigate('/'); // sidebar garantita
+        navigate('/dashboard'); 
       return;
      }
 

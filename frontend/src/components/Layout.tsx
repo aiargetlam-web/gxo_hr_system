@@ -9,7 +9,7 @@ export const Layout: React.FC = () => {
   return (
     <div className="app-layout">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className="main-content">
+      <main className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
         <div className="content-area">
           <Outlet />

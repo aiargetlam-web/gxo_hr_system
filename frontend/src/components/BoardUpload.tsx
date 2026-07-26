@@ -1,7 +1,8 @@
 import React, { useState, useEffect, DragEvent } from "react";
 import api from "../services/api";
 import toast from "react-hot-toast";
-import "./boardupload.css";
+import "../css/boardupload.css";
+
 
 interface BoardUploadProps {
   onUploaded: () => void;

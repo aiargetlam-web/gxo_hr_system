@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import "./sidebar.css";
+import "../css/sidebar.css";
+
 
 
 interface SidebarProps {

@@ -43,18 +43,20 @@ export const Login: React.FC = () => {
   return (
     <div className="login-wrapper" style={{ backgroundImage: `url(${bg})` }}>
 
-  {/* HEADER FUORI DAL BOX */}
   <div className="login-header-outside">
     <h1>GXO Primordia</h1>
     <p>Dove nasce la tua organizzazione.</p>
     <p>L’origine dei processi HR.</p>
   </div>
 
-  {/* BOX LOGIN */}
   <div className="login-card">
+
+    <h2 className="login-title">Login:</h2>
+
     {error && <div className="login-error">{error}</div>}
 
     <form onSubmit={handleSubmit} className="login-form">
+
       <div className="form-group">
         <label className="form-label">Email</label>
         <input
@@ -84,6 +86,7 @@ export const Login: React.FC = () => {
   </div>
 
 </div>
+
 
   );
 };

@@ -160,7 +160,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     id_lul: "",
     role_id: null,
     hire_date: "",
-    termination_date: null,
+    termination_date: string | null;
     is_protected_category: false,
     is_disadvantaged: false,
     site_history: {
@@ -203,6 +203,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
   const [genders, setGenders] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+
 /* ============================================================
    LOAD DATA (DIZIONARI)
 ============================================================ */
@@ -221,6 +223,7 @@ useEffect(() => {
         costCentersRes,
         benefitRes,
         gendersRes,
+	rolesRes,
       ] = await Promise.all([
         siteService.getSites(),
         contractService.getWorkRegimes(),
@@ -228,6 +231,7 @@ useEffect(() => {
         costCenterService.getCostCenters(),
         benefitService.getBenefitTypes(),
         genderService.getGenders(),
+	employeeService.getRoles(),
       ]);
 
       setSites(sitesRes);
@@ -236,6 +240,8 @@ useEffect(() => {
       setCostCentersOptions(costCentersRes);
       setBenefitTypes(benefitRes);
       setGenders(gendersRes);
+      setRoles(rolesRes);
+
     } catch (err) {
       console.error("Errore caricamento dizionari:", err);
     }
@@ -659,7 +665,7 @@ const renderStep = () => {
       					}
     				>
      				<MenuItem value="">Seleziona</MenuItem>
-      					{roles.map((r) => (
+      					{roles.map((r: any) => (
         			<MenuItem key={r.id} value={r.id}>
           				{r.name}
         			</MenuItem>

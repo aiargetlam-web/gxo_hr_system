@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import "./topbar.css";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -20,9 +21,12 @@ export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
       <button className="hamburger-btn" onClick={onMenuClick}>
         ☰
       </button>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+
+      <div className="topbar-user">
         <span>Benvenuto, {user?.first_name} {user?.last_name}</span>
-        <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '0.25rem 0.75rem' }}>Logout</button>
+        <button onClick={handleLogout} className="btn btn-secondary">
+          Logout
+        </button>
       </div>
     </header>
   );

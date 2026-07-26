@@ -43,13 +43,19 @@ export const Login: React.FC = () => {
     <div className="login-wrapper">
       <div className="login-card">
 
+        {/* HEADER AGGIORNATO STILE PRIMORDIA */}
         <div className="login-header">
-          <h1>GXO HR Portal</h1>
-          <p>Accesso riservato</p>
+          <h1>GXO Primordia</h1>
+          <p>Dove nasce la tua organizzazione.</p>
+          <p style={{ fontSize: "0.9rem", color: "#999", marginTop: "0.25rem" }}>
+            L’origine dei processi HR.
+          </p>
         </div>
 
+        {/* ERRORE — NON TOCCATO */}
         {error && <div className="login-error">{error}</div>}
 
+        {/* FORM — IDENTICO, SOLO STILE */}
         <form onSubmit={handleSubmit} className="login-form">
 
           <div className="form-group">

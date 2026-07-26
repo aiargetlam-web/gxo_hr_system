@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 const ChangePassword = () => {
   const navigate = useNavigate();
 
-  const email = localStorage.getItem("user_email") || ""; // ← Assicurati di salvarla al login
+  const email = localStorage.getItem("user_email") || "";
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -39,12 +39,63 @@ const ChangePassword = () => {
   };
 
   return (
-    <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
-      <Paper sx={{ p: 4, width: 400 }}>
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
-          Cambia Password
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundImage: "url('/background-primordia.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        p: 3
+      }}
+    >
+      <Paper
+        sx={{
+          p: 4,
+          width: 420,
+          borderRadius: "14px",
+          boxShadow: "0 0 20px rgba(0,0,0,0.3)",
+          backdropFilter: "blur(3px)"
+        }}
+      >
+        {/* HEADER STILE PRIMORDIA */}
+        <Typography
+          variant="h4"
+          sx={{
+            textAlign: "center",
+            fontWeight: "700",
+            color: "#FF6A00",
+            mb: 1
+          }}
+        >
+          GXO Primordia
         </Typography>
 
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "#666",
+            fontSize: "1rem",
+            mb: 0.5
+          }}
+        >
+          Dove nasce la tua organizzazione.
+        </Typography>
+
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "#999",
+            fontSize: "0.9rem",
+            mb: 3
+          }}
+        >
+          L’origine dei processi HR.
+        </Typography>
+
+        {/* FORM — IDENTICO, SOLO STILE */}
         <TextField
           label="Email"
           value={email}
@@ -85,6 +136,12 @@ const ChangePassword = () => {
           fullWidth
           disabled={loading}
           onClick={handleSubmit}
+          sx={{
+            backgroundColor: "#FF6A00",
+            fontWeight: "600",
+            p: "0.9rem",
+            "&:hover": { backgroundColor: "#E65C00" }
+          }}
         >
           {loading ? "Attendere..." : "Cambia password"}
         </Button>

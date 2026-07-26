@@ -121,14 +121,13 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         db.add(site_history)
 
    for benefit in payload.benefits:
-    db.add(EmployeeBenefit(
-        employee_id=employee.id,
-        benefit_type_id=benefit.benefit_type_id,
-        has_benefit=benefit.has_benefit,
-        from_date=benefit.from_date,
-        note=benefit.note,
-    ))
-
+       db.add(EmployeeBenefit(
+           employee_id=employee.id,
+           benefit_type_id=benefit.benefit_type_id,
+           has_benefit=benefit.has_benefit,
+           from_date=benefit.from_date,
+           note=benefit.note,
+      ))
 
         if payload.company_car:
           db.add(EmployeeCompanyCar(

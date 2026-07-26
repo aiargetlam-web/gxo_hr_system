@@ -105,7 +105,7 @@ type EmployeeCreateForm = {
   id_lul: string;
   role_id: number | null;
   hire_date: string;
-  termination_date: string;
+  termination_date: string | null;
   is_protected_category: boolean;
   is_disadvantaged: boolean;
   site_history: SiteHistory;

@@ -88,11 +88,10 @@ class CompanyCar(BaseModel):
     plate: Optional[str]
     from_date: date
     to_date: Optional[date] = None
-    benefit_type: Optional[str]
-    payroll_notes: Optional[str]
     note: Optional[str]
 
     model_config = {"from_attributes": True}
+
 
 
 class Status(BaseModel):
@@ -147,7 +146,7 @@ class SiteAssignmentCreate(BaseModel):
 
 
 class BenefitCreate(BaseModel):
-    benefit_type: str
+    benefit_type_id: int
     has_benefit: bool
     from_date: date
     note: Optional[str] = None
@@ -157,9 +156,8 @@ class CompanyCarCreate(BaseModel):
     car_model: str
     plate: Optional[str] = None
     from_date: date
-    benefit_type: Optional[str] = None
-    payroll_notes: Optional[str] = None
     note: Optional[str] = None
+
 
 
 # ---------------------------------------------------------
@@ -207,9 +205,9 @@ class StatusUpdate(BaseModel):
 class CompanyCarUpdate(BaseModel):
     car_model: Optional[str] = None
     plate: Optional[str] = None
-    benefit_type: Optional[str] = None
-    payroll_notes: Optional[str] = None
     note: Optional[str] = None
+
+
 
 
 # ---------------------------------------------------------

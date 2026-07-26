@@ -43,14 +43,14 @@ export const Login: React.FC = () => {
   return (
     <div className="login-wrapper" style={{ backgroundImage: `url(${bg})` }}>
       <div className="login-card">
-
+	<div className="login-header-outside">
+          <h1>GXO Primordia</h1>
+    	  <p>Dove nasce la tua organizzazione.</p>
+          <p>L’origine dei processi HR.</p>
+        </div>
         {/* HEADER AGGIORNATO STILE PRIMORDIA */}
         <div className="login-header">
-          <h1>GXO Primordia</h1>
-          <p>Dove nasce la tua organizzazione.</p>
-          <p style={{ fontSize: "0.9rem", color: "#999", marginTop: "0.25rem" }}>
-            L’origine dei processi HR.
-          </p>
+          <h1>Login</h1>
         </div>
 
         {/* ERRORE — NON TOCCATO */}

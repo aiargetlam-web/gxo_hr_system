@@ -141,6 +141,11 @@ a:hover {
   background-color: var(--color-background);
   overflow-y: auto;
   z-index: 1;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content.shifted {
+  margin-left: 250px; /* stessa larghezza della sidebar */
 }
 
 .topbar {

@@ -4,8 +4,7 @@ import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { LoginResponse } from '../types';
 import '../css/login.css'; // <-- IMPORT CORRETTO
-import bg from "../assets/images/background-primordia.jpg";
-
+import bg from "../assets/images/background-primordia.png";
 
 export const Login: React.FC = () => {
   const { login } = useContext(AuthContext);

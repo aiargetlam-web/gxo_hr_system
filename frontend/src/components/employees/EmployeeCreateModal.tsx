@@ -33,7 +33,8 @@ import { costCenterService } from "../../services/costCenterService";
 import { contractService } from "../../services/contractService";
 import { benefitService } from "../../services/benefitService";
 import { genderService } from "../../services/genderService";
-import employeeService from "../../services/employeeService";
+import { employeeService } from "../../services/employeeService";
+
 
 
 /* ============================================================

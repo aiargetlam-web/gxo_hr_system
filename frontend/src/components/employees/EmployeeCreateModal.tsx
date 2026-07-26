@@ -77,7 +77,7 @@ type CostCenterRow = {
 };
 
 type BenefitRow = {
-  benefit_type: string | null;
+  benefit_type_id: number | null;
   has_benefit: boolean;
   from_date: string;
   note: string;
@@ -87,8 +87,6 @@ type CompanyCar = {
   car_model: string;
   plate: string;
   from_date: string;
-  benefit_type: string;
-  payroll_notes: string;
   note: string;
 };
 
@@ -162,7 +160,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     id_lul: "",
     role_id: null,
     hire_date: "",
-    termination_date: "",
+    termination_date: null,
     is_protected_category: false,
     is_disadvantaged: false,
     site_history: {
@@ -308,7 +306,7 @@ const addBenefitRow = () => {
     ...prev,
     benefits: [
       ...prev.benefits,
-      { benefit_type: null, has_benefit: true, from_date: "", note: "" },
+      { benefit_type_id: null, has_benefit: true, from_date: "", note: "" },
     ],
   }));
 };
@@ -321,8 +319,6 @@ const setCompanyCar = (field: keyof CompanyCar, value: any) => {
         car_model: "",
         plate: "",
         from_date: "",
-        benefit_type: "",
-        payroll_notes: "",
         note: "",
       }),
       [field]: value,
@@ -402,7 +398,41 @@ const isStep4Valid = () =>
 
 const handleSubmit = async () => {
   try {
-    const created = await createEmployee(formData);
+	const payload = {
+  		...formData,
+
+  	contract: {
+    		...formData.contract,
+    	weekly_hours: Number(formData.contract.weekly_hours),
+    	fte: Number(formData.contract.fte),
+ 	 },
+
+  	cost_centers: formData.cost_centers.map((cc) => ({
+    	...cc,
+    	weight_percent: Number(cc.weight_percent),
+  	})),
+
+  	salary: {
+    	...formData.salary,
+    	ral_amount: Number(formData.salary.ral_amount),
+  	},
+
+  	benefits: formData.benefits.map((b) => ({
+   	 ...b,
+    	benefit_type_id: Number(b.benefit_type_id),
+ 	 })),
+
+  	company_car: formData.company_car
+    	? {
+        	car_model: formData.company_car.car_model,
+        	plate: formData.company_car.plate,
+        	from_date: formData.company_car.from_date,
+        	note: formData.company_car.note,
+      	}
+    	: null,
+	};
+
+    const created = await createEmployee(payload);
     if (onCreated) onCreated(created);
     onClose();
   } catch (err) {
@@ -615,6 +645,29 @@ const renderStep = () => {
                   onChange={(e) => handleChange("id_lul", e.target.value)}
                 />
               </Grid>
+		<Grid item xs={6}>
+  			<FormControl fullWidth>
+    				<InputLabel>Ruolo *</InputLabel>
+    				<Select
+      					value={formData.role_id ?? ""}
+      					label="Ruolo *"
+      					onChange={(e) =>
+        				handleChange(
+          					"role_id",
+          					e.target.value === "" ? null : Number(e.target.value)
+        				)
+      					}
+    				>
+     				<MenuItem value="">Seleziona</MenuItem>
+      					{roles.map((r) => (
+        			<MenuItem key={r.id} value={r.id}>
+          				{r.name}
+        			</MenuItem>
+      				))}
+    				</Select>
+  			</FormControl>
+		</Grid>
+
 
               <Grid item xs={12}>
                 <Typography variant="subtitle1" sx={{ mt: 3 }}>
@@ -1094,21 +1147,21 @@ const renderStep = () => {
                     <FormControl fullWidth>
                       <InputLabel>Benefit</InputLabel>
                       <Select
-                        value={b.benefit_type ?? ""}
+                        value={b.benefit_type_id ?? ""}
                         label="Benefit"
                         onChange={(e) =>
                           handleArrayChange(
                             "benefits",
                             index,
-                            "benefit_type",
-                            e.target.value
+                            "benefit_type_id",
+                            e.target.value === "" ? null : Number(e.target.value)
                           )
                         }
                       >
                         <MenuItem value="">Seleziona</MenuItem>
                         {benefitTypes.map((bt) => (
-                          <MenuItem key={bt.id} value={bt.code}>
-                            {bt.description || bt.code}
+                          <MenuItem key={bt.id} value={bt.id}>
+                            {bt.description}
                           </MenuItem>
                         ))}
                       </Select>
@@ -1209,29 +1262,7 @@ const renderStep = () => {
                     }
                   />
                 </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="Tipo benefit"
-                    value={formData.company_car?.benefit_type ?? ""}
-                    onChange={(e) =>
-                      setCompanyCar("benefit_type", e.target.value)
-                    }
-                  />
-                </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="Note payroll"
-                    value={formData.company_car?.payroll_notes ?? ""}
-                    onChange={(e) =>
-                      setCompanyCar("payroll_notes", e.target.value)
-                    }
-                  />
-                </Grid>
-
+                
                 <Grid item xs={4}>
                   <TextField
                     fullWidth

@@ -26,7 +26,8 @@ class Contract(BaseModel):
     weekly_hours: Optional[float] = None
     fte: Optional[float] = None
     time_band: Optional[str] = None
-    shift_type: Optional[str] = None
+    shift_type_id: Optional[int] = None
+    shift_type_name: Optional[str] = None
     note: Optional[str] = None
 
     model_config = {"from_attributes": True}
@@ -115,7 +116,7 @@ class ContractCreate(BaseModel):
     weekly_hours: Optional[float] = None
     fte: float
     time_band: Optional[str] = None
-    shift_type: Optional[str] = None
+    shift_type_id: Optional[int] = None
     note: Optional[str] = None
 
 
@@ -146,7 +147,7 @@ class SiteAssignmentCreate(BaseModel):
 
 
 class BenefitCreate(BaseModel):
-    benefit_type_id: int
+    benefit_type_id: Optional[int] = None
     has_benefit: bool
     from_date: date
     note: Optional[str] = None
@@ -266,7 +267,7 @@ class EmployeeCreate(EmployeeBase):
     department: DepartmentAssignmentCreate
     salary: SalaryCreate
     site_history: SiteAssignmentCreate
-    benefits: List[BenefitCreate]
+    benefits: Optional[List[BenefitCreate]] = None
 
     company_car: Optional[CompanyCarCreate] = None
 

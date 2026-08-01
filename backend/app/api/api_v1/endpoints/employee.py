@@ -119,25 +119,25 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             note=payload.site_history.note
         )
         db.add(site_history)
+        # BENEFIT
+        for benefit in payload.benefits:
+            db.add(EmployeeBenefit(
+                employee_id=employee.id,
+                benefit_type_id=benefit.benefit_type_id,
+                has_benefit=benefit.has_benefit,
+                from_date=benefit.from_date,
+                note=benefit.note,
+            ))
 
-   for benefit in payload.benefits:
-       db.add(EmployeeBenefit(
-           employee_id=employee.id,
-           benefit_type_id=benefit.benefit_type_id,
-           has_benefit=benefit.has_benefit,
-           from_date=benefit.from_date,
-           note=benefit.note,
-      ))
-
+        # AUTO AZIENDALE
         if payload.company_car:
-          db.add(EmployeeCompanyCar(
-            employee_id=employee.id,
-            car_model=payload.company_car.car_model,
-            plate=payload.company_car.plate,
-            from_date=payload.company_car.from_date,
-            note=payload.company_car.note,
-        ))
-
+            db.add(EmployeeCompanyCar(
+                employee_id=employee.id,
+                car_model=payload.company_car.car_model,
+                plate=payload.company_car.plate,
+                from_date=payload.company_car.from_date,
+                note=payload.company_car.note,
+            ))
 
         status = EmployeeStatusHistory(
             employee_id=employee.id,

@@ -22,7 +22,7 @@
   cursor: pointer;
   color: #1A1A1A;
   padding: 0.25rem;
-  display: none;
+  display: block;
 }
 
 .topbar-user {

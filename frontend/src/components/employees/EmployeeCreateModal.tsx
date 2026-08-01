@@ -55,7 +55,7 @@ type Contract = {
   weekly_hours: string;
   fte: string;
   time_band: string;
-  shift_type: string;
+  shift_type_id: number | null;
   note: string;
 };
 
@@ -179,7 +179,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       weekly_hours: "",
       fte: "",
       time_band: "",
-      shift_type: "",
+      shift_type_id: null,
       note: "",
     },
     cost_centers: [],
@@ -207,6 +207,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
   const [genders, setGenders] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
+  const [shiftTypes, setShiftTypes] = useState<any[]>([]);
+
 
 /* ============================================================
    LOAD DATA (DIZIONARI)
@@ -227,6 +229,7 @@ useEffect(() => {
         benefitRes,
         gendersRes,
 	rolesRes,
+        shiftTypesRes,
       ] = await Promise.all([
         siteService.getSites(),
         contractService.getWorkRegimes(),
@@ -235,6 +238,7 @@ useEffect(() => {
         benefitService.getBenefitTypes(),
         genderService.getGenders(),
 	roleService.getRoles(),
+        contractService.getShiftTypes(),
       ]);
 
       setSites(sitesRes);
@@ -244,6 +248,8 @@ useEffect(() => {
       setBenefitTypes(benefitRes);
       setGenders(gendersRes);
       setRoles(rolesRes);
+      setShiftTypes(shiftTypesRes);
+
 
     } catch (err) {
       console.error("Errore caricamento dizionari:", err);
@@ -865,15 +871,36 @@ const renderStep = () => {
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Tipo turno"
-                  value={formData.contract.shift_type}
-                  onChange={(e) =>
-                    handleNestedChange("contract", "shift_type", e.target.value)
-                  }
-                />
-              </Grid>
+  <FormControl fullWidth>
+    <InputLabel>Tipologia turno *</InputLabel>
+    <Select
+      value={
+        formData.contract.shift_type_id !== null
+          ? String(formData.contract.shift_type_id)
+          : ""
+      }
+      label="Tipologia turno *"
+      onChange={(e) =>
+        handleNestedChange(
+          "contract",
+          "shift_type_id",
+          e.target.value === "" ? null : Number(e.target.value)
+        )
+      }
+    >
+      <MenuItem value="">
+        <em>Seleziona</em>
+      </MenuItem>
+
+      {shiftTypes.map((st) => (
+        <MenuItem key={st.id} value={String(st.id)}>
+          {st.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+
 
               <Grid item xs={12}>
                 <TextField

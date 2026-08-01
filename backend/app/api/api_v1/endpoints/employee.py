@@ -120,17 +120,17 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             note=payload.site_history.note
         )
         db.add(site_history)
-# BENEFIT
-if payload.benefits:
-    for benefit in payload.benefits:
-        if benefit.benefit_type_id is not None:
-            db.add(EmployeeBenefit(
-                employee_id=employee.id,
-                benefit_type_id=benefit.benefit_type_id,
-                has_benefit=benefit.has_benefit,
-                from_date=benefit.from_date,
-                note=benefit.note,
-            ))
+        # BENEFIT
+        if payload.benefits:
+            for benefit in payload.benefits:
+                if benefit.benefit_type_id is not None:
+                    db.add(EmployeeBenefit(
+                        employee_id=employee.id,
+                        benefit_type_id=benefit.benefit_type_id,
+                        has_benefit=benefit.has_benefit,
+                        from_date=benefit.from_date,
+                        note=benefit.note,
+                    ))
 
         # AUTO AZIENDALE
         if payload.company_car:

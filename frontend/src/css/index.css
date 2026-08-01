@@ -148,15 +148,6 @@ a:hover {
   margin-left: 250px; /* stessa larghezza della sidebar */
 }
 
-.topbar {
-  height: 60px;
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 2rem;
-}
 
 .content-area {
   flex: 1;

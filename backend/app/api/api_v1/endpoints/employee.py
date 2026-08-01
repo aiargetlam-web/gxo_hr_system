@@ -42,6 +42,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_benefits import EmployeeBenefit
+    from app.models.shift_type import ShiftType
 
     try:
         employee = EmployeeModel(
@@ -81,7 +82,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             weekly_hours=payload.contract.weekly_hours,
             fte=payload.contract.fte,
             time_band=payload.contract.time_band,
-            shift_type=payload.contract.shift_type,
+            shift_type_id=payload.contract.shift_type_id,
             note=payload.contract.note,
         )
         db.add(contract)
@@ -119,8 +120,10 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             note=payload.site_history.note
         )
         db.add(site_history)
-        # BENEFIT
-        for benefit in payload.benefits:
+# BENEFIT
+if payload.benefits:
+    for benefit in payload.benefits:
+        if benefit.benefit_type_id is not None:
             db.add(EmployeeBenefit(
                 employee_id=employee.id,
                 benefit_type_id=benefit.benefit_type_id,

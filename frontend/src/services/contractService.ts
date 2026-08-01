@@ -10,4 +10,10 @@ export const contractService = {
     const res = await api.get("/api/v1/contract-natures");
     return res.data;
   },
+
+  // 🔥 AGGIUNTO — NECESSARIO PER IL SELECT DEL TURNO
+  getShiftTypes: async () => {
+    const res = await api.get("/api/v1/shift-types");
+    return res.data;
+  },
 };

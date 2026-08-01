@@ -5,7 +5,7 @@
 .topbar {
   height: 60px;
   background-color: #FFFFFF;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  border-bottom: 3px solid #2E2E2E; /* Grafite */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,16 +15,31 @@
   z-index: 900;
 }
 
+/* Sezione sinistra */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .hamburger-btn {
   background: none;
   border: none;
   font-size: 1.6rem;
   cursor: pointer;
-  color: #1A1A1A;
+  color: #2E2E2E;
   padding: 0.25rem;
   display: block;
 }
 
+.topbar-logo {
+  font-weight: 700;
+  color: #FF6600; /* Arancione Primordia */
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+}
+
+/* Sezione destra */
 .topbar-user {
   display: flex;
   align-items: center;
@@ -33,18 +48,31 @@
   color: #333;
 }
 
-.topbar-user span {
-  font-weight: 500;
+.logout-btn {
+  background: #E5E5E5;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
 }
 
-.topbar .btn-secondary {
-  padding: 0.35rem 0.9rem;
-  font-size: 0.85rem;
+.logout-btn:hover {
+  background: #D0D0D0;
 }
 
 /* MOBILE */
 @media (max-width: 768px) {
   .hamburger-btn {
     display: block;
+  }
+
+  .topbar-logo {
+    font-size: 1rem;
+  }
+
+  .topbar-user span {
+    display: none; /* nasconde il testo su mobile */
   }
 }

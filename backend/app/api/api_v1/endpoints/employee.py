@@ -155,6 +155,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         return employee
 
     except Exception as e:
+        print("ERRORE CREAZIONE DIPENDENTE:", e)
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore creazione dipendente: {str(e)}")
 # ============================================================

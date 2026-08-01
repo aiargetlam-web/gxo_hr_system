@@ -11,20 +11,19 @@ class EmployeeContract(Base):
     work_regime_id = Column(Integer, ForeignKey("work_regimes.id"), nullable=False)
     contract_nature_id = Column(Integer, ForeignKey("contract_natures.id"), nullable=False)
 
-shift_type_id = Column(Integer, ForeignKey("shift_types.id"), nullable=True)
-shift_type = relationship("ShiftType")
-
+    # 🔥 QUI ERA ROTTO — ORA È CORRETTO
+    shift_type_id = Column(Integer, ForeignKey("shift_types.id"), nullable=True)
+    shift_type = relationship("ShiftType")
 
     from_date = Column(Date, nullable=False)
     to_date = Column(Date)
 
-    weekly_hours = Column(Numeric(5,2))
-    fte = Column(Numeric(4,2), nullable=False)
+    weekly_hours = Column(Numeric(5, 2))
+    fte = Column(Numeric(4, 2), nullable=False)
     time_band = Column(String(50))
     note = Column(String)
 
     employee = relationship("Employee", back_populates="contracts")
 
-    # 🔥 RELAZIONI MANCANTI (DEVONO ESSERCI)
     work_regime = relationship("WorkRegime")
     contract_nature = relationship("ContractNature")

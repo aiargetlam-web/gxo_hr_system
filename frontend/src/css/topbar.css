@@ -1,11 +1,21 @@
 /* ========================= */
-/* TOPBAR - GXO PRIMORDIA    */
+/* TOPBAR - CORPORATE        */
 /* ========================= */
 
 .topbar {
   height: 60px;
   background-color: #FFFFFF;
-  border-bottom: 3px solid #2E2E2E; /* Grafite */
+
+  /* ⭐ Barra inferiore sfumata grafite → arancione */
+  background-image: linear-gradient(
+    to right,
+    #2E2E2E 0%,
+    #FF6600 100%
+  );
+  background-size: 100% 3px;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,7 +25,7 @@
   z-index: 900;
 }
 
-/* Sezione sinistra */
+/* ⭐ Sinistra: hamburger + logo */
 .topbar-left {
   display: flex;
   align-items: center;
@@ -29,7 +39,6 @@
   cursor: pointer;
   color: #2E2E2E;
   padding: 0.25rem;
-  display: block;
 }
 
 .topbar-logo {
@@ -39,7 +48,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Sezione destra */
+/* ⭐ Destra: utente + logout */
 .topbar-user {
   display: flex;
   align-items: center;
@@ -62,17 +71,9 @@
   background: #D0D0D0;
 }
 
-/* MOBILE */
+/* ⭐ Mobile */
 @media (max-width: 768px) {
-  .hamburger-btn {
-    display: block;
-  }
-
-  .topbar-logo {
-    font-size: 1rem;
-  }
-
   .topbar-user span {
-    display: none; /* nasconde il testo su mobile */
+    display: none;
   }
 }

@@ -6,7 +6,7 @@ from app.schemas.work_regime import WorkRegime as WorkRegimeSchema
 
 router = APIRouter(tags=["Work Regimes"])
 
-@router.get("/", response_model=list[WorkRegimeSchema])
+@router.get("", response_model=list[WorkRegimeSchema])
 def get_work_regimes(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

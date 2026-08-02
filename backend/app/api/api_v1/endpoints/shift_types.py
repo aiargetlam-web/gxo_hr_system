@@ -5,6 +5,6 @@ from app.models.shift_type import ShiftType
 
 router = APIRouter(tags=["Shift Types"])
 
-@router.get("/")
+@router.get("")
 def list_shift_types(db: Session = Depends(get_db)):
     return db.query(ShiftType).all()

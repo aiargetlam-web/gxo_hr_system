@@ -6,7 +6,7 @@ from app.schemas.contract_nature import ContractNature as ContractNatureSchema
 
 router = APIRouter(tags=["Contract Natures"])
 
-@router.get("/", response_model=list[ContractNatureSchema])
+@router.get("", response_model=list[ContractNatureSchema])
 def get_contract_natures(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

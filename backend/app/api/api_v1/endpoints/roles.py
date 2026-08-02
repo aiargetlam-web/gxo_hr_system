@@ -10,7 +10,7 @@ router = APIRouter()
 # GET ALL ROLES
 # ============================================================
 
-@router.get("/", response_model=list[RoleSchema])
+@router.get("", response_model=list[RoleSchema])
 def get_roles(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

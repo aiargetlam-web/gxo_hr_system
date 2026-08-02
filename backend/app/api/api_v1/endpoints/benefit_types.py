@@ -6,7 +6,7 @@ from app.schemas.benefit_type import BenefitType as BenefitTypeSchema
 
 router = APIRouter(tags=["Benefit Types"])
 
-@router.get("/", response_model=list[BenefitTypeSchema])
+@router.get("", response_model=list[BenefitTypeSchema])
 def get_benefit_types(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

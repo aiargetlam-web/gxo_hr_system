@@ -6,7 +6,7 @@ from app.models.ccnl_level import CCNLLevel
 
 router = APIRouter(prefix="/ccnl-levels", tags=["CCNL Levels"])
 
-@router.get("/")
+@router.get("")
 def get_ccnl_levels(db: Session = Depends(get_db)):
     levels = db.query(CCNLLevel).order_by(CCNLLevel.id).all()
     return [

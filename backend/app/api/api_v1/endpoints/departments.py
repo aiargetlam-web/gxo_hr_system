@@ -6,7 +6,7 @@ from app.models.department import Department
 
 router = APIRouter()
 
-@router.get("/", response_model=list[DepartmentSchema])
+@router.get("", response_model=list[DepartmentSchema])
 def get_departments(
     site_id: int,  # <-- OBBLIGATORIO
     db: Session = Depends(deps.get_db),

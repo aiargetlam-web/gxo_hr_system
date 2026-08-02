@@ -6,7 +6,7 @@ from app.schemas.cost_center import CostCenter as CostCenterSchema
 
 router = APIRouter(tags=["Cost Centers"])
 
-@router.get("/", response_model=list[CostCenterSchema])
+@router.get("", response_model=list[CostCenterSchema])
 def get_cost_centers(
     db: Session = Depends(deps.get_db),
     current_user = Depends(deps.get_current_user)

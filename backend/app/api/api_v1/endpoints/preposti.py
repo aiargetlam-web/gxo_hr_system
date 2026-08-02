@@ -6,7 +6,7 @@ from app.models.employee import Employee
 
 router = APIRouter(prefix="/preposti", tags=["Preposti"])
 
-@router.get("/", response_model=list[EmployeeSchema])
+@router.get("", response_model=list[EmployeeSchema])
 def get_preposti(
     site_id: int,
     db: Session = Depends(deps.get_db),

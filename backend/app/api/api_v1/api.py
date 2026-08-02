@@ -26,6 +26,8 @@ from app.api.api_v1.endpoints.preposti import router as preposti_router
 from app.api.api_v1.endpoints.genders import router as genders_router
 from app.api.api_v1.endpoints.benefit_types import router as benefit_types_router
 from app.api.api_v1.endpoints.shift_types import router as shift_types_router
+from app.api.api_v1.endpoints.ccnl_levels import router as ccnl_levels_router
+
 
 
 
@@ -63,3 +65,5 @@ api_router.include_router(preposti_router, prefix="/employees", tags=["preposti"
 api_router.include_router(genders_router, prefix="/genders", tags=["genders"])
 api_router.include_router(benefit_types_router, prefix="/benefit-types", tags=["benefit-types"])
 api_router.include_router(shift_types_router, prefix="/shift-types", tags=["shift-types"])
+api_router.include_router(ccnl_levels_router, prefix="/ccnl-levels", tags=["ccnl-levels"])
+

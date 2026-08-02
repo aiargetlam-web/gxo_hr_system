@@ -4,7 +4,8 @@ from app.db.session import get_db
 from app.models.ccnl_level import CCNLLevel
 
 
-router = APIRouter(prefix="/ccnl-levels", tags=["CCNL Levels"])
+router = APIRouter(tags=["CCNL Levels"])
+
 
 @router.get("")
 def get_ccnl_levels(db: Session = Depends(get_db)):

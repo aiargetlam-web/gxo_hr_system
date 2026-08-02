@@ -183,6 +183,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
       time_band: "",
       shift_type_id: null,
       note: "",
+      level_ccnl_id: null,
     },
     cost_centers: [],
     department: {
@@ -211,7 +212,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [genders, setGenders] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [shiftTypes, setShiftTypes] = useState<any[]>([]);
-  const [ccnlLevels, setCcnlLevels] = useState([]);
+  const [ccnlLevels, setCcnlLevels] = useState<CCNLLevel[]>([]);
+
 
 
 

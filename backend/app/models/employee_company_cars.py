@@ -12,9 +12,6 @@ class EmployeeCompanyCar(Base):
     plate = Column(String(20))
     from_date = Column(Date, nullable=False)
     to_date = Column(Date)
-
-    benefit_type = Column(String(50))
-    payroll_notes = Column(Text)
     note = Column(Text)
 
     employee = relationship("Employee", back_populates="cars")

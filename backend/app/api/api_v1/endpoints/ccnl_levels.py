@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from models.ccnl_level import CCNLLevel
+from app.models.ccnl_level import CCNLLevel
+
 
 router = APIRouter(prefix="/ccnl-levels", tags=["CCNL Levels"])
 

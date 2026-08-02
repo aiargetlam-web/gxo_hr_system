@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from database import Base
+from app.db.base_class import Base
+
+
 
 class CCNLLevel(Base):
     __tablename__ = "ccnl_levels"

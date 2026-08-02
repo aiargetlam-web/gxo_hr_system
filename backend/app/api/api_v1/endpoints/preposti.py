@@ -4,7 +4,7 @@ from app.api import deps
 from app.schemas.employee import Employee as EmployeeSchema
 from app.models.employee import Employee
 
-router = APIRouter(prefix="/preposti", tags=["Preposti"])
+router = APIRouter(tags=["Preposti"])
 
 @router.get("", response_model=list[EmployeeSchema])
 def get_preposti(

@@ -35,6 +35,7 @@ import { benefitService } from "../../services/benefitService";
 import { genderService } from "../../services/genderService";
 import { roleService } from "../../services/roleService";
 import { CCNLLevel } from "../../types";
+import api from "../../services/api";
 
 
 /* ============================================================
@@ -246,7 +247,7 @@ useEffect(() => {
         genderService.getGenders(),
         roleService.getRoles(),
         contractService.getShiftTypes(),
-        fetch("/api/v1/ccnl-levels").then((r) => r.json()),  // 🔥 AGGIUNTO QUI
+        api.get("/api/v1/ccnl-levels"),  // 🔥 AGGIUNTO QUI
       ]);
 
       setSites(sitesRes);

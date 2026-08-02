@@ -74,6 +74,25 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             password_hash=bcrypt.hash("Password123!"),
         )
 
+        # Recupero natura contratto
+        cn = db.query(ContractNature).filter(
+            ContractNature.id == payload.contract.contract_nature_id
+        ).first()
+
+        if not cn:
+            raise HTTPException(status_code=400, detail="Natura contratto non valida")
+
+        # Se NON è indeterminato → to_date obbligatorio
+        if cn.code != "TI":
+            if not payload.contract.to_date:
+                raise HTTPException(
+                    status_code=400,
+                    detail="I contratti non indeterminati devono avere una data di scadenza (to_date)."
+                )
+            contract_to_date = payload.contract.to_date
+        else:
+            contract_to_date = None
+
         db.add(employee)
         db.flush()
         contract = EmployeeContract(
@@ -81,11 +100,14 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             work_regime_id=payload.contract.work_regime_id,
             contract_nature_id=payload.contract.contract_nature_id,
             from_date=payload.contract.from_date,
+            to_date=contract_to_date,
             weekly_hours=payload.contract.weekly_hours,
             fte=payload.contract.fte,
             time_band=payload.contract.time_band,
             shift_type_id=payload.contract.shift_type_id,
             note=payload.contract.note,
+            level_ccnl_id=payload.contract.level_ccnl_id,
+
         )
         db.add(contract)
 
@@ -125,14 +147,14 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         # BENEFIT
         if payload.benefits:
             for benefit in payload.benefits:
-                if benefit.benefit_type_id is not None:
-                    db.add(EmployeeBenefit(
-                        employee_id=employee.id,
-                        benefit_type_id=benefit.benefit_type_id,
-                        has_benefit=benefit.has_benefit,
-                        from_date=benefit.from_date,
-                        note=benefit.note,
-                    ))
+                db.add(EmployeeBenefit(
+                    employee_id=employee.id,
+                    benefit_type_id=benefit.benefit_type_id,   # può essere None, ed è OK
+                    has_benefit=benefit.has_benefit,
+                    from_date=benefit.from_date,
+                    note=benefit.note,
+                ))
+
 
         # AUTO AZIENDALE
         if payload.company_car:
@@ -187,16 +209,38 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
             current_contract.to_date = payload.from_date - timedelta(days=1)
             db.add(current_contract)
 
+        cn = db.query(ContractNature).filter(
+            ContractNature.id == payload.contract_nature_id
+        ).first()
+
+        if not cn:
+            raise HTTPException(status_code=400, detail="Natura contratto non valida")
+
+        if cn.code != "TI":
+            if not payload.to_date:
+                raise HTTPException(
+                    status_code=400,
+                    detail="I contratti non indeterminati devono avere una data di scadenza (to_date)."
+                )
+            new_to_date = payload.to_date
+        else:
+            new_to_date = None
+
+
         new_contract = EmployeeContract(
             employee_id=employee_id,
             work_regime_id=payload.work_regime_id,
             contract_nature_id=payload.contract_nature_id,
             from_date=payload.from_date,
+            to_date=new_to_date,
             weekly_hours=payload.weekly_hours,
             fte=payload.fte,
             time_band=payload.time_band,
-            shift_type=payload.shift_type,
-            note=payload.note
+            shift_type_id=payload.shift_type_id,
+            note=payload.note,
+            level_ccnl_id=payload.level_ccnl_id,
+
+
         )
 
         db.add(new_contract)
@@ -505,11 +549,17 @@ def list_employees(db: Session = Depends(get_db)):
                 "work_regime": wr.description or wr.code if wr else None,
                 "contract_nature": cn.description or cn.code if cn else None,
                 "weekly_hours": contract_hist.weekly_hours,
-                "shift_type": contract_hist.shift_type,
+                "shift_type_id": contract_hist.shift_type_id,
+                "shift_type_name": contract_hist.shift_type.name if contract_hist.shift_type else None,
                 "time_band": contract_hist.time_band,
                 "fte": contract_hist.fte,
                 "from_date": contract_hist.from_date,
+                "to_date": contract_hist.to_date,
                 "note": contract_hist.note,
+                "level_ccnl_id": contract_hist.level_ccnl_id,
+                "level_ccnl_description": contract_hist.level_ccnl.description if contract_hist.level_ccnl else None,
+
+
             }
 
         # STATO
@@ -526,7 +576,7 @@ def list_employees(db: Session = Depends(get_db)):
 
             status = {
                 "id": status_hist.id,
-                "name": st.name if st else None,
+                "name": st.code if st else None,
                 "from_date": status_hist.from_date,
                 "note": status_hist.note,
             }
@@ -569,6 +619,23 @@ def list_employees(db: Session = Depends(get_db)):
                 "id": emp.role.id,
                 "name": emp.role.name or emp.role.code
             }
+        #COST CENTER
+        cc_hist = db.query(EmployeeCostCenter).filter(
+            EmployeeCostCenter.employee_id == emp.id,
+            EmployeeCostCenter.to_date.is_(None)
+        ).all()
+
+        cost_centers = [
+            {
+                "id": cc.id,
+                "cost_center_id": cc.cost_center_id,
+                "weight_percent": cc.weight_percent,
+                "from_date": cc.from_date,
+                "note": cc.note
+            }
+            for cc in cc_hist
+        ]
+
 
         result.append({
             "id": emp.id,
@@ -582,6 +649,8 @@ def list_employees(db: Session = Depends(get_db)):
             "status": status,
             "salary": salary,
             "company_car": company_car,
+            "cost_centers": cost_centers,
+            "is_active": emp.is_active,
         })
 
     return result

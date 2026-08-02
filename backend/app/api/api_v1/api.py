@@ -67,3 +67,5 @@ api_router.include_router(benefit_types_router, prefix="/benefit-types", tags=["
 api_router.include_router(shift_types_router, prefix="/shift-types", tags=["shift-types"])
 api_router.include_router(ccnl_levels_router, prefix="/ccnl-levels", tags=["ccnl-levels"])
 
+
+

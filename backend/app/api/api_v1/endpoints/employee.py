@@ -2,6 +2,7 @@ from datetime import timedelta, date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
+from passlib.hash import bcrypt
 
 # Schemi Pydantic
 from app.schemas.employee import (
@@ -70,6 +71,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             termination_date=payload.termination_date,
             is_protected_category=payload.is_protected_category,
             is_disadvantaged=payload.is_disadvantaged,
+            password_hash=bcrypt.hash("Password123!"),
         )
 
         db.add(employee)

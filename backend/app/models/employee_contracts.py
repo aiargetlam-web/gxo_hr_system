@@ -27,3 +27,6 @@ class EmployeeContract(Base):
 
     work_regime = relationship("WorkRegime")
     contract_nature = relationship("ContractNature")
+    level_ccnl_id = Column(Integer, ForeignKey("ccnl_levels.id"), nullable=True)
+    level_ccnl = relationship("CCNLLevel")
+

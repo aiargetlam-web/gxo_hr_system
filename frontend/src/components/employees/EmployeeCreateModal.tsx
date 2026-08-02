@@ -258,7 +258,7 @@ useEffect(() => {
       setGenders(gendersRes);
       setRoles(rolesRes);
       setShiftTypes(shiftTypesRes);
-      setCcnlLevels(ccnlLevelsRes);   // 🔥 AGGIUNTO QUI
+      setCcnlLevels(ccnlLevelsRes.data);   // 🔥 AGGIUNTO QUI
 
     } catch (err) {
       console.error("Errore caricamento dizionari:", err);

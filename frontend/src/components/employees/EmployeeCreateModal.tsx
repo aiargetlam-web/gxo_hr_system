@@ -61,6 +61,7 @@ type Contract = {
   time_band: string;
   shift_type_id: number | null;
   note: string;
+  level_ccnl_id: number | null;
 };
 
 type Department = {

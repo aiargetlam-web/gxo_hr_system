@@ -6,7 +6,7 @@ import { EmployeeFull } from "../types";
 ============================================================ */
 
 export const getEmployeesFull = async (): Promise<EmployeeFull[]> => {
-  const response = await api.get("/api/v1/employees/employees");
+  const response = await api.get("/api/v1/employees/employees/");
   return response.data;
 };
 
@@ -15,7 +15,7 @@ export const getEmployeesFull = async (): Promise<EmployeeFull[]> => {
 ============================================================ */
 
 export const getEmployee = async (employeeId: number): Promise<EmployeeFull> => {
-  const response = await api.get(`/api/v1/employees/${employeeId}`);
+  const response = await api.get(`/api/v1/employees/${employeeId}/`);
   return response.data;
 };
 
@@ -101,7 +101,7 @@ export const createEmployee = async (formData: any) => {
       : null,
   };
 
-  const response = await api.post("/api/v1/employees", payload);
+  const response = await api.post("/api/v1/employees/", payload);
   return response.data;
 };
 
@@ -116,7 +116,10 @@ export const changeEmployeeSite = async (employeeId: number, data: any) => {
     note: data.note,
   };
 
-  const response = await api.post(`/api/v1/employees/${employeeId}/sites`, payload);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/sites/`,
+    payload
+  );
   return response.data;
 };
 
@@ -125,7 +128,10 @@ export const changeEmployeeSite = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const addContract = async (employeeId: number, data: any) => {
-  const response = await api.post(`/api/v1/employees/${employeeId}/contracts`, data);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/contracts/`,
+    data
+  );
   return response.data;
 };
 
@@ -134,7 +140,10 @@ export const addContract = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const addCostCenter = async (employeeId: number, data: any) => {
-  const response = await api.post(`/api/v1/employees/${employeeId}/cost-centers`, data);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/cost-centers/`,
+    data
+  );
   return response.data;
 };
 
@@ -143,7 +152,10 @@ export const addCostCenter = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const addDepartment = async (employeeId: number, data: any) => {
-  const response = await api.post(`/api/v1/employees/${employeeId}/departments`, data);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/departments/`,
+    data
+  );
   return response.data;
 };
 
@@ -152,7 +164,10 @@ export const addDepartment = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const addSalary = async (employeeId: number, data: any) => {
-  const response = await api.post(`/api/v1/employees/${employeeId}/salaries`, data);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/salaries/`,
+    data
+  );
   return response.data;
 };
 
@@ -161,7 +176,10 @@ export const addSalary = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const addCompanyCar = async (employeeId: number, data: any) => {
-  const response = await api.post(`/api/v1/employees/${employeeId}/company-cars`, data);
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/company-cars/`,
+    data
+  );
   return response.data;
 };
 
@@ -170,7 +188,7 @@ export const addCompanyCar = async (employeeId: number, data: any) => {
 ============================================================ */
 
 export const getPrepostiBySite = async (siteId: number) => {
-  const response = await api.get(`/api/v1/employees/preposti?site_id=${siteId}`);
+  const response = await api.get(`/api/v1/preposti/?site_id=${siteId}`);
   return response.data;
 };
 
@@ -179,7 +197,7 @@ export const getPrepostiBySite = async (siteId: number) => {
 ============================================================ */
 
 export const getDepartmentsBySite = async (siteId: number) => {
-  const response = await api.get(`/api/v1/departments?site_id=${siteId}`);
+  const response = await api.get(`/api/v1/departments/?site_id=${siteId}`);
   return response.data;
 };
 
@@ -188,37 +206,47 @@ export const getDepartmentsBySite = async (siteId: number) => {
 ============================================================ */
 
 export const getEmployeeContracts = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/contracts`);
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/contracts/`
+  );
   return response.data;
 };
 
 export const getEmployeeCostCenters = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/cost-centers`);
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/cost-centers/`
+  );
   return response.data;
 };
 
 export const getEmployeeDepartments = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/departments`);
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/departments/`
+  );
   return response.data;
 };
 
 export const getEmployeeSalaries = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/salaries`);
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/salaries/`
+  );
   return response.data;
 };
 
 export const getEmployeeCompanyCars = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/company-cars`);
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/company-cars/`
+  );
   return response.data;
 };
 
 export const getEmployeeSites = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/sites`);
+  const response = await api.get(`/api/v1/employees/${employeeId}/sites/`);
   return response.data;
 };
 
 export const getEmployeeStatusHistory = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/status`);
+  const response = await api.get(`/api/v1/employees/${employeeId}/status/`);
   return response.data;
 };
 
@@ -227,7 +255,7 @@ export const getEmployeeStatusHistory = async (employeeId: number) => {
 ============================================================ */
 
 export const getEmployeeCurrentStatus = async (employeeId: number) => {
-  const response = await api.get(`/api/v1/employees/${employeeId}/current`);
+  const response = await api.get(`/api/v1/employees/${employeeId}/current/`);
   return response.data;
 };
 

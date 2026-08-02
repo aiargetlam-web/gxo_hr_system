@@ -34,11 +34,7 @@ import { contractService } from "../../services/contractService";
 import { benefitService } from "../../services/benefitService";
 import { genderService } from "../../services/genderService";
 import { roleService } from "../../services/roleService";
-import { CCNLLevel } from "../../types/Employee"; 
-
-
-
-
+import { CCNLLevel } from "../../types";
 
 
 /* ============================================================

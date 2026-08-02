@@ -14,6 +14,14 @@ export interface Site {
   id: number;
   name: string;
 }
+/* ============================
+   CCNL
+============================ */
+export interface CCNLLevel {
+  id: number;
+  code: string;
+  description: string;
+}
 
 /* ============================
    HR MODULES (STORICO)
@@ -97,6 +105,7 @@ export interface ContractCreate {
   time_band?: string;
   shift_type?: string;
   note?: string;
+  level_ccnl_id?: number | null;
 }
 
 export interface CostCenterCreate {
@@ -152,6 +161,7 @@ export interface ContractUpdate {
   time_band?: string;
   shift_type?: string;
   note?: string;
+  level_ccnl_id?: number | null;
 }
 
 export interface SalaryUpdate {

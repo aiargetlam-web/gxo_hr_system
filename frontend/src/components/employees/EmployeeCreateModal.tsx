@@ -37,6 +37,8 @@ import { roleService } from "../../services/roleService";
 
 
 
+
+
 /* ============================================================
    TIPI
 ============================================================ */
@@ -198,6 +200,7 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
     company_car: null,
   });
 
+
   const [sites, setSites] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [preposti, setPreposti] = useState<any[]>([]);
@@ -208,6 +211,8 @@ const EmployeeCreateModal = ({ open, onClose, onCreated }: EmployeeCreateModalPr
   const [genders, setGenders] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [shiftTypes, setShiftTypes] = useState<any[]>([]);
+  const [ccnlLevels, setCcnlLevels] = useState([]);
+
 
 
 /* ============================================================
@@ -228,8 +233,9 @@ useEffect(() => {
         costCentersRes,
         benefitRes,
         gendersRes,
-	rolesRes,
+        rolesRes,
         shiftTypesRes,
+        ccnlLevelsRes,   // 🔥 AGGIUNTO QUI
       ] = await Promise.all([
         siteService.getSites(),
         contractService.getWorkRegimes(),
@@ -237,8 +243,9 @@ useEffect(() => {
         costCenterService.getCostCenters(),
         benefitService.getBenefitTypes(),
         genderService.getGenders(),
-	roleService.getRoles(),
+        roleService.getRoles(),
         contractService.getShiftTypes(),
+        fetch("/api/v1/ccnl-levels").then((r) => r.json()),  // 🔥 AGGIUNTO QUI
       ]);
 
       setSites(sitesRes);
@@ -249,7 +256,7 @@ useEffect(() => {
       setGenders(gendersRes);
       setRoles(rolesRes);
       setShiftTypes(shiftTypesRes);
-
+      setCcnlLevels(ccnlLevelsRes);   // 🔥 AGGIUNTO QUI
 
     } catch (err) {
       console.error("Errore caricamento dizionari:", err);
@@ -857,6 +864,37 @@ const renderStep = () => {
                     inputProps: { step: "0.01" },
                   }}
                 />
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Livello CCNL</InputLabel>
+                  <Select
+                    value={
+                      formData.contract.level_ccnl_id !== null
+                        ? String(formData.contract.level_ccnl_id)
+                        : ""
+                    }
+                    label="Livello CCNL"
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "contract",
+                        "level_ccnl_id",
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>Seleziona</em>
+                    </MenuItem>
+
+                    {ccnlLevels.map((lvl) => (
+                      <MenuItem key={lvl.id} value={String(lvl.id)}>
+                        {lvl.description}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
               <Grid item xs={6}>

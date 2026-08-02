@@ -37,6 +37,7 @@ export interface Contract {
   time_band?: string;
   shift_type?: string;
   note?: string;
+  level_ccnl_id?: number | null;
 }
 
 export interface Salary {

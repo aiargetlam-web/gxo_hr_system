@@ -29,6 +29,9 @@ class Contract(BaseModel):
     shift_type_id: Optional[int] = None
     shift_type_name: Optional[str] = None
     note: Optional[str] = None
+    level_ccnl_id: Optional[int] = None
+    level_ccnl_description: Optional[str] = None
+
 
     model_config = {"from_attributes": True}
 
@@ -118,6 +121,9 @@ class ContractCreate(BaseModel):
     time_band: Optional[str] = None
     shift_type_id: Optional[int] = None
     note: Optional[str] = None
+    to_date: Optional[date] = None
+    level_ccnl_id: Optional[int] = None
+
 
 
 class CostCenterAssignmentCreate(BaseModel):

@@ -31,6 +31,10 @@ import EmployeeNewCostCenterModal from "../components/employees/EmployeeNewCostC
 import EmployeeNewCompanyCarModal from "../components/employees/EmployeeNewCompanyCarModal";
 import EmployeeChangeSiteModal from "../components/employees/EmployeeChangeSiteModal";
 import EmployeeChangeStatusModal from "../components/employees/EmployeeChangeStatusModal";
+import EmployeeDetailModal from "../components/employees/EmployeeDetailModal";
+import { employeeViewsService } from "../services/employeeViewsService";
+
+
 
 export default function Employees() {
   const [employees, setEmployees] = useState<EmployeeFull[]>([]);
@@ -51,6 +55,36 @@ export default function Employees() {
   const [openNewCompanyCar, setOpenNewCompanyCar] = useState<EmployeeFull | null>(null);
   const [openChangeSite, setOpenChangeSite] = useState<EmployeeFull | null>(null);
   const [openChangeStatus, setOpenChangeStatus] = useState<EmployeeFull | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ceased">("all");
+  const [views, setViews] = useState<any[]>([]);
+  const [selectedView, setSelectedView] = useState<number | null>(null);
+
+
+  
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+
+  const openDetailModal = (id: number) => {
+    setSelectedEmployeeId(id);
+    setDetailOpen(true);
+  };
+  const createNewView = async () => {
+    const name = prompt("Nome della vista:");
+    if (!name) return;
+
+    const columnsList = columns.map((c) => c.field); // tutte le colonne attuali
+
+    await employeeViewsService.createView({
+      user_id: 1,
+      name,
+      columns: columnsList,
+    });
+
+    const updated = await employeeViewsService.getViews(1);
+    setViews(updated);
+  };
+
 
   const loadData = async () => {
     setLoading(true);
@@ -70,7 +104,9 @@ export default function Employees() {
 
   useEffect(() => {
     loadData();
+    employeeViewsService.getViews(1).then(setViews); // user_id = 1
   }, []);
+
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -99,11 +135,15 @@ export default function Employees() {
       sortable: false,
       filterable: false,
       renderCell: (params: any) => (
-        <Avatar sx={{ bgcolor: "#1976d2" }}>
+        <Avatar
+          sx={{ bgcolor: "#1976d2", cursor: "pointer" }}
+          onClick={() => openDetailModal(params.row.id)}
+        >
           {params.row.first_name?.[0]}
           {params.row.last_name?.[0]}
         </Avatar>
       ),
+
     },
 
     {
@@ -279,10 +319,90 @@ export default function Employees() {
         </Stack>
       </Stack>
 
+      <Box mb={2}>
+        <input
+          type="text"
+          placeholder="Cerca nome, cognome, email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </Box>
+
+      {/* FILTRI RAPIDI */}
+      <Stack direction="row" spacing={2} mb={2}>
+        <Button
+          variant={statusFilter === "all" ? "contained" : "outlined"}
+          onClick={() => setStatusFilter("all")}
+        >
+          Tutti
+        </Button>
+
+        <Button
+          variant={statusFilter === "active" ? "contained" : "outlined"}
+          onClick={() => setStatusFilter("active")}
+        >
+          Attivi
+        </Button>
+
+        <Button
+          variant={statusFilter === "ceased" ? "contained" : "outlined"}
+          onClick={() => setStatusFilter("ceased")}
+        >
+          Cessati
+        </Button>
+      </Stack>
+
+      {/* VISTE SALVATE */}
+      <Stack direction="row" spacing={2} mb={2}>
+        {views.map((v) => (
+          <Button
+            key={v.id}
+            variant={selectedView === v.id ? "contained" : "outlined"}
+            onClick={() => setSelectedView(v.id)}
+          >
+            {v.name}
+          </Button>
+        ))}
+
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => createNewView()}
+        >
+          Nuova Vista
+        </Button>
+      </Stack>
+
+
       <Card sx={{ height: 650 }}>
         <DataGrid
-          rows={employees}
-          columns={columns}
+          rows={employees
+            .filter((emp) =>
+              `${emp.first_name} ${emp.last_name} ${emp.email}`
+                .toLowerCase()
+                .includes(search.toLowerCase())
+            )
+            .filter((emp) => {
+              if (statusFilter === "all") return true;
+              if (statusFilter === "active") return emp.status?.name === "Attivo";
+              if (statusFilter === "ceased") return emp.status?.name === "Cessato";
+            })}
+
+          columns={
+            selectedView
+              ? columns.filter((c) =>
+                  views.find((v) => v.id === selectedView)?.columns.includes(c.field)
+                )
+              : columns
+          }
+
           loading={loading}
           disableSelectionOnClick
           pageSize={10}
@@ -431,6 +551,12 @@ export default function Employees() {
         onClose={() => setOpenChangeStatus(null)}
         onSaved={loadData}
       />
+      <EmployeeDetailModal
+                    open={detailOpen}
+                    onClose={() => setDetailOpen(false)}
+                   employeeId={selectedEmployeeId}
+              />
+
     </Box>
   );
 }

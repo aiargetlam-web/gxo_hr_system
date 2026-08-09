@@ -107,6 +107,35 @@ class Status(BaseModel):
 
     model_config = {"from_attributes": True}
 
+# ---------------------------------------------------------
+# EMPLOYMENT STATUS TYPE (nome dello stato)
+# ---------------------------------------------------------
+
+class EmploymentStatusType(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# STATUS HISTORY COMPLETO (con nome dello stato)
+# ---------------------------------------------------------
+
+class StatusHistory(BaseModel):
+    id: int
+    employee_id: int
+    status_type_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    # 🔥 RELAZIONE: include il nome dello stato
+    status_type: Optional[EmploymentStatusType] = None
+
+    model_config = {"from_attributes": True}
+
+
 
 # ---------------------------------------------------------
 # SOTTO-SCHEMI HR (CREATE)
@@ -312,5 +341,6 @@ class Employee(EmployeeInDBBase):
     salary: Optional[Salary] = None
     company_car: Optional[CompanyCar] = None
     status: Optional[Status] = None
+    status_history: Optional[List[StatusHistory]] = None
 
     model_config = {"from_attributes": True}

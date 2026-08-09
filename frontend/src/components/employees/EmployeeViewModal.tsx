@@ -17,6 +17,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useEffect, useState } from "react";
 import { employeeService } from "../../services/employeeService";
 import { EmployeeFull } from "../../types";
+import { CostCenter } from "../../types";
+
 
 
 interface Props {
@@ -144,7 +146,7 @@ export default function EmployeeDetailModal({ open, onClose, employeeId }: Props
             <Stack spacing={1}>
               <Typography><strong>Reparto ID:</strong> {employee.department?.department_id ?? "-"}</Typography>
               <Typography><strong>Sito:</strong> {employee.site?.name ?? "-"}</Typography>
-              <Typography><strong>Status:</strong> {employee.status?.name ?? "-"}</Typography>
+              <Typography><strong>Status:</strong> {employee.status?.status_type?.name ?? "-"}</Typography>
             </Stack>
           </Card>
         )}

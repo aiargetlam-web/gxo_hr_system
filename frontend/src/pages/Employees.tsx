@@ -31,7 +31,7 @@ import EmployeeNewCostCenterModal from "../components/employees/EmployeeNewCostC
 import EmployeeNewCompanyCarModal from "../components/employees/EmployeeNewCompanyCarModal";
 import EmployeeChangeSiteModal from "../components/employees/EmployeeChangeSiteModal";
 import EmployeeChangeStatusModal from "../components/employees/EmployeeChangeStatusModal";
-import EmployeeDetailModal from "../components/employees/EmployeeDetailModal";
+import EmployeeViewModal from "../components/employees/EmployeeViewModal";
 import { employeeViewsService } from "../services/employeeViewsService";
 
 
@@ -551,11 +551,12 @@ export default function Employees() {
         onClose={() => setOpenChangeStatus(null)}
         onSaved={loadData}
       />
-      <EmployeeDetailModal
-                    open={detailOpen}
-                    onClose={() => setDetailOpen(false)}
+      <EmployeeViewModal
+                   open={detailOpen}
+                   onClose={() => setDetailOpen(false)}
                    employeeId={selectedEmployeeId}
-              />
+               />
+
 
     </Box>
   );

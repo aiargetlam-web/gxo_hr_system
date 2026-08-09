@@ -88,10 +88,16 @@ export interface SiteHistory {
 
 export interface StatusHistory {
   id: number;
+  employee_id: number;
   status_type_id: number;
   from_date: string;
-  to_date?: string | null;
-  note?: string;
+  to_date: string | null;
+  note: string | null;
+
+  status_type?: {
+    id: number;
+    name: string;
+  };
 }
 
 /* ============================

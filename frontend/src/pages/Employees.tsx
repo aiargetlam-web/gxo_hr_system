@@ -393,8 +393,8 @@ export default function Employees() {
             )
             .filter((emp) => {
               if (statusFilter === "all") return true;
-              if (statusFilter === "active") return emp.status?.name === "Attivo";
-              if (statusFilter === "ceased") return emp.status?.name === "Cessato";
+              if (statusFilter === "active") return emp.status?.status_type?.name === "Attivo";
+              if (statusFilter === "ceased") return emp.status?.status_type?.name === "Cessato";
             })}
 
           columns={

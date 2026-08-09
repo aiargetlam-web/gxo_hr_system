@@ -19,6 +19,8 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 import { employeeService } from "../services/employeeService";
 import { EmployeeFull } from "../types";
+import { CostCenter } from "../types";
+
 
 // Modali HR
 import EmployeeCreateModal from "../components/employees/EmployeeCreateModal";
@@ -237,7 +239,7 @@ export default function Employees() {
       flex: 1,
       renderCell: (params: any) => (
         <Chip
-          label={params.row.status?.name ?? "N/D"}
+          label={params.row.status?.status_type?.name ?? "N/D"}
           color="success"
         />
       ),

@@ -15,15 +15,4 @@ class EmployeeStatusHistory(Base):
 
     employee = relationship("Employee", back_populates="status_history")
 
-    # 🔥 FIX: aggiungi back_populates per collegare la relazione inversa
     status_type = relationship("EmploymentStatusType", back_populates="history")
-   
-class EmploymentStatusType(Base):
-    __tablename__ = "employment_status_types"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-
-    # 🔥 AGGIUNGI QUESTO
-    history = relationship("EmployeeStatusHistory", back_populates="status_type")
-

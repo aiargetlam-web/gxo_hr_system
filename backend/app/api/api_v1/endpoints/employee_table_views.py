@@ -2,15 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app import models, schemas
+from app import models
 from app.api import deps
+
+# Import diretto dei modelli Pydantic (così NON serve __init__.py)
+from app.schemas.employee_table_views import (
+    EmployeeTableView,
+    EmployeeTableViewCreate,
+    EmployeeTableViewUpdate
+)
 
 router = APIRouter()
 
 # ============================================================
 # GET — tutte le viste dell’utente
 # ============================================================
-@router.get("/employee-table-views/{user_id}", response_model=List[schemas.EmployeeTableView])
+@router.get("/employee-table-views/{user_id}", response_model=List[EmployeeTableView])
 def get_employee_table_views(
     user_id: int,
     db: Session = Depends(deps.get_db)
@@ -22,9 +29,9 @@ def get_employee_table_views(
 # ============================================================
 # POST — crea una nuova vista
 # ============================================================
-@router.post("/employee-table-views", response_model=schemas.EmployeeTableView)
+@router.post("/employee-table-views", response_model=EmployeeTableView)
 def create_employee_table_view(
-    payload: schemas.EmployeeTableViewCreate,
+    payload: EmployeeTableViewCreate,
     db: Session = Depends(deps.get_db)
 ):
     new_view = models.EmployeeTableView(
@@ -41,10 +48,10 @@ def create_employee_table_view(
 # ============================================================
 # PUT — aggiorna una vista esistente
 # ============================================================
-@router.put("/employee-table-views/{view_id}", response_model=schemas.EmployeeTableView)
+@router.put("/employee-table-views/{view_id}", response_model=EmployeeTableView)
 def update_employee_table_view(
     view_id: int,
-    payload: schemas.EmployeeTableViewUpdate,
+    payload: EmployeeTableViewUpdate,
     db: Session = Depends(deps.get_db)
 ):
     view = db.query(models.EmployeeTableView).filter(models.EmployeeTableView.id == view_id).first()

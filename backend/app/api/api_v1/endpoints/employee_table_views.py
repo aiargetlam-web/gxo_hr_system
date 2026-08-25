@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app import models
+# ⭐ Import diretto del MODELLO SQLAlchemy (come fanno gli altri endpoint)
+from app.models.employee_table_view import EmployeeTableView
+
 from app.api import deps
 
+# ⭐ Import degli SCHEMI Pydantic
 from app.schemas.employee_table_view import (
-    EmployeeTableView,
+    EmployeeTableView as EmployeeTableViewSchema,
     EmployeeTableViewCreate,
     EmployeeTableViewUpdate,
 )
@@ -16,19 +19,20 @@ router = APIRouter()
 # ============================================================
 # GET — tutte le viste dell’utente
 # ============================================================
-@router.get("/{user_id}", response_model=List[EmployeeTableView])
+@router.get("/{user_id}", response_model=List[EmployeeTableViewSchema])
 def get_employee_table_views(
     user_id: int,
     db: Session = Depends(deps.get_db),
 ):
     views = (
-        db.query(models.EmployeeTableView)
-        .filter(models.EmployeeTableView.user_id == user_id)
+        db.query(EmployeeTableView)
+        .filter(EmployeeTableView.user_id == user_id)
         .all()
     )
 
+    # ⭐ VISTA DI DEFAULT SE NON ESISTONO VISTE SALVATE
     if not views:
-        default_view = EmployeeTableView(
+        default_view = EmployeeTableViewSchema(
             id=0,
             user_id=user_id,
             name="Default",
@@ -59,12 +63,12 @@ def get_employee_table_views(
 # ============================================================
 # POST — crea una nuova vista
 # ============================================================
-@router.post("", response_model=EmployeeTableView)
+@router.post("", response_model=EmployeeTableViewSchema)
 def create_employee_table_view(
     payload: EmployeeTableViewCreate,
     db: Session = Depends(deps.get_db),
 ):
-    new_view = models.EmployeeTableView(
+    new_view = EmployeeTableView(
         user_id=payload.user_id,
         name=payload.name,
         columns=payload.columns,
@@ -78,15 +82,15 @@ def create_employee_table_view(
 # ============================================================
 # PUT — aggiorna una vista esistente
 # ============================================================
-@router.put("/{view_id}", response_model=EmployeeTableView)
+@router.put("/{view_id}", response_model=EmployeeTableViewSchema)
 def update_employee_table_view(
     view_id: int,
     payload: EmployeeTableViewUpdate,
     db: Session = Depends(deps.get_db),
 ):
     view = (
-        db.query(models.EmployeeTableView)
-        .filter(models.EmployeeTableView.id == view_id)
+        db.query(EmployeeTableView)
+        .filter(EmployeeTableView.id == view_id)
         .first()
     )
 
@@ -110,8 +114,8 @@ def delete_employee_table_view(
     db: Session = Depends(deps.get_db),
 ):
     view = (
-        db.query(models.EmployeeTableView)
-        .filter(models.EmployeeTableView.id == view_id)
+        db.query(EmployeeTableView)
+        .filter(EmployeeTableView.id == view_id)
         .first()
     )
 

@@ -362,16 +362,26 @@ export default function Employees() {
       </Stack>
 
       {/* VISTE SALVATE */}
-      <Stack direction="row" spacing={2} mb={2}>
-        {views.map((v) => (
-          <Button
-            key={v.id}
-            variant={selectedView === v.id ? "contained" : "outlined"}
-            onClick={() => setSelectedView(v.id)}
-          >
-            {v.name}
-          </Button>
-        ))}
+      <Stack direction="row" spacing={2} mb={2} alignItems="center">
+        <select
+          value={selectedView ?? "default"}
+          onChange={(e) => setSelectedView(e.target.value === "default" ? null : Number(e.target.value))}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            fontSize: "16px",
+            minWidth: "200px",
+          }}
+        >
+          <option value="default">Default</option>
+
+          {views.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name}
+            </option>
+          ))}
+        </select>
 
         <Button
           variant="outlined"
@@ -381,6 +391,7 @@ export default function Employees() {
           Nuova Vista
         </Button>
       </Stack>
+
 
 
       <Card sx={{ height: 650 }}>

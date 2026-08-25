@@ -5,7 +5,7 @@ from typing import List
 from app import models
 from app.api import deps
 
-# IMPORT COERENTE CON LA TUA CARTELLA: employee_table_view.py
+# Import coerente con il tuo file: employee_table_view.py
 from app.schemas.employee_table_view import (
     EmployeeTableView,
     EmployeeTableViewCreate,
@@ -27,6 +27,34 @@ def get_employee_table_views(
         .filter(models.EmployeeTableView.user_id == user_id)
         .all()
     )
+
+    # ⭐ VISTA DI DEFAULT SE NON ESISTONO VISTE SALVATE
+    if not views:
+        default_view = EmployeeTableView(
+            id=0,
+            user_id=user_id,
+            name="Default",
+            columns=[
+                "avatar",          # colonna virtuale per le iniziali
+                "name",
+                "email",
+                "phone",
+                "fiscal_code",
+                "protected",
+                "disadvantaged",
+                "role",
+                "department",
+                "site",
+                "contract",
+                "status",
+                "ral",
+                "car",
+                "hire_date",
+                "termination_date"
+            ]
+        )
+        return [default_view]
+
     return views
 
 

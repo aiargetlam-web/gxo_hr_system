@@ -28,3 +28,4 @@ from app.models.communication import Communication
 from app.models.import_users_log import ImportUsersLog
 from app.models.ticket import Ticket
 from app.models.board import BoardFile, BoardFileSite
+from app.models.employee_table_view import EmployeeTableView

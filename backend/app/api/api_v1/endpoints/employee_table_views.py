@@ -5,7 +5,6 @@ from typing import List
 from app import models
 from app.api import deps
 
-# Import coerente con il tuo file: employee_table_view.py
 from app.schemas.employee_table_view import (
     EmployeeTableView,
     EmployeeTableViewCreate,
@@ -17,7 +16,7 @@ router = APIRouter()
 # ============================================================
 # GET — tutte le viste dell’utente
 # ============================================================
-@router.get("/employee-table-views/{user_id}", response_model=List[EmployeeTableView])
+@router.get("/{user_id}", response_model=List[EmployeeTableView])
 def get_employee_table_views(
     user_id: int,
     db: Session = Depends(deps.get_db),
@@ -28,14 +27,13 @@ def get_employee_table_views(
         .all()
     )
 
-    # ⭐ VISTA DI DEFAULT SE NON ESISTONO VISTE SALVATE
     if not views:
         default_view = EmployeeTableView(
             id=0,
             user_id=user_id,
             name="Default",
             columns=[
-                "avatar",          # colonna virtuale per le iniziali
+                "avatar",
                 "name",
                 "email",
                 "phone",
@@ -61,7 +59,7 @@ def get_employee_table_views(
 # ============================================================
 # POST — crea una nuova vista
 # ============================================================
-@router.post("/employee-table-views", response_model=EmployeeTableView)
+@router.post("", response_model=EmployeeTableView)
 def create_employee_table_view(
     payload: EmployeeTableViewCreate,
     db: Session = Depends(deps.get_db),
@@ -80,7 +78,7 @@ def create_employee_table_view(
 # ============================================================
 # PUT — aggiorna una vista esistente
 # ============================================================
-@router.put("/employee-table-views/{view_id}", response_model=EmployeeTableView)
+@router.put("/{view_id}", response_model=EmployeeTableView)
 def update_employee_table_view(
     view_id: int,
     payload: EmployeeTableViewUpdate,
@@ -106,7 +104,7 @@ def update_employee_table_view(
 # ============================================================
 # DELETE — elimina una vista
 # ============================================================
-@router.delete("/employee-table-views/{view_id}")
+@router.delete("/{view_id}")
 def delete_employee_table_view(
     view_id: int,
     db: Session = Depends(deps.get_db),

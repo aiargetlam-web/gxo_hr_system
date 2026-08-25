@@ -61,6 +61,10 @@ export default function Employees() {
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ceased">("all");
   const [views, setViews] = useState<any[]>([]);
   const [selectedView, setSelectedView] = useState<number | null>(null);
+  const [openCreateView, setOpenCreateView] = useState(false);
+  const [newViewName, setNewViewName] = useState("");
+  const [newViewColumns, setNewViewColumns] = useState<string[]>([]);
+
 
 
   
@@ -71,21 +75,13 @@ export default function Employees() {
     setSelectedEmployeeId(id);
     setDetailOpen(true);
   };
-  const createNewView = async () => {
-    const name = prompt("Nome della vista:");
-    if (!name) return;
 
-    const columnsList = columns.map((c) => c.field); // tutte le colonne attuali
-
-    await employeeViewsService.createView({
-      user_id: 1,
-      name,
-      columns: columnsList,
-    });
-
-    const updated = await employeeViewsService.getViews(1);
-    setViews(updated);
+  const createNewView = () => {
+    setNewViewName("");
+    setNewViewColumns(columns.map((c) => c.field)); // tutte selezionate di default
+    setOpenCreateView(true);
   };
+
 
 
   const loadData = async () => {
@@ -569,8 +565,79 @@ export default function Employees() {
                    onClose={() => setDetailOpen(false)}
                    employeeId={selectedEmployeeId}
                />
+      <Dialog open={openCreateView} onClose={() => setOpenCreateView(false)} fullWidth maxWidth="sm">
+                    <DialogTitle>Crea nuova vista</DialogTitle>
 
+                   <DialogContent>
+                        <TextField
+                              label="Nome vista"
+                              fullWidth
+                              margin="normal"
+                              value={newViewName}
+                              onChange={(e) => setNewViewName(e.target.value)}
+                        />
 
+                        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                              Colonne da includere:
+                        </Typography>
+
+                        <Stack>
+                              {columns
+                                   .filter((c) => c.field !== "actions") // opzionale
+                                   .map((c) => (
+                                      <FormControlLabel
+                                            key={c.field}
+                                            control={
+                                                 <Checkbox
+                                                       checked={newViewColumns.includes(c.field)}
+                                                       onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                               setNewViewColumns((prev) => [...prev, c.field]);
+                                                            } else {
+                                                               setNewViewColumns((prev) => prev.filter((f) => f !== c.field));
+                                                            }
+                                                       }}
+                                                 />
+                                            }
+                                            label={c.headerName || c.field}
+                                      />
+                                  ))}
+                        </Stack>
+                   </DialogContent>
+
+                   <DialogActions>
+                        <Button onClick={() => setOpenCreateView(false)}>Annulla</Button>
+
+                        <Button
+                              variant="contained"
+                              onClick={async () => {
+                                   if (!newViewName.trim()) {
+                                       alert("Inserisci un nome per la vista");
+                                       return;
+                                   }
+
+                                  if (!newViewColumns.length) {
+                                      alert("Seleziona almeno una colonna");
+                                      return;
+                                   }
+
+                                   await employeeViewsService.createView({
+                                       user_id: 1,
+                                       name: newViewName,
+                                       columns: newViewColumns,
+                                   });
+
+                                   const updated = await employeeViewsService.getViews(1);
+                                   setViews(updated);
+                                   setOpenCreateView(false);
+                              }}
+                        >
+                             Salva vista
+                        </Button>
+                  </DialogActions>
+             </Dialog>
+
+      
     </Box>
   );
 }

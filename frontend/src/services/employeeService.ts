@@ -124,6 +124,24 @@ export const changeEmployeeSite = async (employeeId: number, data: any) => {
 };
 
 /* ============================================================
+   CAMBIO STATO LAVORATIVO
+============================================================ */
+
+export const changeEmployeeStatus = async (employeeId: number, data: any) => {
+  const payload = {
+    status_type_id: data.status_type_id,
+    from_date: data.from_date,
+    note: data.note,
+  };
+
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/status`,
+    payload
+  );
+  return response.data;
+};
+
+/* ============================================================
    NUOVO CONTRATTO
 ============================================================ */
 

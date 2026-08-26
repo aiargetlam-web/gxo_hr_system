@@ -916,3 +916,57 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
         "site": current_site,
         "status": current_status,
     }
+
+# ============================================================
+# post CAMBIO STATO
+# ============================================================
+
+@router.post("/{employee_id}/status")
+def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employment_status_type import EmploymentStatusType
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    # Recupera lo stato attuale
+    current_status = (
+        db.query(EmployeeStatusHistory)
+        .filter(EmployeeStatusHistory.employee_id == employee_id)
+        .filter(EmployeeStatusHistory.to_date.is_(None))
+        .first()
+    )
+
+    # Chiudi lo stato attuale
+    if current_status:
+        current_status.to_date = payload.from_date - timedelta(days=1)
+        db.add(current_status)
+
+    # Recupera info sul nuovo stato
+    status_type = db.query(EmploymentStatusType).filter(
+        EmploymentStatusType.id == payload.status_type_id
+    ).first()
+
+    if not status_type:
+        raise HTTPException(status_code=400, detail="Stato lavorativo non valido")
+
+    # Inserisci nuovo stato
+    new_status = EmployeeStatusHistory(
+        employee_id=employee_id,
+        status_type_id=payload.status_type_id,
+        from_date=payload.from_date,
+        note=payload.note
+    )
+    db.add(new_status)
+
+    # Aggiorna employee.is_active
+    employee.is_active = status_type.is_active
+    db.add(employee)
+
+    db.commit()
+    db.refresh(new_status)
+
+    return {"message": "Cambio stato registrato con successo", "status": new_status}
+

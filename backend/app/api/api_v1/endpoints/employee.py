@@ -921,7 +921,7 @@ def get_current_status(employee_id: int, db: Session = Depends(get_db)):
 # post CAMBIO STATO
 # ============================================================
 
-@router.post("/{employee_id}/status")
+@router.post("/employees/{employee_id}/status")
 def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_status_history import EmployeeStatusHistory

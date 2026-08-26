@@ -14,6 +14,17 @@ export interface Site {
   id: number;
   name: string;
 }
+
+/* ============================
+   EMPLOYMENT STATUS TYPE
+============================ */
+export interface EmploymentStatusType {
+  id: number;
+  code: string;
+  description: string;
+  is_active: boolean;
+}
+
 /* ============================
    CCNL
 ============================ */

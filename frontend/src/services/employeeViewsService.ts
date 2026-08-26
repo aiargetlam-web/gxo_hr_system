@@ -9,6 +9,10 @@ export const employeeViewsService = {
     return api.post(`/api/v1/employee-table-views`, payload).then((r) => r.data);
   },
 
+  updateView(id: number, payload: { name: string; columns: string[] }) {
+    return api.put(`/api/v1/employee-table-views/${id}`, payload).then((r) => r.data);
+  },
+
   deleteView(id: number) {
     return api.delete(`/api/v1/employee-table-views/${id}`).then((r) => r.data);
   },

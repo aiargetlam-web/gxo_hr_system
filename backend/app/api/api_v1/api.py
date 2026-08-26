@@ -28,6 +28,8 @@ from app.api.api_v1.endpoints.benefit_types import router as benefit_types_route
 from app.api.api_v1.endpoints.shift_types import router as shift_types_router
 from app.api.api_v1.endpoints.ccnl_levels import router as ccnl_levels_router
 from app.api.api_v1.endpoints import employee_table_views
+from app.api.api_v1.endpoints import status_types
+
 
 
 
@@ -69,6 +71,9 @@ api_router.include_router(benefit_types_router, prefix="/benefit-types", tags=["
 api_router.include_router(shift_types_router, prefix="/shift-types", tags=["shift-types"])
 api_router.include_router(ccnl_levels_router, prefix="/ccnl-levels", tags=["ccnl-levels"])
 api_router.include_router(employee_table_views.router, prefix="/employee-table-views", tags=["employee-table-views"])
+api_router.include_router(status_types.router)
+
+
 
 
 

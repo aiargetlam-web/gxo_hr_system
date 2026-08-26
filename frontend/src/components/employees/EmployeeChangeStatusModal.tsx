@@ -78,13 +78,14 @@ export default function EmployeeChangeStatusModal({
             options={statusTypes}
             getOptionLabel={(option) => option.description}
             value={statusTypes.find((s) => s.id === form.status_type_id) || null}
-            onChange={(_, newValue) =>
+            onChange={(_, newValue: EmploymentStatusType | null) =>
               handleChange("status_type_id", newValue ? newValue.id : 0)
             }
             renderInput={(params) => (
               <TextField {...params} label="Nuovo stato" fullWidth />
             )}
           />
+
 
           <TextField
             label="Data decorrenza"

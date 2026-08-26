@@ -72,6 +72,10 @@ export default function Employees() {
   const [openCreateView, setOpenCreateView] = useState(false);
   const [newViewName, setNewViewName] = useState("");
   const [newViewColumns, setNewViewColumns] = useState<string[]>([]);
+  const [openEditView, setOpenEditView] = useState(false);
+  const [viewToEdit, setViewToEdit] = useState<any | null>(null);
+  const [openDeleteView, setOpenDeleteView] = useState(false);
+  const [viewToDelete, setViewToDelete] = useState<any | null>(null);
 
 
 
@@ -394,6 +398,38 @@ export default function Employees() {
         >
           Nuova Vista
         </Button>
+
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (!selectedView) {
+              alert("La vista Default non può essere modificata");
+              return;
+            }
+            const v = views.find((x) => x.id === selectedView);
+            setViewToEdit(v);
+            setOpenEditView(true);
+          }}
+        >
+          Modifica Vista
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => {
+            if (!selectedView) {
+              alert("La vista Default non può essere eliminata");
+              return;
+            }
+            const v = views.find((x) => x.id === selectedView);
+            setViewToDelete(v);
+            setOpenDeleteView(true);
+          }}
+        >
+          Elimina Vista
+        </Button>
+
       </Stack>
 
 
@@ -644,6 +680,105 @@ export default function Employees() {
                         </Button>
                   </DialogActions>
              </Dialog>
+             
+             <Dialog open={openEditView} onClose={() => setOpenEditView(false)} fullWidth maxWidth="sm">
+                                    <DialogTitle>Modifica vista</DialogTitle>
+
+                                    <DialogContent>
+                                         <TextField
+                                               label="Nome vista"
+                                               fullWidth
+                                               margin="normal"
+                                               value={viewToEdit?.name ?? ""}
+                                               onChange={(e) =>
+                                                    setViewToEdit((prev: any) => ({ ...prev, name: e.target.value }))
+                                               }
+                                         />
+
+                                        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                                             Colonne da includere:
+                                        </Typography>
+
+                                        <Stack>
+                                              {columns
+                                                   .filter((c) => c.field !== "actions")
+                                                   .map((c) => (
+                                                      <FormControlLabel
+                                                            key={c.field}
+                                                            control={
+                                                                <Checkbox
+                                                                      checked={viewToEdit?.columns.includes(c.field)}
+                                                                      onChange={(e) => {
+                                                                           if (e.target.checked) {
+                                                                               setViewToEdit((prev: any) => ({
+                                                                                    ...prev,
+                                                                                   columns: [...prev.columns, c.field],
+                                                                               }));
+                                                                           } else {
+                                                                              setViewToEdit((prev: any) => ({
+                                                                                    ...prev,
+                                                                                   columns: prev.columns.filter((f: string) => f !== c.field),
+                                                                               }));
+                                                                           }
+                                                                      }}
+                                                                />
+                                                            }
+                                                           label={c.headerName || c.field}
+                                                      />
+                                                  ))}
+                                        </Stack>
+                                    </DialogContent>
+
+                                    <DialogActions>
+                                         <Button onClick={() => setOpenEditView(false)}>Annulla</Button>
+
+                                         <Button
+                                               variant="contained"
+                                               onClick={async () => {
+                                                    await employeeViewsService.updateView(viewToEdit.id, {
+                                                         name: viewToEdit.name,
+                                                         columns: viewToEdit.columns,
+                                                    });
+
+                                                   const updated = await employeeViewsService.getViews(1);
+                                                   setViews(updated);
+                                                   setOpenEditView(false);
+                                               }}
+                                         >
+                                               Salva modifiche
+                                         </Button>
+                                   </DialogActions>
+                              </Dialog>
+
+            <Dialog open={openDeleteView} onClose={() => setOpenDeleteView(false)} fullWidth maxWidth="xs">
+                                  <DialogTitle>Elimina vista</DialogTitle>
+
+                                  <DialogContent>
+                                        <Typography>
+                                             Sei sicuro di voler eliminare la vista <b>{viewToDelete?.name}</b>?
+                                        </Typography>
+                                  </DialogContent>
+
+                                 <DialogActions>
+                                      <Button onClick={() => setOpenDeleteView(false)}>Annulla</Button>
+
+                                      <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={async () => {
+                                                 await employeeViewsService.deleteView(viewToDelete.id);
+
+                                                 const updated = await employeeViewsService.getViews(1);
+                                                 setViews(updated);
+
+                                                 setSelectedView(null); // torna alla Default
+                                                 setOpenDeleteView(false);
+                                            }}
+                                      >
+                                            Elimina
+                                      </Button>
+                                  </DialogActions>
+                             </Dialog>
 
       
     </Box>

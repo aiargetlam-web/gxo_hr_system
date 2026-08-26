@@ -286,6 +286,7 @@ export const employeeService = {
   getEmployee,
   createEmployee,
   changeEmployeeSite,
+  changeEmployeeStatus,
   addContract,
   addCostCenter,
   addDepartment,
@@ -301,4 +302,5 @@ export const employeeService = {
   getEmployeeSites,
   getEmployeeStatusHistory,
   getEmployeeCurrentStatus,
+  
 };

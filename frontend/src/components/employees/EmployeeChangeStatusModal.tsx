@@ -4,16 +4,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
   Stack,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { Employee } from "../../types";
+import { Employee, EmploymentStatusType } from "../../types";
 
-// ❗ IMPORT CORRETTO — RIMOSSO changeStatus
 import { employeeService } from "../../services/employeeService";
+import { getEmploymentStatusTypes } from "../../services/dictionaryService";
 
 interface Props {
   open: boolean;
@@ -28,23 +28,37 @@ export default function EmployeeChangeStatusModal({
   onSaved,
   employee,
 }: Props) {
-  const [statusTypeId, setStatusTypeId] = useState<number>(1);
-  const [fromDate, setFromDate] = useState<string>("");
-  const [note, setNote] = useState<string>("");
+  const [statusTypes, setStatusTypes] = useState<EmploymentStatusType[]>([]);
+  const [form, setForm] = useState({
+    status_type_id: 0,
+    from_date: "",
+    note: "",
+  });
 
+  // Carica stati dal DB
   useEffect(() => {
-    if (employee) {
-      setStatusTypeId(employee.status?.status_type_id ?? 1);
+    getEmploymentStatusTypes().then((data) => setStatusTypes(data));
+  }, []);
+
+  // Imposta default sullo stato attuale
+  useEffect(() => {
+    if (employee?.status) {
+      setForm({
+        status_type_id: employee.status.status_type_id,
+        from_date: "",
+        note: "",
+      });
     }
   }, [employee]);
+
+  const handleChange = (field: string, value: any) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async () => {
     if (!employee) return;
 
-    // ❗ NON ESISTE changeStatus → per ora NON facciamo chiamate
-    // Quando avrai l’endpoint, lo aggiungiamo qui.
-
-    console.warn("⚠ Nessuna API per changeStatus: submit ignorato.");
+    await employeeService.changeEmployeeStatus(employee.id, form);
 
     onSaved();
     onClose();
@@ -58,35 +72,35 @@ export default function EmployeeChangeStatusModal({
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            select
-            label="Nuovo stato"
-            fullWidth
-            value={statusTypeId}
-            onChange={(e) => setStatusTypeId(Number(e.target.value))}
-          >
-            <MenuItem value={1}>Attivo</MenuItem>
-            <MenuItem value={2}>Sospeso</MenuItem>
-            <MenuItem value={3}>Cessato</MenuItem>
-            <MenuItem value={4}>In aspettativa</MenuItem>
-            <MenuItem value={5}>Rientrato</MenuItem>
-          </TextField>
+          
+          {/* AUTOCOMPLETE STATI */}
+          <Autocomplete
+            options={statusTypes}
+            getOptionLabel={(option) => option.description}
+            value={statusTypes.find((s) => s.id === form.status_type_id) || null}
+            onChange={(_, newValue) =>
+              handleChange("status_type_id", newValue ? newValue.id : 0)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Nuovo stato" fullWidth />
+            )}
+          />
 
           <TextField
             label="Data decorrenza"
             type="date"
             InputLabelProps={{ shrink: true }}
             fullWidth
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            value={form.from_date}
+            onChange={(e) => handleChange("from_date", e.target.value)}
           />
 
           <TextField
             label="Note"
             fullWidth
             multiline
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            value={form.note}
+            onChange={(e) => handleChange("note", e.target.value)}
           />
         </Stack>
       </DialogContent>

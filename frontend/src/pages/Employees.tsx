@@ -245,13 +245,19 @@ export default function Employees() {
       field: "status",
       headerName: "Stato",
       flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.status?.status_type?.name ?? "N/D"}
-          color="success"
-        />
-      ),
+      renderCell: (params: any) => {
+        const raw = params.row.status?.name ?? null; // "ATTIVO", "DIMESSO", ecc.
+        const isActive = params.row.is_active;
+        const label = raw ? raw : "-";
+        const color =
+          isActive === true ? "success" :
+          isActive === false ? "error" :
+          "default";
+
+        return <Chip label={label} color={color} />;
+      },
     },
+
 
     {
       field: "salary",
@@ -444,8 +450,9 @@ export default function Employees() {
             )
             .filter((emp) => {
               if (statusFilter === "all") return true;
-              if (statusFilter === "active") return emp.status?.status_type?.name === "Attivo";
-              if (statusFilter === "ceased") return emp.status?.status_type?.name === "Cessato";
+              if (statusFilter === "active") return emp.is_active === true;
+              if (statusFilter === "ceased") return emp.is_active === false;
+              return true;
             })}
 
           columns={

@@ -427,7 +427,7 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
 # CAMBIO SITO (CORRETTO)
 # ============================================================
 
-@router.post("/employees/{employee_id}/sites")
+@router.post("/{employee_id}/sites")
 def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_site_history import EmployeeSiteHistory

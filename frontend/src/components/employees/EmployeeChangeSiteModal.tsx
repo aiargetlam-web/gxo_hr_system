@@ -6,13 +6,14 @@ import {
   DialogTitle,
   Stack,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { Employee, SiteAssignmentCreate } from "../../types";
+import { Employee, SiteAssignmentCreate, Site } from "../../types";
 
-// ❗ IMPORT CORRETTO
 import { changeEmployeeSite } from "../../services/employeeService";
+import { siteService } from "../../services/siteService";
 
 interface Props {
   open: boolean;
@@ -27,16 +28,23 @@ export default function EmployeeChangeSiteModal({
   onSaved,
   employee,
 }: Props) {
+  const [sites, setSites] = useState<Site[]>([]);
   const [form, setForm] = useState<SiteAssignmentCreate>({
-    site_id: 1,
+    site_id: 0,
     from_date: "",
     note: "",
   });
 
+  // Carica i siti
+  useEffect(() => {
+    siteService.getSites().then((data) => setSites(data));
+  }, []);
+
+  // Imposta default quando cambia employee
   useEffect(() => {
     if (employee) {
       setForm({
-        site_id: employee.site?.id ?? 1,
+        site_id: employee.site?.id ?? 0,
         from_date: "",
         note: "",
       });
@@ -50,7 +58,6 @@ export default function EmployeeChangeSiteModal({
   const handleSubmit = async () => {
     if (!employee) return;
 
-    // ❗ CHIAMATA CORRETTA
     await changeEmployeeSite(employee.id, form);
 
     onSaved();
@@ -65,11 +72,18 @@ export default function EmployeeChangeSiteModal({
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Nuovo sito (ID)"
-            fullWidth
-            value={form.site_id}
-            onChange={(e) => handleChange("site_id", Number(e.target.value))}
+          
+          {/* AUTOCOMPLETE SITI */}
+          <Autocomplete
+            options={sites}
+            getOptionLabel={(option) => option.name}
+            value={sites.find((s) => s.id === form.site_id) || null}
+            onChange={(_, newValue) =>
+              handleChange("site_id", newValue ? newValue.id : 0)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Nuovo sito" fullWidth />
+            )}
           />
 
           <TextField

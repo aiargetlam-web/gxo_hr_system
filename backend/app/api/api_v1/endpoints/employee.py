@@ -489,6 +489,7 @@ def list_employees(db: Session = Depends(get_db)):
     from app.models.work_regime import WorkRegime
     from app.models.contract_nature import ContractNature
     from app.models.employment_status_type import EmploymentStatusType
+    from app.models.cost_center import CostCenter as CostCenterModel
 
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_departments import EmployeeDepartment
@@ -503,7 +504,7 @@ def list_employees(db: Session = Depends(get_db)):
 
     for emp in employees:
 
-        # SITO
+        # SITO ATTUALE
         site_hist = db.query(EmployeeSiteHistory).filter(
             EmployeeSiteHistory.employee_id == emp.id,
             EmployeeSiteHistory.to_date.is_(None)
@@ -515,25 +516,37 @@ def list_employees(db: Session = Depends(get_db)):
             if site_obj:
                 site = {
                     "id": site_obj.id,
-                    "name": site_obj.name or site_obj.code
+                    "name": site_obj.name or site_obj.code,
                 }
 
-        # REPARTO
+        # REPARTO ATTUALE + MANAGER
         dep_hist = db.query(EmployeeDepartment).filter(
             EmployeeDepartment.employee_id == emp.id,
             EmployeeDepartment.to_date.is_(None)
         ).first()
 
         department = None
+        manager = None
         if dep_hist:
             dep_obj = db.query(Department).filter(Department.id == dep_hist.department_id).first()
             if dep_obj:
                 department = {
                     "id": dep_obj.id,
-                    "name": dep_obj.name or dep_obj.code
+                    "name": dep_obj.name or dep_obj.code,
                 }
 
-        # CONTRATTO
+            if dep_hist.manager_employee_id:
+                manager_emp = db.query(EmployeeModel).filter(
+                    EmployeeModel.id == dep_hist.manager_employee_id
+                ).first()
+                if manager_emp:
+                    manager = {
+                        "id": manager_emp.id,
+                        "name": f"{manager_emp.first_name} {manager_emp.last_name}",
+                        "email": manager_emp.email,
+                    }
+
+        # CONTRATTO ATTUALE COMPLETO
         contract_hist = db.query(EmployeeContract).filter(
             EmployeeContract.employee_id == emp.id,
             EmployeeContract.to_date.is_(None)
@@ -558,11 +571,9 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": contract_hist.note,
                 "level_ccnl_id": contract_hist.level_ccnl_id,
                 "level_ccnl_description": contract_hist.level_ccnl.description if contract_hist.level_ccnl else None,
-
-
             }
 
-        # STATO
+        # STATO ATTUALE
         status_hist = db.query(EmployeeStatusHistory).filter(
             EmployeeStatusHistory.employee_id == emp.id,
             EmployeeStatusHistory.to_date.is_(None)
@@ -581,7 +592,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": status_hist.note,
             }
 
-        # RAL
+        # RAL ATTUALE
         salary_hist = db.query(EmployeeSalary).filter(
             EmployeeSalary.employee_id == emp.id,
             EmployeeSalary.to_date.is_(None)
@@ -596,7 +607,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": salary_hist.note,
             }
 
-        # AUTO
+        # AUTO ATTUALE
         car_hist = db.query(EmployeeCompanyCar).filter(
             EmployeeCompanyCar.employee_id == emp.id,
             EmployeeCompanyCar.to_date.is_(None)
@@ -617,45 +628,66 @@ def list_employees(db: Session = Depends(get_db)):
         if emp.role:
             role = {
                 "id": emp.role.id,
-                "name": emp.role.name or emp.role.code
+                "name": emp.role.name or emp.role.code,
             }
-        #COST CENTER
+
+        # COST CENTER ATTUALI (code + description)
         cc_hist = db.query(EmployeeCostCenter).filter(
             EmployeeCostCenter.employee_id == emp.id,
             EmployeeCostCenter.to_date.is_(None)
         ).all()
 
-        cost_centers = [
-            {
+        cost_centers = []
+        for cc in cc_hist:
+            cc_obj = db.query(CostCenterModel).filter(
+                CostCenterModel.id == cc.cost_center_id
+            ).first()
+
+            cost_centers.append({
                 "id": cc.id,
-                "cost_center_id": cc.cost_center_id,
+                "code": cc_obj.code if cc_obj else None,
+                "description": cc_obj.description if cc_obj else None,
                 "weight_percent": cc.weight_percent,
                 "from_date": cc.from_date,
-                "note": cc.note
-            }
-            for cc in cc_hist
-        ]
-
+                "note": cc.note,
+            })
 
         result.append({
             "id": emp.id,
             "email": emp.email,
             "first_name": emp.first_name,
             "last_name": emp.last_name,
+
+            # 🔥 ANAGRAFICA COMPLETA
             "phone": emp.phone,
             "fiscal_code": emp.fiscal_code,
-            "is_protected_category": emp.is_protected_category,
-            "is_disadvantaged": emp.is_disadvantaged,
+            "gender": emp.gender,
+            "birth_date": emp.birth_date,
+            "birth_place": emp.birth_place,
+            "address_street": emp.address_street,
+            "address_city": emp.address_city,
+            "address_cap": emp.address_cap,
+            "id_lul": emp.id_lul,
+
+            # 🔥 AZIENDALE
             "hire_date": emp.hire_date,
             "termination_date": emp.termination_date,
+            "is_protected_category": emp.is_protected_category,
+            "is_disadvantaged": emp.is_disadvantaged,
+
+            # 🔥 ORGANIZZAZIONE
             "role": role,
             "site": site,
             "department": department,
+            "manager": manager,
+
+            # 🔥 HR
             "contract": contract,
             "status": status,
             "salary": salary,
             "company_car": company_car,
             "cost_centers": cost_centers,
+
             "is_active": emp.is_active,
         })
 

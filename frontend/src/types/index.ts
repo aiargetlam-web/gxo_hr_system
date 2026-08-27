@@ -285,14 +285,15 @@ export interface EmployeeFull extends Employee {
   } | null;
 
   // CONTRATTO (FLAT PER LE COLONNE NASCOSTE)
-  contract?: Contract & {
+  contract: (Contract & {
     contract_nature?: string | null;
     weekly_hours?: number;
     time_band?: string;
     shift_type_name?: string | null;
     fte?: number;
     level_ccnl_description?: string | null;
-  };
+  }) | null;
+
 
   // RAL (FLAT)
   salary?: Salary & {

@@ -138,171 +138,171 @@ export default function Employees() {
   };
 
   const columns = [
-    {
-      field: "avatar",
-      headerName: "",
-      width: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: any) => (
-        <Avatar
-          sx={{ bgcolor: "#1976d2", cursor: "pointer" }}
-          onClick={() => openDetailModal(params.row.id)}
-        >
-          {params.row.first_name?.[0]}
-          {params.row.last_name?.[0]}
-        </Avatar>
-      ),
+  {
+    field: "avatar",
+    headerName: "",
+    width: 70,
+    sortable: false,
+    filterable: false,
+    renderCell: (params: any) => (
+      <Avatar
+        sx={{ bgcolor: "#1976d2", cursor: "pointer" }}
+        onClick={() => openDetailModal(params.row.id)}
+      >
+        {params.row.first_name?.[0]}
+        {params.row.last_name?.[0]}
+      </Avatar>
+    ),
+  },
 
+  {
+    field: "name",
+    headerName: "Nome",
+    flex: 1,
+    valueGetter: (params: any) =>
+      `${params.row.first_name} ${params.row.last_name}`,
+  },
+
+  { field: "email", headerName: "Email", flex: 1 },
+  { field: "phone", headerName: "Telefono", flex: 1 },
+  { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
+
+  {
+    field: "is_protected_category",
+    headerName: "Protetta",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.is_protected_category ? "Protetta" : "-",
+  },
+
+  {
+    field: "is_disadvantaged",
+    headerName: "Svantaggiato",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.is_disadvantaged ? "Svantaggiato" : "-",
+  },
+
+  {
+    field: "role",
+    headerName: "Ruolo",
+    flex: 1,
+    renderCell: (params: any) => (
+      <Chip
+        label={params.row.role?.name ?? "-"}
+        color={getRoleColor(params.row.role?.id ?? 0)}
+        variant="outlined"
+      />
+    ),
+  },
+
+  {
+    field: "department",
+    headerName: "Reparto",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.department?.name ?? "-",
+  },
+
+  {
+    field: "site",
+    headerName: "Sito",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.site?.name ?? "-",
+  },
+
+  {
+    field: "contract",
+    headerName: "Contratto",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.contract?.work_regime ?? "-",
+  },
+
+  {
+    field: "status",
+    headerName: "Stato",
+    flex: 1,
+    renderCell: (params: any) => {
+      const raw = params.row.status?.name ?? null;
+      const isActive = params.row.is_active;
+      const label = raw ? raw : "-";
+      const color =
+        isActive === true ? "green" :
+        isActive === false ? "red" :
+        "inherit";
+
+      return (
+        <span style={{ color }}>
+          {label}
+        </span>
+      );
     },
+  },
 
-    {
-      field: "name",
-      headerName: "Nome",
-      flex: 1,
-      valueGetter: (params: any) =>
-        `${params.row.first_name} ${params.row.last_name}`,
-    },
+  {
+    field: "salary",
+    headerName: "RAL",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.salary?.ral_amount
+        ? `${params.row.salary.ral_amount} €`
+        : "-",
+  },
 
-    { field: "email", headerName: "Email", flex: 1 },
-    { field: "phone", headerName: "Telefono", flex: 1 },
-    { field: "fiscal_code", headerName: "Codice Fiscale", flex: 1 },
+  {
+    field: "company_car",
+    headerName: "Auto",
+    flex: 1,
+    renderCell: (params: any) =>
+      params.row.company_car?.car_model ?? "-",
+  },
 
-    {
-      field: "is_protected_category",
-      headerName: "Protetta",
-      flex: 1,
-      renderCell: (params: any) =>
-        params.row.is_protected_category ? (
-          <Chip label="Protetta" color="error" />
-        ) : (
-          "-"
-        ),
-    },
+  { field: "hire_date", headerName: "Assunzione", flex: 1 },
+  { field: "termination_date", headerName: "Cessazione", flex: 1 },
 
-    {
-      field: "is_disadvantaged",
-      headerName: "Svantaggiato",
-      flex: 1,
-      renderCell: (params: any) =>
-        params.row.is_disadvantaged ? (
-          <Chip label="Svantaggiato" color="warning" />
-        ) : (
-          "-"
-        ),
-    },
+  // 🔥 COLONNE EXTRA NASCOSTE (per viste future)
+  { field: "gender", headerName: "Genere", flex: 1, hide: true },
+  { field: "birth_date", headerName: "Data di nascita", flex: 1, hide: true },
+  { field: "birth_place", headerName: "Luogo di nascita", flex: 1, hide: true },
+  { field: "address_street", headerName: "Indirizzo", flex: 1, hide: true },
+  { field: "address_city", headerName: "Città", flex: 1, hide: true },
+  { field: "address_cap", headerName: "CAP", flex: 1, hide: true },
+  { field: "id_lul", headerName: "ID LUL", flex: 1, hide: true },
 
-    {
-      field: "role",
-      headerName: "Ruolo",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.role?.name ?? "-"}
-          color={getRoleColor(params.row.role?.id ?? 0)}
-          variant="outlined"
-        />
-      ),
-    },
+  { field: "contract_nature", headerName: "Natura contratto", flex: 1, hide: true },
+  { field: "weekly_hours", headerName: "Ore settimanali", flex: 1, hide: true },
+  { field: "time_band", headerName: "Fascia oraria", flex: 1, hide: true },
+  { field: "shift_type_name", headerName: "Turno", flex: 1, hide: true },
+  { field: "fte", headerName: "FTE", flex: 1, hide: true },
+  { field: "contract_from_date", headerName: "Inizio contratto", flex: 1, hide: true },
+  { field: "contract_to_date", headerName: "Fine contratto", flex: 1, hide: true },
+  { field: "contract_note", headerName: "Note contratto", flex: 1, hide: true },
 
-    {
-      field: "department",
-      headerName: "Reparto",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.department?.name ?? "-"}
-          color="secondary"
-        />
-      ),
-    },
+  { field: "salary_from_date", headerName: "Inizio RAL", flex: 1, hide: true },
+  { field: "salary_note", headerName: "Note RAL", flex: 1, hide: true },
 
-    {
-      field: "site",
-      headerName: "Sito",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.site?.name ?? "-"}
-          color="info"
-        />
-      ),
-    },
+  { field: "car_plate", headerName: "Targa", flex: 1, hide: true },
+  { field: "car_from_date", headerName: "Assegnazione auto", flex: 1, hide: true },
+  { field: "car_note", headerName: "Note auto", flex: 1, hide: true },
 
-    {
-      field: "contract",
-      headerName: "Contratto",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.contract?.work_regime ?? "-"}
-          color="primary"
-        />
-      ),
-    },
+  { field: "manager", headerName: "Manager", flex: 1, hide: true },
 
-    {
-      field: "status",
-      headerName: "Stato",
-      flex: 1,
-      renderCell: (params: any) => {
-        const raw = params.row.status?.name ?? null; // "ATTIVO", "DIMESSO", ecc.
-        const isActive = params.row.is_active;
-        const label = raw ? raw : "-";
-        const color =
-          isActive === true ? "success" :
-          isActive === false ? "error" :
-          "default";
+  {
+    field: "actions",
+    headerName: "",
+    width: 60,
+    sortable: false,
+    filterable: false,
+    renderCell: (params: any) => (
+      <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
+        <MoreVertIcon />
+      </IconButton>
+    ),
+  },
+];
 
-        return <Chip label={label} color={color} />;
-      },
-    },
-
-
-    {
-      field: "salary",
-      headerName: "RAL",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={
-            params.row.salary?.ral_amount
-              ? `${params.row.salary.ral_amount} €`
-              : "-"
-          }
-          color="warning"
-        />
-      ),
-    },
-
-    {
-      field: "company_car",
-      headerName: "Auto",
-      flex: 1,
-      renderCell: (params: any) => (
-        <Chip
-          label={params.row.company_car?.car_model ?? "-"}
-          color="secondary"
-        />
-      ),
-    },
-
-    { field: "hire_date", headerName: "Assunzione", flex: 1 },
-    { field: "termination_date", headerName: "Cessazione", flex: 1 },
-
-    {
-      field: "actions",
-      headerName: "",
-      width: 60,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: any) => (
-        <IconButton onClick={(ev) => handleMenuOpen(ev, params.row)}>
-          <MoreVertIcon />
-        </IconButton>
-      ),
-    },
-  ];
 
   return (
     <Box p={3}>

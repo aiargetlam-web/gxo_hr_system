@@ -302,9 +302,10 @@ export interface EmployeeFull extends Employee {
 
 
   // AUTO (FLAT)
-  company_car?: CompanyCar & {
+  company_car: (CompanyCar & {
     note?: string;
-  };
+  }) | null;
+
 
     // COST CENTER (stesso tipo di Employee)
   cost_centers: CostCenter[];

@@ -61,6 +61,7 @@ export interface Salary {
 
 export interface Department {
   id: number;
+  name?: string; 
   department_id: number;
   manager_employee_id?: number | null;
   employee_id?: number;
@@ -101,6 +102,7 @@ export interface SiteHistory {
 
 export interface StatusHistory {
   id: number;
+  name?: string;
   employee_id: number;
   status_type_id: number;
   from_date: string;

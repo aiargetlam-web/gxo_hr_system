@@ -937,7 +937,6 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
-    # Recupera lo stato attuale
     current_status = (
         db.query(EmployeeStatusHistory)
         .filter(EmployeeStatusHistory.employee_id == employee_id)
@@ -945,12 +944,10 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
         .first()
     )
 
-    # Chiudi lo stato attuale
     if current_status:
         current_status.to_date = payload.from_date - timedelta(days=1)
         db.add(current_status)
 
-    # Recupera info sul nuovo stato
     status_type = db.query(EmploymentStatusType).filter(
         EmploymentStatusType.id == payload.status_type_id
     ).first()
@@ -958,7 +955,6 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     if not status_type:
         raise HTTPException(status_code=400, detail="Stato lavorativo non valido")
 
-    # Inserisci nuovo stato
     new_status = EmployeeStatusHistory(
         employee_id=employee_id,
         status_type_id=payload.status_type_id,
@@ -967,12 +963,18 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     )
     db.add(new_status)
 
-    # Aggiorna employee.is_active
+    # 🔥 QUI AGGIUNGI QUESTA LOGICA
     employee.is_active = status_type.is_active
+    if status_type.is_active is False:
+        # stato che “cessa” la persona → metti termination_date
+        employee.termination_date = payload.from_date
+    else:
+        # se torna ATTIVO o altro stato attivo → azzera la cessazione
+        employee.termination_date = None
+
     db.add(employee)
 
     db.commit()
     db.refresh(new_status)
 
     return {"message": "Cambio stato registrato con successo", "status": new_status}
-

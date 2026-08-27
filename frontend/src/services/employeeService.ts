@@ -268,6 +268,37 @@ export const getEmployeeStatusHistory = async (employeeId: number) => {
   return response.data;
 };
 
+export const getContracts = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/contracts`).then(r => r.data);
+
+export const getSalaries = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/salaries`).then(r => r.data);
+
+export const getDepartments = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/departments`).then(r => r.data);
+
+export const getCostCenters = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/cost-centers`).then(r => r.data);
+
+export const getCompanyCars = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/company-cars`).then(r => r.data);
+
+export const getStatusHistory = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/status`).then(r => r.data);
+
+export const getSites = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/sites`).then(r => r.data);
+
+export const getEnacCourses = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/enac-courses`).then(r => r.data);
+
+export const getEnacApprovals = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/enac-approvals`).then(r => r.data);
+
+export const getBenefits = async (employeeId: number) =>
+  api.get(`/api/v1/employees/${employeeId}/benefits`).then(r => r.data);
+
+
 /* ============================================================
    STATO ATTUALE
 ============================================================ */
@@ -302,5 +333,16 @@ export const employeeService = {
   getEmployeeSites,
   getEmployeeStatusHistory,
   getEmployeeCurrentStatus,
+  getContracts,
+  getSalaries,
+  getDepartments,
+  getCostCenters,
+  getCompanyCars,
+  getStatusHistory,
+  getSites,
+  getEnacCourses,
+  getEnacApprovals,
+  getBenefits,
+
   
 };

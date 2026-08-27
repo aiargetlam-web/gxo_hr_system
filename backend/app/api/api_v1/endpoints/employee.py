@@ -645,6 +645,7 @@ def list_employees(db: Session = Depends(get_db)):
 
             cost_centers.append({
                 "id": cc.id,
+                "cost_center_id": cc.cost_center_id,
                 "code": cc_obj.code if cc_obj else None,
                 "description": cc_obj.description if cc_obj else None,
                 "weight_percent": cc.weight_percent,

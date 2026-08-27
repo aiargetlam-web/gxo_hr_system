@@ -790,7 +790,7 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO CONTRATTI
 # ============================================================
 
-@router.get("/employees/{employee_id}/contracts")
+@router.get("/{employee_id}/contracts")
 def get_contracts(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_contracts import EmployeeContract
 
@@ -805,7 +805,7 @@ def get_contracts(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO COST CENTER
 # ============================================================
 
-@router.get("/employees/{employee_id}/cost-centers")
+@router.get("/{employee_id}/cost-centers")
 def get_cost_centers(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_cost_centers import EmployeeCostCenter
 
@@ -820,7 +820,7 @@ def get_cost_centers(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO REPARTI
 # ============================================================
 
-@router.get("/employees/{employee_id}/departments")
+@router.get("/{employee_id}/departments")
 def get_departments(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_departments import EmployeeDepartment
 
@@ -835,7 +835,7 @@ def get_departments(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO RAL
 # ============================================================
 
-@router.get("/employees/{employee_id}/salaries")
+@router.get("/{employee_id}/salaries")
 def get_salaries(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_salaries import EmployeeSalary
 
@@ -850,7 +850,7 @@ def get_salaries(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO AUTO AZIENDALI
 # ============================================================
 
-@router.get("/employees/{employee_id}/company-cars")
+@router.get("/{employee_id}/company-cars")
 def get_company_cars(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_company_cars import EmployeeCompanyCar
 
@@ -865,7 +865,7 @@ def get_company_cars(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO SITI
 # ============================================================
 
-@router.get("/employees/{employee_id}/sites")
+@router.get("/{employee_id}/sites")
 def get_sites(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_site_history import EmployeeSiteHistory
 
@@ -880,7 +880,7 @@ def get_sites(employee_id: int, db: Session = Depends(get_db)):
 # GET STORICO STATI LAVORATIVI
 # ============================================================
 
-@router.get("/employees/{employee_id}/status")
+@router.get("/{employee_id}/status")
 def get_status_history(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
 
@@ -894,7 +894,7 @@ def get_status_history(employee_id: int, db: Session = Depends(get_db)):
 # ============================================================
 # ENAC corsi
 # ============================================================
-@router.get("/employees/{employee_id}/enac-courses")
+@router.get("/{employee_id}/enac-courses")
 def get_enac_courses(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_enac_courses import EmployeeEnacCourse
     return (
@@ -906,7 +906,7 @@ def get_enac_courses(employee_id: int, db: Session = Depends(get_db)):
 # ============================================================
 # ENAC approvazioni
 # ============================================================
-@router.get("/employees/{employee_id}/enac-approvals")
+@router.get("/{employee_id}/enac-approvals")
 def get_enac_approvals(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_enac_approvals import EmployeeEnacApproval
     return (
@@ -918,7 +918,7 @@ def get_enac_approvals(employee_id: int, db: Session = Depends(get_db)):
 # ============================================================
 # Benefit
 # ============================================================
-@router.get("/employees/{employee_id}/benefits")
+@router.get("/{employee_id}/benefits")
 def get_benefits(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_benefits import EmployeeBenefit
     return (

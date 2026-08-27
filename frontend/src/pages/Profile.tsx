@@ -62,7 +62,7 @@ export const Profile: React.FC = () => {
         <span>{employee.email}</span>
 
         <strong>ID LUL:</strong> 
-        <span>{employee.lul_id || 'N/D'}</span>
+        <span>{employee.id_lul || 'N/D'}</span>
 
         <strong>Ruolo:</strong> 
         <span style={{ textTransform: 'capitalize' }}>

@@ -83,10 +83,11 @@ export default function Employees() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
 
-  const openDetailModal = (id: number) => {
-    setSelectedEmployeeId(id);
+  const openDetailModal = (emp: EmployeeFull) => {
+    setSelectedEmployee(emp);
     setDetailOpen(true);
   };
+
 
   const createNewView = () => {
     setNewViewName("");
@@ -147,7 +148,7 @@ export default function Employees() {
     renderCell: (params: any) => (
       <Avatar
         sx={{ bgcolor: "#1976d2", cursor: "pointer" }}
-        onClick={() => openDetailModal(params.row.id)}
+        onClick={() => openDetailModal(params.row)}
       >
         {params.row.first_name?.[0]}
         {params.row.last_name?.[0]}
@@ -612,10 +613,11 @@ export default function Employees() {
         onSaved={loadData}
       />
       <EmployeeViewModal
-                   open={detailOpen}
-                   onClose={() => setDetailOpen(false)}
-                   employeeId={selectedEmployeeId}
+                    open={detailOpen}
+                    onClose={() => setDetailOpen(false)}
+                    employee={selectedEmployee}
                />
+
       <Dialog open={openCreateView} onClose={() => setOpenCreateView(false)} fullWidth maxWidth="sm">
                     <DialogTitle>Crea nuova vista</DialogTitle>
 

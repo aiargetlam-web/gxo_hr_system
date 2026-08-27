@@ -296,9 +296,10 @@ export interface EmployeeFull extends Employee {
 
 
   // RAL (FLAT)
-  salary?: Salary & {
+  salary: (Salary & {
     note?: string;
-  };
+  }) | null;
+
 
   // AUTO (FLAT)
   company_car?: CompanyCar & {

@@ -234,7 +234,8 @@ class SiteUpdate(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status_type_id: Optional[int] = None
+    status_type_id: int
+    from_date: date
     note: Optional[str] = None
 
 

@@ -249,8 +249,8 @@ export interface Employee {
    EMPLOYEE FULL (DETTAGLIO)
 ============================ */
 export interface EmployeeFull extends Employee {
+  // ANAGRAFICA COMPLETA
   phone?: string;
-
   fiscal_code?: string;
   gender?: string;
   birth_date?: string;
@@ -260,8 +260,9 @@ export interface EmployeeFull extends Employee {
   address_city?: string;
   address_cap?: string;
 
-  lul_id?: string;
+  id_lul?: string;
 
+  // AZIENDALE
   hire_date?: string;
   termination_date?: string;
 
@@ -273,6 +274,43 @@ export interface EmployeeFull extends Employee {
 
   created_at: string;
   updated_at: string;
+
+  // ORGANIZZAZIONE
+  manager?: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
+
+  // CONTRATTO (FLAT PER LE COLONNE NASCOSTE)
+  contract?: Contract & {
+    contract_nature?: string | null;
+    weekly_hours?: number;
+    time_band?: string;
+    shift_type_name?: string | null;
+    fte?: number;
+    level_ccnl_description?: string | null;
+  };
+
+  // RAL (FLAT)
+  salary?: Salary & {
+    note?: string;
+  };
+
+  // AUTO (FLAT)
+  company_car?: CompanyCar & {
+    note?: string;
+  };
+
+  // COST CENTER (CODE + DESCRIPTION)
+  cost_centers: {
+    id: number;
+    code: string | null;
+    description: string | null;
+    weight_percent: number;
+    from_date: string;
+    note?: string;
+  }[];
 }
 
 /* ============================

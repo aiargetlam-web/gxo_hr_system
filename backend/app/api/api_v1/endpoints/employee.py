@@ -892,6 +892,44 @@ def get_status_history(employee_id: int, db: Session = Depends(get_db)):
     )
     return statuses
 # ============================================================
+# ENAC corsi
+# ============================================================
+@router.get("/employees/{employee_id}/enac-courses")
+def get_enac_courses(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+    return (
+        db.query(EmployeeEnacCourse)
+        .filter(EmployeeEnacCourse.employee_id == employee_id)
+        .order_by(EmployeeEnacCourse.from_date.desc())
+        .all()
+    )
+# ============================================================
+# ENAC approvazioni
+# ============================================================
+@router.get("/employees/{employee_id}/enac-approvals")
+def get_enac_approvals(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
+    return (
+        db.query(EmployeeEnacApproval)
+        .filter(EmployeeEnacApproval.employee_id == employee_id)
+        .order_by(EmployeeEnacApproval.from_date.desc())
+        .all()
+    )
+# ============================================================
+# Benefit
+# ============================================================
+@router.get("/employees/{employee_id}/benefits")
+def get_benefits(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee_benefits import EmployeeBenefit
+    return (
+        db.query(EmployeeBenefit)
+        .filter(EmployeeBenefit.employee_id == employee_id)
+        .order_by(EmployeeBenefit.from_date.desc())
+        .all()
+    )
+
+
+# ============================================================
 # GET STATO ATTUALE COMPLETO
 # ============================================================
 

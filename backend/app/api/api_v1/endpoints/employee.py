@@ -883,6 +883,7 @@ def get_sites(employee_id: int, db: Session = Depends(get_db)):
 @router.get("/{employee_id}/status")
 def get_status_history(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employment_status_type import EmploymentStatusType
 
     statuses = (
         db.query(EmployeeStatusHistory)
@@ -890,7 +891,23 @@ def get_status_history(employee_id: int, db: Session = Depends(get_db)):
         .order_by(EmployeeStatusHistory.from_date.desc())
         .all()
     )
-    return statuses
+
+    result = []
+    for st in statuses:
+        st_type = db.query(EmploymentStatusType).filter(
+            EmploymentStatusType.id == st.status_type_id
+        ).first()
+
+        result.append({
+            "id": st.id,
+            "name": st_type.code if st_type else None,
+            "description": st_type.description if st_type else None,
+            "from_date": st.from_date,
+            "to_date": st.to_date,
+            "note": st.note,
+        })
+
+    return result
 # ============================================================
 # ENAC corsi
 # ============================================================
@@ -900,7 +917,7 @@ def get_enac_courses(employee_id: int, db: Session = Depends(get_db)):
     return (
         db.query(EmployeeEnacCourse)
         .filter(EmployeeEnacCourse.employee_id == employee_id)
-        .order_by(EmployeeEnacCourse.from_date.desc())
+        .order_by(EmployeeEnacCourse.course_date.desc())
         .all()
     )
 # ============================================================
@@ -912,7 +929,7 @@ def get_enac_approvals(employee_id: int, db: Session = Depends(get_db)):
     return (
         db.query(EmployeeEnacApproval)
         .filter(EmployeeEnacApproval.employee_id == employee_id)
-        .order_by(EmployeeEnacApproval.from_date.desc())
+        .order_by(EmployeeEnacApproval.request_date.desc())
         .all()
     )
 # ============================================================

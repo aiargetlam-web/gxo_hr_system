@@ -304,15 +304,8 @@ export interface EmployeeFull extends Employee {
     note?: string;
   };
 
-  // COST CENTER (CODE + DESCRIPTION)
-  cost_centers: {
-    id: number;
-    code: string | null;
-    description: string | null;
-    weight_percent: number;
-    from_date: string;
-    note?: string;
-  }[];
+    // COST CENTER (stesso tipo di Employee)
+  cost_centers: CostCenter[];
 }
 
 /* ============================

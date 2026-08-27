@@ -72,6 +72,8 @@ export interface Department {
 export interface CostCenter {
   id: number;
   cost_center_id: number;
+  code: string | null;
+  description: string | null;
   weight_percent: number;
   from_date: string;
   to_date?: string | null;

@@ -2048,8 +2048,8 @@ if (loading) {
   return (
     <Box
       sx={{
-        position="fixed",
-        inset={0},
+        position: "fixed",
+        inset: 0,
         bgcolor: "rgba(0,0,0,0.5)",
         display: "flex",
         alignItems: "center",
@@ -2077,8 +2077,8 @@ if (loading) {
 return (
   <Box
     sx={{
-      position="fixed",
-      inset={0},
+      position: "fixed",
+      inset: 0,
       bgcolor: "rgba(0,0,0,0.5)",
       display: "flex",
       alignItems: "stretch",

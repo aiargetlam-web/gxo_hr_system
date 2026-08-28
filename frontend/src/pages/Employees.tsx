@@ -558,11 +558,11 @@ export default function Employees() {
       />
 
       <EmployeeEditModal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        onUpdated={reload}
-        employee={selectedEmployee}
-      />
+                    open={openEdit}
+                    onClose={() => setOpenEdit(false)}
+                    onUpdated={loadData}
+                    employeeId={selectedEmployee?.id}
+                />
 
       <EmployeeNewContractModal
         open={!!openNewContract}

@@ -746,6 +746,19 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         EmployeeCompanyCar.employee_id == employee_id,
         EmployeeCompanyCar.to_date.is_(None)
     ).first()
+    
+    enac_courses = db.query(EmployeeEnacCourse).filter(
+        EmployeeEnacCourse.employee_id == employee_id
+    ).order_by(EmployeeEnacCourse.course_date.desc()).all()
+
+    enac_approvals = db.query(EmployeeEnacApproval).filter(
+        EmployeeEnacApproval.employee_id == employee_id
+    ).order_by(EmployeeEnacApproval.request_date.desc()).all()
+
+    status_history = db.query(EmployeeStatusHistory).filter(
+        EmployeeStatusHistory.employee_id == employee_id
+    ).order_by(EmployeeStatusHistory.from_date.desc()).all()
+
 
     return {
         "id": employee.id,
@@ -785,6 +798,10 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "status": status,
         "salary": salary,
         "company_car": car,
+        "enac_courses": enac_courses,
+        "enac_approvals": enac_approvals,
+        "status_history": status_history,
+
     }
 # ============================================================
 # GET STORICO CONTRATTI
@@ -1066,3 +1083,90 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     db.refresh(new_status)
 
     return {"message": "Cambio stato registrato con successo", "status": new_status}
+
+# ============================================================
+# put anagrafica
+# ============================================================
+@router.put("/employees/{employee_id}")
+def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(employee, field, value)
+
+        db.add(employee)
+        db.commit()
+        db.refresh(employee)
+
+        return employee
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento dipendente: {str(e)}")
+
+# ============================================================
+# Post Enac corsi
+# ============================================================
+@router.post("/employees/{employee_id}/enac-courses")
+def add_enac_course(employee_id: int, payload: EnacCourseCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    try:
+        new_course = EmployeeEnacCourse(
+            employee_id=employee_id,
+            course_date=payload.course_date,
+            expiry_date=payload.expiry_date,
+            is_first_course=payload.is_first_course,
+            note=payload.note
+        )
+
+        db.add(new_course)
+        db.commit()
+        db.refresh(new_course)
+
+        return {"message": "Corso ENAC aggiunto con successo", "course": new_course}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del corso ENAC: {str(e)}")
+
+# ============================================================
+# Post Enac approvazioni
+# ============================================================
+@router.post("/employees/{employee_id}/enac-approvals")
+def add_enac_approval(employee_id: int, payload: EnacApprovalCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    try:
+        new_approval = EmployeeEnacApproval(
+            employee_id=employee_id,
+            request_date=payload.request_date,
+            approval_date=payload.approval_date,
+            is_first_approval=payload.is_first_approval,
+            note=payload.note
+        )
+
+        db.add(new_approval)
+        db.commit()
+        db.refresh(new_approval)
+
+        return {"message": "Approvazione ENAC aggiunta con successo", "approval": new_approval}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'approvazione ENAC: {str(e)}")

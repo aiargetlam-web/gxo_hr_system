@@ -2047,9 +2047,9 @@ if (!open) return null;
 if (loading) {
   return (
     <Box
-      position="fixed"
-      inset={0}
       sx={{
+        position="fixed"
+        inset={0}
         bgcolor: "rgba(0,0,0,0.5)",
         display: "flex",
         alignItems: "center",
@@ -2076,9 +2076,9 @@ if (loading) {
 
 return (
   <Box
-    position="fixed"
-    inset={0}
     sx={{
+      position="fixed"
+      inset={0}
       bgcolor: "rgba(0,0,0,0.5)",
       display: "flex",
       alignItems: "stretch",

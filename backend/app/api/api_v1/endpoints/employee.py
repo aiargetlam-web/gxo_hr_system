@@ -707,6 +707,9 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
     from app.models.employee_salaries import EmployeeSalary
     from app.models.employee_company_cars import EmployeeCompanyCar
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
+
 
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:

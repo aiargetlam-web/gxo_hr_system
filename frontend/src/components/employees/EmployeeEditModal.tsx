@@ -1,584 +1,2156 @@
+import React, { useState, useEffect } from "react";
 import {
-  Button,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
   Stepper,
   Step,
   StepLabel,
-  Stack,
+  Grid,
   TextField,
   Checkbox,
   FormControlLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Card,
+  CardContent,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Box,
 } from "@mui/material";
 
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import api from "../../services/api";
+import { siteService } from "../../services/siteService";
+import { costCenterService } from "../../services/costCenterService";
+import { contractService } from "../../services/contractService";
+import { benefitService } from "../../services/benefitService";
+import { genderService } from "../../services/genderService";
+import { roleService } from "../../services/roleService";
+import { getDepartmentsBySite, getPrepostiBySite } from "../../services/employeeService";
+import { CCNLLevel } from "../../types";
 
-import { useEffect, useState } from "react";
-import {
-  EmployeeFull,
-  CostCenterCreate,
-  ContractCreate,
-  SalaryCreate,
-  DepartmentCreate,
-  SiteAssignmentCreate,
-  CompanyCarCreate,
-} from "../../types";
+interface EmployeeEditModalProps {
+  open: boolean;
+  onClose: () => void;
+  employeeId: number;
+  onUpdated?: (employee: any) => void;
+}
 
-import { employeeService } from "../../services/employeeService";
+/* ============================================================
+   TIPI FORM
+============================================================ */
+
+type SiteHistory = {
+  site_id: number | null;
+  from_date: string;
+  note: string;
+};
+
+type ContractForm = {
+  work_regime_id: number | null;
+  contract_nature_id: number | null;
+  from_date: string;
+  to_date: string | null;
+  weekly_hours: string;
+  fte: string;
+  time_band: string;
+  shift_type_id: number | null;
+  note: string;
+  level_ccnl_id: number | null;
+};
+
+type DepartmentForm = {
+  department_id: number | null;
+  manager_employee_id: number | null;
+  from_date: string;
+  note: string;
+};
+
+type SalaryForm = {
+  ral_amount: string;
+  from_date: string;
+  note: string;
+};
+
+type CostCenterRow = {
+  cost_center_id: number | null;
+  weight_percent: string;
+  from_date: string;
+  note: string;
+};
+
+type BenefitRow = {
+  benefit_type_id: number | null;
+  has_benefit: boolean;
+  from_date: string;
+  note: string;
+};
+
+type CompanyCarForm = {
+  car_model: string;
+  plate: string;
+  from_date: string;
+  note: string;
+};
+
+type EnacCourseForm = {
+  id?: number;
+  course_date: string;
+  expiry_date: string;
+  is_first_course: boolean;
+  note: string;
+};
+
+type EnacApprovalForm = {
+  id?: number;
+  request_date: string;
+  approval_date: string;
+  is_first_approval: boolean;
+  note: string;
+};
+
+type StatusRow = {
+  id?: number;
+  status_type_id: number | null;
+  from_date: string;
+  note: string;
+};
+
+type EmployeeEditForm = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  fiscal_code: string;
+  gender: string;
+  birth_date: string;
+  birth_place: string;
+  address_street: string;
+  address_city: string;
+  address_cap: string;
+  id_lul: string;
+  role_id: number | null;
+  hire_date: string;
+  termination_date: string | null;
+  is_protected_category: boolean;
+  is_disadvantaged: boolean;
+  site_history: SiteHistory;
+  contract: ContractForm;
+  cost_centers: CostCenterRow[];
+  department: DepartmentForm;
+  salary: SalaryForm;
+  benefits: BenefitRow[];
+  company_car: CompanyCarForm | null;
+  enac_courses: EnacCourseForm[];
+  enac_approvals: EnacApprovalForm[];
+  status_history: StatusRow[];
+};
+
+/* ============================================================
+   STEPS
+============================================================ */
 
 const steps = [
   "Anagrafica",
   "Contratto",
-  "RAL",
-  "Reparto / Sito / Stato",
-  "Cost center / Auto",
+  "Cost Center",
+  "Reparto",
+  "RAL / Benefit / Auto",
+  "ENAC / Status",
 ];
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  onSaved: () => void;
-  employee: EmployeeFull | null;
-}
+/* ============================================================
+   COMPONENTE
+============================================================ */
 
-export default function EmployeeEditModal({
-  open,
-  onClose,
-  onSaved,
-  employee,
-}: Props) {
-  const [activeStep, setActiveStep] = useState(0);
+const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEditModalProps) => {
+  const [step, setStep] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // ============================
-  // STATE LOCALI
-  // ============================
+  const [formData, setFormData] = useState<EmployeeEditForm>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    fiscal_code: "",
+    gender: "",
+    birth_date: "",
+    birth_place: "",
+    address_street: "",
+    address_city: "",
+    address_cap: "",
+    id_lul: "",
+    role_id: null,
+    hire_date: "",
+    termination_date: null,
+    is_protected_category: false,
+    is_disadvantaged: false,
+    site_history: {
+      site_id: null,
+      from_date: "",
+      note: "",
+    },
+    contract: {
+      work_regime_id: null,
+      contract_nature_id: null,
+      from_date: "",
+      to_date: null,
+      weekly_hours: "",
+      fte: "",
+      time_band: "",
+      shift_type_id: null,
+      note: "",
+      level_ccnl_id: null,
+    },
+    cost_centers: [],
+    department: {
+      department_id: null,
+      manager_employee_id: null,
+      from_date: "",
+      note: "",
+    },
+    salary: {
+      ral_amount: "",
+      from_date: "",
+      note: "",
+    },
+    benefits: [],
+    company_car: null,
+    enac_courses: [],
+    enac_approvals: [],
+    status_history: [],
+  });
 
-  // Anagrafica
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [fiscalCode, setFiscalCode] = useState("");
-  const [addressStreet, setAddressStreet] = useState("");
-  const [addressCity, setAddressCity] = useState("");
-  const [addressCap, setAddressCap] = useState("");
-  const [isProtectedCategory, setIsProtectedCategory] = useState(false);
-  const [isDisadvantaged, setIsDisadvantaged] = useState(false);
+  const [sites, setSites] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [preposti, setPreposti] = useState<any[]>([]);
+  const [workRegimes, setWorkRegimes] = useState<any[]>([]);
+  const [contractNatures, setContractNatures] = useState<any[]>([]);
+  const [costCentersOptions, setCostCentersOptions] = useState<any[]>([]);
+  const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
+  const [genders, setGenders] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [shiftTypes, setShiftTypes] = useState<any[]>([]);
+  const [ccnlLevels, setCcnlLevels] = useState<CCNLLevel[]>([]);
+  const [statusTypes, setStatusTypes] = useState<any[]>([]);
 
-  // Contratto
-  const [contractWorkRegimeId, setContractWorkRegimeId] = useState<number>(1);
-  const [contractNatureId, setContractNatureId] = useState<number>(1);
-  const [contractWeeklyHours, setContractWeeklyHours] = useState<number>(40);
-  const [contractFte, setContractFte] = useState<number>(1);
-  const [contractTimeBand, setContractTimeBand] = useState<string>("");
-  const [contractShiftType, setContractShiftType] = useState<string>("");
-
-  // RAL
-  const [salaryRalAmount, setSalaryRalAmount] = useState<number>(0);
-
-  // Reparto / Sito / Stato
-  const [departmentId, setDepartmentId] = useState<number>(1);
-  const [siteId, setSiteId] = useState<number>(1);
-  const [statusTypeId, setStatusTypeId] = useState<number>(1);
-
-  // Cost center
-  const [costCenters, setCostCenters] = useState<
-    { cost_center_id: number; weight_percent: number; note?: string }[]
-  >([]);
-
-  // Auto aziendale
-  const [hasCompanyCar, setHasCompanyCar] = useState<boolean>(false);
-  const [companyCarModel, setCompanyCarModel] = useState<string>("");
-  const [companyCarPlate, setCompanyCarPlate] = useState<string>("");
-
-  // ============================
-  // INIZIALIZZAZIONE DA employee
-  // ============================
+/* ============================================================
+   LOAD DATA (EMPLOYEE + DIZIONARI)
+============================================================ */
 
   useEffect(() => {
-    if (!employee) return;
+    if (!open) return;
 
-    // Anagrafica
-    setFirstName(employee.first_name || "");
-    setLastName(employee.last_name || "");
-    setEmail(employee.email || "");
-    setPhone(employee.phone || "");
-    setFiscalCode(employee.fiscal_code || "");
-    setAddressStreet(employee.address_street || "");
-    setAddressCity(employee.address_city || "");
-    setAddressCap(employee.address_cap || "");
-    setIsProtectedCategory(employee.is_protected_category || false);
-    setIsDisadvantaged(employee.is_disadvantaged || false);
+    const loadAll = async () => {
+      setLoading(true);
+      try {
+        const [
+          employeeRes,
+          sitesRes,
+          workRegRes,
+          contractNatRes,
+          costCentersRes,
+          benefitRes,
+          gendersRes,
+          rolesRes,
+          shiftTypesRes,
+          ccnlLevelsRes,
+          statusTypesRes,
+        ] = await Promise.all([
+          api.get(`/api/v1/employees/${employeeId}`),
+          siteService.getSites(),
+          contractService.getWorkRegimes(),
+          contractService.getContractNatures(),
+          costCenterService.getCostCenters(),
+          benefitService.getBenefitTypes(),
+          genderService.getGenders(),
+          roleService.getRoles(),
+          contractService.getShiftTypes(),
+          api.get("/api/v1/ccnl-levels"),
+          api.get("/api/v1/employment-status-types"),
+        ]);
 
-    // Contratto attuale
-    if (employee.contract) {
-      setContractWorkRegimeId(Number(employee.contract.work_regime));
-      setContractNatureId(Number(employee.contract.contract_nature));
-      setContractWeeklyHours(employee.contract.weekly_hours ?? 40);
-      setContractFte(employee.contract.fte);
-      setContractTimeBand(employee.contract.time_band ?? "");
-      setContractShiftType(employee.contract.shift_type ?? "");
+        const emp = employeeRes.data;
+
+        setFormData({
+          first_name: emp.first_name ?? "",
+          last_name: emp.last_name ?? "",
+          email: emp.email ?? "",
+          phone: emp.phone ?? "",
+          fiscal_code: emp.fiscal_code ?? "",
+          gender: emp.gender ?? "",
+          birth_date: emp.birth_date ?? "",
+          birth_place: emp.birth_place ?? "",
+          address_street: emp.address_street ?? "",
+          address_city: emp.address_city ?? "",
+          address_cap: emp.address_cap ?? "",
+          id_lul: emp.id_lul ?? "",
+          role_id: emp.role?.id ?? null,
+          hire_date: emp.hire_date ?? "",
+          termination_date: emp.termination_date ?? null,
+          is_protected_category: emp.is_protected_category ?? false,
+          is_disadvantaged: emp.is_disadvantaged ?? false,
+
+          site_history: {
+            site_id: emp.site?.id ?? null,
+            from_date: emp.site?.from_date ?? "",
+            note: emp.site?.note ?? "",
+          },
+
+          contract: {
+            work_regime_id: emp.contract?.work_regime_id ?? null,
+            contract_nature_id: emp.contract?.contract_nature_id ?? null,
+            from_date: emp.contract?.from_date ?? "",
+            to_date: emp.contract?.to_date ?? null,
+            weekly_hours: emp.contract?.weekly_hours?.toString() ?? "",
+            fte: emp.contract?.fte?.toString() ?? "",
+            time_band: emp.contract?.time_band ?? "",
+            shift_type_id: emp.contract?.shift_type_id ?? null,
+            note: emp.contract?.note ?? "",
+            level_ccnl_id: emp.contract?.level_ccnl_id ?? null,
+          },
+
+          cost_centers: (emp.cost_centers ?? []).map((cc: any) => ({
+            cost_center_id: cc.cost_center_id,
+            weight_percent: cc.weight_percent?.toString() ?? "",
+            from_date: cc.from_date ?? "",
+            note: cc.note ?? "",
+          })),
+
+          department: {
+            department_id: emp.department?.id ?? null,
+            manager_employee_id: emp.manager?.id ?? null,
+            from_date: emp.department?.from_date ?? "",
+            note: emp.department?.note ?? "",
+          },
+
+          salary: {
+            ral_amount: emp.salary?.ral_amount?.toString() ?? "",
+            from_date: emp.salary?.from_date ?? "",
+            note: emp.salary?.note ?? "",
+          },
+
+          benefits: (emp.benefits ?? []).map((b: any) => ({
+            benefit_type_id: b.benefit_type_id,
+            has_benefit: b.has_benefit,
+            from_date: b.from_date ?? "",
+            note: b.note ?? "",
+          })),
+
+          company_car: emp.company_car
+            ? {
+                car_model: emp.company_car.car_model ?? "",
+                plate: emp.company_car.plate ?? "",
+                from_date: emp.company_car.from_date ?? "",
+                note: emp.company_car.note ?? "",
+              }
+            : null,
+
+          enac_courses: (emp.enac_courses ?? []).map((c: any) => ({
+            id: c.id,
+            course_date: c.course_date ?? "",
+            expiry_date: c.expiry_date ?? "",
+            is_first_course: c.is_first_course ?? false,
+            note: c.note ?? "",
+          })),
+
+          enac_approvals: (emp.enac_approvals ?? []).map((a: any) => ({
+            id: a.id,
+            request_date: a.request_date ?? "",
+            approval_date: a.approval_date ?? "",
+            is_first_approval: a.is_first_approval ?? false,
+            note: a.note ?? "",
+          })),
+
+          status_history: (emp.status_history ?? emp.status ? [emp.status] : []).map(
+            (s: any) => ({
+              id: s.id,
+              status_type_id: s.status_type_id ?? null,
+              from_date: s.from_date ?? "",
+              note: s.note ?? "",
+            })
+          ),
+        });
+
+        setSites(sitesRes);
+        setWorkRegimes(workRegRes);
+        setContractNatures(contractNatRes);
+        setCostCentersOptions(costCentersRes);
+        setBenefitTypes(benefitRes);
+        setGenders(gendersRes);
+        setRoles(rolesRes);
+        setShiftTypes(shiftTypesRes);
+        setCcnlLevels(ccnlLevelsRes.data);
+        setStatusTypes(statusTypesRes.data);
+
+        if (emp.site?.id) {
+          const [depsRes, prepostiRes] = await Promise.all([
+            getDepartmentsBySite(emp.site.id),
+            getPrepostiBySite(emp.site.id),
+          ]);
+          setDepartments(depsRes);
+          setPreposti(prepostiRes);
+        }
+
+      } catch (err) {
+        console.error("Errore caricamento dati modifica dipendente:", err);
+      }
+
+      setLoading(false);
+    };
+
+    loadAll();
+  }, [open, employeeId]);
+
+/* ============================================================
+   HANDLER CAMPI
+============================================================ */
+
+  const handleChange = (field: keyof EmployeeEditForm, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNestedChange = (
+    section: keyof EmployeeEditForm,
+    field: string,
+    value: any
+  ) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [section]: { ...(prev[section] || {}), [field]: value },
+    }));
+  };
+
+  const handleArrayChange = (
+    section: keyof EmployeeEditForm,
+    index: number,
+    field: string,
+    value: any
+  ) => {
+    setFormData((prev: any) => {
+      const arr = Array.isArray(prev[section]) ? [...prev[section]] : [];
+      arr[index] = { ...arr[index], [field]: value };
+      return { ...prev, [section]: arr };
+    });
+  };
+
+  const addCostCenterRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      cost_centers: [
+        ...prev.cost_centers,
+        { cost_center_id: null, weight_percent: "", from_date: "", note: "" },
+      ],
+    }));
+  };
+
+  const addBenefitRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      benefits: [
+        ...prev.benefits,
+        { benefit_type_id: null, has_benefit: true, from_date: "", note: "" },
+      ],
+    }));
+  };
+
+  const setCompanyCar = (field: keyof CompanyCarForm, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      company_car: {
+        ...(prev.company_car || {
+          car_model: "",
+          plate: "",
+          from_date: "",
+          note: "",
+        }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const addEnacCourseRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      enac_courses: [
+        ...prev.enac_courses,
+        {
+          course_date: "",
+          expiry_date: "",
+          is_first_course: false,
+          note: "",
+        },
+      ],
+    }));
+  };
+
+  const addEnacApprovalRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      enac_approvals: [
+        ...prev.enac_approvals,
+        {
+          request_date: "",
+          approval_date: "",
+          is_first_approval: false,
+          note: "",
+        },
+      ],
+    }));
+  };
+
+  const addStatusRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      status_history: [
+        ...prev.status_history,
+        {
+          status_type_id: null,
+          from_date: "",
+          note: "",
+        },
+      ],
+    }));
+  };
+
+/* ============================================================
+   CAMBIO SITO → CARICA REPARTI E PREPOSTI
+============================================================ */
+
+  const handleSiteChange = async (siteId: number | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      site_history: { ...prev.site_history, site_id: siteId },
+    }));
+
+    if (!siteId) {
+      setDepartments([]);
+      setPreposti([]);
+      return;
     }
 
-    // RAL attuale
-    if (employee.salary) {
-      setSalaryRalAmount(employee.salary.ral_amount);
+    try {
+      const [depsRes, prepostiRes] = await Promise.all([
+        getDepartmentsBySite(siteId),
+        getPrepostiBySite(siteId),
+      ]);
+      setDepartments(depsRes);
+      setPreposti(prepostiRes);
+    } catch (err) {
+      console.error("Errore caricamento reparti/preposti:", err);
     }
+  };
 
-    // Reparto
-    if (employee.department) {
-      setDepartmentId(employee.department.department_id);
+/* ============================================================
+   SALVATAGGI PER STEP
+============================================================ */
+
+  const saveAnagrafica = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        fiscal_code: formData.fiscal_code,
+        gender: formData.gender,
+        birth_date: formData.birth_date,
+        birth_place: formData.birth_place,
+        address_street: formData.address_street,
+        address_city: formData.address_city,
+        address_cap: formData.address_cap,
+        id_lul: formData.id_lul,
+        role_id: formData.role_id,
+        hire_date: formData.hire_date,
+        termination_date: formData.termination_date,
+        is_protected_category: formData.is_protected_category,
+        is_disadvantaged: formData.is_disadvantaged,
+      };
+
+      await api.put(`/api/v1/employees/${employeeId}`, payload);
+
+      setSaving(false);
+      if (onUpdated) {
+        const updated = await api.get(`/api/v1/employees/${employeeId}`);
+        onUpdated(updated.data);
+      }
+      alert("Anagrafica aggiornata con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio anagrafica:", err);
+      alert("Errore durante il salvataggio dell'anagrafica");
+      setSaving(false);
     }
+  };
 
-    // Sito
-    if (employee.site) {
-      setSiteId(employee.site.id);
+  const saveContract = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        work_regime_id: formData.contract.work_regime_id,
+        contract_nature_id: formData.contract.contract_nature_id,
+        from_date: formData.contract.from_date,
+        to_date: formData.contract.to_date,
+        weekly_hours: Number(formData.contract.weekly_hours || 0),
+        fte: Number(formData.contract.fte || 0),
+        time_band: formData.contract.time_band,
+        shift_type_id: formData.contract.shift_type_id,
+        note: formData.contract.note,
+        level_ccnl_id: formData.contract.level_ccnl_id,
+      };
+
+      await api.post(`/api/v1/employees/${employeeId}/contracts`, payload);
+
+      setSaving(false);
+      alert("Contratto aggiornato (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio contratto:", err);
+      alert("Errore durante il salvataggio del contratto");
+      setSaving(false);
     }
+  };
 
-    // Stato
-    if (employee.status) {
-      setStatusTypeId(employee.status.status_type_id);
-    }
+  const saveCostCenters = async () => {
+    try {
+      setSaving(true);
 
-    // Cost center attivi
-    if (employee.cost_centers) {
-      setCostCenters(
-        employee.cost_centers.map((cc) => ({
+      for (const cc of formData.cost_centers) {
+        const payload = {
           cost_center_id: cc.cost_center_id,
-          weight_percent: cc.weight_percent,
-          note: cc.note ?? "",
-        }))
-      );
+          weight_percent: Number(cc.weight_percent || 0),
+          from_date: cc.from_date,
+          note: cc.note,
+        };
+        await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
+      }
+
+      setSaving(false);
+      alert("Cost center aggiornati (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio cost center:", err);
+      alert("Errore durante il salvataggio dei cost center");
+      setSaving(false);
+    }
+  };
+
+  const saveDepartment = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        department_id: formData.department.department_id,
+        manager_employee_id: formData.department.manager_employee_id,
+        from_date: formData.department.from_date,
+        note: formData.department.note,
+      };
+
+      await api.post(`/api/v1/employees/${employeeId}/departments`, payload);
+
+      setSaving(false);
+      alert("Reparto aggiornato (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio reparto:", err);
+      alert("Errore durante il salvataggio del reparto");
+      setSaving(false);
+    }
+  };
+
+  const saveSalary = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        ral_amount: Number(formData.salary.ral_amount || 0),
+        from_date: formData.salary.from_date,
+        note: formData.salary.note,
+      };
+
+      await api.post(`/api/v1/employees/${employeeId}/salaries`, payload);
+
+      setSaving(false);
+      alert("RAL aggiornata (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio RAL:", err);
+      alert("Errore durante il salvataggio della RAL");
+      setSaving(false);
+    }
+  };
+
+  const saveBenefits = async () => {
+    try {
+      setSaving(true);
+
+      for (const b of formData.benefits) {
+        const payload = {
+          benefit_type_id: b.benefit_type_id,
+          has_benefit: b.has_benefit,
+          from_date: b.from_date,
+          note: b.note,
+        };
+        await api.post(`/api/v1/employees/${employeeId}/benefits`, payload);
+      }
+
+      setSaving(false);
+      alert("Benefit aggiornati (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio benefit:", err);
+      alert("Errore durante il salvataggio dei benefit");
+      setSaving(false);
+    }
+  };
+
+  const saveCompanyCar = async () => {
+    if (!formData.company_car) {
+      alert("Nessuna auto aziendale da salvare");
+      return;
     }
 
-    // Auto aziendale
-    if (employee.company_car) {
-      setHasCompanyCar(true);
-      setCompanyCarModel(employee.company_car.car_model ?? "");
-      setCompanyCarPlate(employee.company_car.plate ?? "");
-    } else {
-      setHasCompanyCar(false);
-      setCompanyCarModel("");
-      setCompanyCarPlate("");
-    }
-  }, [employee]);
+    try {
+      setSaving(true);
 
-  // ============================
-  // RENDER STEP 0–3
-  // ============================
+      const payload = {
+        car_model: formData.company_car.car_model,
+        plate: formData.company_car.plate,
+        from_date: formData.company_car.from_date,
+        note: formData.company_car.note,
+      };
+
+      await api.post(`/api/v1/employees/${employeeId}/company-cars`, payload);
+
+      setSaving(false);
+      alert("Auto aziendale aggiornata (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio auto aziendale:", err);
+      alert("Errore durante il salvataggio dell'auto aziendale");
+      setSaving(false);
+    }
+  };
+
+  const saveEnacCourses = async () => {
+    try {
+      setSaving(true);
+
+      for (const c of formData.enac_courses) {
+        const payload = {
+          course_date: c.course_date,
+          expiry_date: c.expiry_date,
+          is_first_course: c.is_first_course,
+          note: c.note,
+        };
+        await api.post(`/api/v1/employees/${employeeId}/enac-courses`, payload);
+      }
+
+      setSaving(false);
+      alert("Corsi ENAC aggiornati (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio corsi ENAC:", err);
+      alert("Errore durante il salvataggio dei corsi ENAC");
+      setSaving(false);
+    }
+  };
+
+  const saveEnacApprovals = async () => {
+    try {
+      setSaving(true);
+
+      for (const a of formData.enac_approvals) {
+        const payload = {
+          request_date: a.request_date,
+          approval_date: a.approval_date,
+          is_first_approval: a.is_first_approval,
+          note: a.note,
+        };
+        await api.post(`/api/v1/employees/${employeeId}/enac-approvals`, payload);
+      }
+
+      setSaving(false);
+      alert("Approvazioni ENAC aggiornate (storico) con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio approvazioni ENAC:", err);
+      alert("Errore durante il salvataggio delle approvazioni ENAC");
+      setSaving(false);
+    }
+  };
+
+  const saveStatusHistory = async () => {
+    try {
+      setSaving(true);
+
+      for (const s of formData.status_history) {
+        const payload = {
+          status_type_id: s.status_type_id,
+          from_date: s.from_date,
+          note: s.note,
+        };
+        await api.post(`/api/v1/employees/${employeeId}/status`, payload);
+      }
+
+      setSaving(false);
+      alert("Storico status aggiornato con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio status:", err);
+      alert("Errore durante il salvataggio dello status");
+      setSaving(false);
+    }
+  };
+
+/* ============================================================
+   RENDER STEP
+============================================================ */
 
   const renderStep = () => {
-    switch (activeStep) {
+    switch (step) {
+      /* STEP 0 — ANAGRAFICA */
       case 0:
         return (
-          <Stack spacing={2}>
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Nome"
-                fullWidth
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-              <TextField
-                label="Cognome"
-                fullWidth
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </Stack>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Anagrafica
+              </Typography>
 
-            <TextField
-              label="Email"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Nome *"
+                    value={formData.first_name}
+                    onChange={(e) => handleChange("first_name", e.target.value)}
+                  />
+                </Grid>
 
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Telefono"
-                fullWidth
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-              <TextField
-                label="Codice fiscale"
-                fullWidth
-                value={fiscalCode}
-                onChange={(e) => setFiscalCode(e.target.value)}
-              />
-            </Stack>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Cognome *"
+                    value={formData.last_name}
+                    onChange={(e) => handleChange("last_name", e.target.value)}
+                  />
+                </Grid>
 
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Indirizzo"
-                fullWidth
-                value={addressStreet}
-                onChange={(e) => setAddressStreet(e.target.value)}
-              />
-              <TextField
-                label="Città"
-                fullWidth
-                value={addressCity}
-                onChange={(e) => setAddressCity(e.target.value)}
-              />
-              <TextField
-                label="CAP"
-                fullWidth
-                value={addressCap}
-                onChange={(e) => setAddressCap(e.target.value)}
-              />
-            </Stack>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Email *"
+                    value={formData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                  />
+                </Grid>
 
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isProtectedCategory}
-                  onChange={(e) => setIsProtectedCategory(e.target.checked)}
-                />
-              }
-              label="Categoria protetta"
-            />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Telefono"
+                    value={formData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                  />
+                </Grid>
 
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isDisadvantaged}
-                  onChange={(e) => setIsDisadvantaged(e.target.checked)}
-                />
-              }
-              label="Svantaggiato"
-            />
-          </Stack>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Codice fiscale"
+                    value={formData.fiscal_code}
+                    onChange={(e) => handleChange("fiscal_code", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Genere *</InputLabel>
+                    <Select
+                      value={formData.gender ?? ""}
+                      label="Genere *"
+                      onChange={(e) => handleChange("gender", e.target.value)}
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {genders.map((g) => (
+                        <MenuItem key={g.id} value={g.code}>
+                          {g.description}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data di nascita"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.birth_date ?? ""}
+                    onChange={(e) => handleChange("birth_date", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Luogo di nascita"
+                    value={formData.birth_place ?? ""}
+                    onChange={(e) => handleChange("birth_place", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Indirizzo"
+                    value={formData.address_street ?? ""}
+                    onChange={(e) =>
+                      handleChange("address_street", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Città"
+                    value={formData.address_city ?? ""}
+                    onChange={(e) =>
+                      handleChange("address_city", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="CAP"
+                    value={formData.address_cap ?? ""}
+                    onChange={(e) => handleChange("address_cap", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    Sito di assegnazione
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Sito *</InputLabel>
+                    <Select
+                      value={
+                        formData.site_history.site_id !== null
+                          ? String(formData.site_history.site_id)
+                          : ""
+                      }
+                      label="Sito *"
+                      onChange={(e) =>
+                        handleSiteChange(
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {sites.map((s) => (
+                        <MenuItem key={s.id} value={String(s.id)}>
+                          {s.name || s.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.site_history.from_date ?? ""}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "site_history",
+                        "from_date",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Note sito"
+                    value={formData.site_history.note ?? ""}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "site_history",
+                        "note",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    LUL
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="ID LUL"
+                    value={formData.id_lul ?? ""}
+                    onChange={(e) => handleChange("id_lul", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Ruolo *</InputLabel>
+                    <Select
+                      value={formData.role_id ?? ""}
+                      label="Ruolo *"
+                      onChange={(e) =>
+                        handleChange(
+                          "role_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {roles.map((r: any) => (
+                        <MenuItem key={r.id} value={r.id}>
+                          {r.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mt: 3 }}>
+                    Stato lavorativo
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data assunzione *"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.hire_date ?? ""}
+                    onChange={(e) => handleChange("hire_date", e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.is_protected_category}
+                        onChange={(e) =>
+                          handleChange(
+                            "is_protected_category",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Categoria protetta"
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.is_disadvantaged}
+                        onChange={(e) =>
+                          handleChange("is_disadvantaged", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Svantaggiato"
+                  />
+                </Grid>
+              </Grid>
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveAnagrafica}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva anagrafica"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         );
 
+      /* STEP 1 — CONTRATTO */
       case 1:
         return (
-          <Stack spacing={2}>
-            <Typography variant="h6">Contratto attuale</Typography>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Contratto
+              </Typography>
 
-            <TextField
-              label="Regime di lavoro (ID)"
-              fullWidth
-              value={contractWorkRegimeId}
-              onChange={(e) => setContractWorkRegimeId(Number(e.target.value))}
-            />
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Regime di lavoro *</InputLabel>
+                    <Select
+                      value={
+                        formData.contract.work_regime_id !== null
+                          ? String(formData.contract.work_regime_id)
+                          : ""
+                      }
+                      label="Regime di lavoro *"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "work_regime_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {workRegimes.map((wr) => (
+                        <MenuItem key={wr.id} value={String(wr.id)}>
+                          {wr.description || wr.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <TextField
-              label="Natura contratto (ID)"
-              fullWidth
-              value={contractNatureId}
-              onChange={(e) => setContractNatureId(Number(e.target.value))}
-            />
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Natura contratto *</InputLabel>
+                    <Select
+                      value={
+                        formData.contract.contract_nature_id !== null
+                          ? String(formData.contract.contract_nature_id)
+                          : ""
+                      }
+                      label="Natura contratto *"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "contract_nature_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {contractNatures.map((cn) => (
+                        <MenuItem key={cn.id} value={String(cn.id)}>
+                          {cn.description || cn.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <TextField
-              label="Ore settimanali"
-              fullWidth
-              value={contractWeeklyHours}
-              onChange={(e) => setContractWeeklyHours(Number(e.target.value))}
-            />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data inizio contratto *"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.contract.from_date ?? ""}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "contract",
+                        "from_date",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
 
-            <TextField
-              label="FTE"
-              fullWidth
-              value={contractFte}
-              onChange={(e) => setContractFte(Number(e.target.value))}
-            />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Scadenza contratto"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.contract.to_date ?? ""}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "to_date", e.target.value)
+                    }
+                  />
+                </Grid>
 
-            <TextField
-              label="Fascia oraria"
-              fullWidth
-              value={contractTimeBand}
-              onChange={(e) => setContractTimeBand(e.target.value)}
-            />
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Ore settimanali"
+                    value={formData.contract.weekly_hours}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "contract",
+                        "weekly_hours",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
 
-            <TextField
-              label="Turno"
-              fullWidth
-              value={contractShiftType}
-              onChange={(e) => setContractShiftType(e.target.value)}
-            />
-          </Stack>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="FTE"
+                    value={formData.contract.fte}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "fte", e.target.value)
+                    }
+                    InputProps={{
+                      inputProps: { step: "0.01" },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Livello CCNL</InputLabel>
+                    <Select
+                      value={
+                        formData.contract.level_ccnl_id !== null
+                          ? String(formData.contract.level_ccnl_id)
+                          : ""
+                      }
+                      label="Livello CCNL"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "level_ccnl_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">
+                        <em>Seleziona</em>
+                      </MenuItem>
+
+                      {ccnlLevels.map((lvl) => (
+                        <MenuItem key={lvl.id} value={String(lvl.id)}>
+                          {lvl.description}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Fascia oraria"
+                    value={formData.contract.time_band}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "contract",
+                        "time_band",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Tipologia turno *</InputLabel>
+                    <Select
+                      value={
+                        formData.contract.shift_type_id !== null
+                          ? String(formData.contract.shift_type_id)
+                          : ""
+                      }
+                      label="Tipologia turno *"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "contract",
+                          "shift_type_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">
+                        <em>Seleziona</em>
+                      </MenuItem>
+
+                      {shiftTypes.map((st) => (
+                        <MenuItem key={st.id} value={String(st.id)}>
+                          {st.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label="Note contratto"
+                    value={formData.contract.note}
+                    onChange={(e) =>
+                      handleNestedChange("contract", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveContract}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva contratto"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         );
 
+      /* STEP 2 — COST CENTER */
       case 2:
         return (
-          <Stack spacing={2}>
-            <Typography variant="h6">RAL attuale</Typography>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Cost Center
+              </Typography>
 
-            <TextField
-              label="Importo RAL"
-              fullWidth
-              value={salaryRalAmount}
-              onChange={(e) => setSalaryRalAmount(Number(e.target.value))}
-            />
-          </Stack>
+              <Button variant="outlined" onClick={addCostCenterRow} sx={{ mb: 2 }}>
+                Aggiungi cost center
+              </Button>
+
+              {formData.cost_centers.map((cc, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cost center *</InputLabel>
+                      <Select
+                        value={
+                          cc.cost_center_id !== null
+                            ? String(cc.cost_center_id)
+                            : ""
+                        }
+                        label="Cost center *"
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "cost_centers",
+                            index,
+                            "cost_center_id",
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value)
+                          )
+                        }
+                      >
+                        <MenuItem value="">Seleziona</MenuItem>
+                        {costCentersOptions.map((c) => (
+                          <MenuItem key={c.id} value={String(c.id)}>
+                            {c.name || c.code}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={2}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="% peso *"
+                      value={cc.weight_percent}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "weight_percent",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal *"
+                      InputLabelProps={{ shrink: true }}
+                      value={cc.from_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "from_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={cc.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "cost_centers",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveCostCenters}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva cost center"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         );
 
+      /* STEP 3 — REPARTO */
       case 3:
         return (
-          <Stack spacing={2}>
-            <Typography variant="h6">Reparto / Sito / Stato</Typography>
-
-            <TextField
-              label="Reparto ID"
-              fullWidth
-              value={departmentId}
-              onChange={(e) => setDepartmentId(Number(e.target.value))}
-            />
-
-            <TextField
-              label="Sito ID"
-              fullWidth
-              value={siteId}
-              onChange={(e) => setSiteId(Number(e.target.value))}
-            />
-
-            <TextField
-              label="Stato lavorativo (ID)"
-              fullWidth
-              value={statusTypeId}
-              onChange={(e) => setStatusTypeId(Number(e.target.value))}
-            />
-          </Stack>
-        );
-    }
-  };
-
-  if (!employee) return null;
-
-  // ============================
-  // SUBMIT COMPLETO — CORRETTO
-  // ============================
-
-  const handleSubmit = async () => {
-    if (!employee) return;
-
-    // 🔥 1) Aggiorna ANAGRAFICA — sostituisce updateEmployee
-    await employeeService.createEmployee({
-      ...employee,
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      phone,
-      fiscal_code: fiscalCode,
-      address_street: addressStreet,
-      address_city: addressCity,
-      address_cap: addressCap,
-      is_protected_category: isProtectedCategory,
-      is_disadvantaged: isDisadvantaged,
-    });
-
-    // 🔥 2) Nuovo CONTRATTO
-    const contractPayload: ContractCreate = {
-      work_regime_id: contractWorkRegimeId,
-      contract_nature_id: contractNatureId,
-      weekly_hours: contractWeeklyHours,
-      fte: contractFte,
-      time_band: contractTimeBand,
-      shift_type: contractShiftType,
-      from_date: new Date().toISOString().split("T")[0],
-    };
-    await employeeService.addContract(employee.id, contractPayload);
-
-    // 🔥 3) Nuova RAL
-    const salaryPayload: SalaryCreate = {
-      ral_amount: salaryRalAmount,
-      from_date: new Date().toISOString().split("T")[0],
-    };
-    await employeeService.addSalary(employee.id, salaryPayload);
-
-    // 🔥 4) Nuovo REPARTO
-    const departmentPayload: DepartmentCreate = {
-      department_id: departmentId,
-      from_date: new Date().toISOString().split("T")[0],
-    };
-    await employeeService.addDepartment(employee.id, departmentPayload);
-
-    // 🔥 5) Nuovo SITO — CORRETTO
-    const sitePayload: SiteAssignmentCreate = {
-      site_id: siteId,
-      from_date: new Date().toISOString().split("T")[0],
-    };
-    await employeeService.changeEmployeeSite(employee.id, sitePayload);
-
-    // 🔥 6) Stato lavorativo — RIMOSSO perché non esiste nel service
-
-    // 🔥 7) Cost center
-    for (const cc of costCenters) {
-      const payload: CostCenterCreate = {
-        cost_center_id: cc.cost_center_id,
-        weight_percent: cc.weight_percent,
-        from_date: new Date().toISOString().split("T")[0],
-        note: cc.note ?? "",
-      };
-      await employeeService.addCostCenter(employee.id, payload);
-    }
-
-    // 🔥 8) Auto aziendale
-    if (hasCompanyCar) {
-      const carPayload: CompanyCarCreate = {
-        car_model: companyCarModel,
-        plate: companyCarPlate,
-        from_date: new Date().toISOString().split("T")[0],
-      };
-      await employeeService.addCompanyCar(employee.id, carPayload);
-    }
-
-    onSaved();
-    onClose();
-    setActiveStep(0);
-  };
-
-  // ============================
-  // RENDER STEP 4 (Cost center + Auto)
-  // ============================
-
-  const renderCostCentersAccordion = () => {
-    return (
-      <Stack spacing={2}>
-        <Typography variant="h6">Cost center attivi</Typography>
-
-        {costCenters.length === 0 && (
-          <Typography>Nessun cost center attivo.</Typography>
-        )}
-
-        {costCenters.map((cc, index) => (
-          <Accordion key={index}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>
-                Cost Center #{index + 1} — {cc.cost_center_id} ({cc.weight_percent}%)
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Reparto
               </Typography>
-            </AccordionSummary>
 
-            <AccordionDetails>
-              <Stack spacing={2}>
-                <TextField
-                  label="Cost Center ID"
-                  fullWidth
-                  value={cc.cost_center_id}
-                  onChange={(e) => {
-                    const newValue = Number(e.target.value);
-                    setCostCenters((prev) =>
-                      prev.map((item, i) =>
-                        i === index ? { ...item, cost_center_id: newValue } : item
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Reparto *</InputLabel>
+                    <Select
+                      value={
+                        formData.department.department_id !== null
+                          ? String(formData.department.department_id)
+                          : ""
+                      }
+                      label="Reparto *"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "department",
+                          "department_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {departments.map((d) => (
+                        <MenuItem key={d.id} value={String(d.id)}>
+                          {d.name || d.code}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Preposto *</InputLabel>
+                    <Select
+                      value={
+                        formData.department.manager_employee_id !== null
+                          ? String(formData.department.manager_employee_id)
+                          : ""
+                      }
+                      label="Preposto *"
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "department",
+                          "manager_employee_id",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {preposti.map((p) => (
+                        <MenuItem key={p.id} value={String(p.id)}>
+                          {p.last_name} {p.first_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal *"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.department.from_date}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "department",
+                        "from_date",
+                        e.target.value
                       )
-                    );
-                  }}
-                />
+                    }
+                  />
+                </Grid>
 
-                <TextField
-                  label="Percentuale"
-                  fullWidth
-                  value={cc.weight_percent}
-                  onChange={(e) => {
-                    const newValue = Number(e.target.value);
-                    setCostCenters((prev) =>
-                      prev.map((item, i) =>
-                        i === index ? { ...item, weight_percent: newValue } : item
-                      )
-                    );
-                  }}
-                />
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Note reparto"
+                    value={formData.department.note}
+                    onChange={(e) =>
+                      handleNestedChange("department", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
 
-                <TextField
-                  label="Note"
-                  fullWidth
-                  value={cc.note ?? ""}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setCostCenters((prev) =>
-                      prev.map((item, i) =>
-                        i === index ? { ...item, note: newValue } : item
-                      )
-                    );
-                  }}
-                />
-              </Stack>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-
-        <Typography variant="h6" sx={{ mt: 3 }}>
-          Auto aziendale
-        </Typography>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={hasCompanyCar}
-              onChange={(e) => setHasCompanyCar(e.target.checked)}
-            />
-          }
-          label="Ha auto aziendale"
-        />
-
-        {hasCompanyCar && (
-          <Card sx={{ p: 2 }}>
-            <Stack spacing={2}>
-              <TextField
-                label="Modello auto"
-                fullWidth
-                value={companyCarModel}
-                onChange={(e) => setCompanyCarModel(e.target.value)}
-              />
-
-              <TextField
-                label="Targa"
-                fullWidth
-                value={companyCarPlate}
-                onChange={(e) => setCompanyCarPlate(e.target.value)}
-              />
-            </Stack>
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveDepartment}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva reparto"}
+                </Button>
+              </Box>
+            </CardContent>
           </Card>
-        )}
-      </Stack>
-    );
+        );
+
+      /* STEP 4 — RAL / BENEFIT / AUTO */
+      case 4:
+        return (
+          <Box>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  RAL
+                </Typography>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="RAL *"
+                      value={formData.salary.ral_amount}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "salary",
+                          "ral_amount",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal *"
+                      InputLabelProps={{ shrink: true }}
+                      value={formData.salary.from_date}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "salary",
+                          "from_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note RAL"
+                      value={formData.salary.note}
+                      onChange={(e) =>
+                        handleNestedChange("salary", "note", e.target.value)
+                      }
+                    />
+                  </Grid>
+                </Grid>
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveSalary}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva RAL"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Benefit
+                </Typography>
+
+                <Button variant="outlined" onClick={addBenefitRow} sx={{ mb: 2 }}>
+                  Aggiungi benefit
+                </Button>
+
+                {formData.benefits.map((b, index) => (
+                  <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                    <Grid item xs={4}>
+                      <FormControl fullWidth>
+                        <InputLabel>Benefit</InputLabel>
+                        <Select
+                          value={b.benefit_type_id ?? ""}
+                          label="Benefit"
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "benefits",
+                              index,
+                              "benefit_type_id",
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value)
+                            )
+                          }
+                        >
+                          <MenuItem value="">Seleziona</MenuItem>
+                          {benefitTypes.map((bt) => (
+                            <MenuItem key={bt.id} value={bt.id}>
+                              {bt.description}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={2}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={b.has_benefit}
+                            onChange={(e) =>
+                              handleArrayChange(
+                                "benefits",
+                                index,
+                                "has_benefit",
+                                e.target.checked
+                              )
+                            }
+                          />
+                        }
+                        label="Attivo"
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Dal"
+                        InputLabelProps={{ shrink: true }}
+                        value={b.from_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "benefits",
+                            index,
+                            "from_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        label="Note"
+                        value={b.note}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "benefits",
+                            index,
+                            "note",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveBenefits}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva benefit"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Auto aziendale
+                </Typography>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Modello auto"
+                      value={formData.company_car?.car_model ?? ""}
+                      onChange={(e) => setCompanyCar("car_model", e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Targa"
+                      value={formData.company_car?.plate ?? ""}
+                      onChange={(e) => setCompanyCar("plate", e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={formData.company_car?.from_date ?? ""}
+                      onChange={(e) =>
+                        setCompanyCar("from_date", e.target.value)
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note auto"
+                      value={formData.company_car?.note ?? ""}
+                      onChange={(e) => setCompanyCar("note", e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveCompanyCar}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva auto aziendale"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      /* STEP 5 — ENAC / STATUS */
+      case 5:
+        return (
+          <Box>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Corsi ENAC
+                </Typography>
+
+                <Button variant="outlined" onClick={addEnacCourseRow} sx={{ mb: 2 }}>
+                  Aggiungi corso ENAC
+                </Button>
+
+                {formData.enac_courses.map((c, index) => (
+                  <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Data corso"
+                        InputLabelProps={{ shrink: true }}
+                        value={c.course_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_courses",
+                            index,
+                            "course_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Scadenza"
+                        InputLabelProps={{ shrink: true }}
+                        value={c.expiry_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_courses",
+                            index,
+                            "expiry_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={2}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={c.is_first_course}
+                            onChange={(e) =>
+                              handleArrayChange(
+                                "enac_courses",
+                                index,
+                                "is_first_course",
+                                e.target.checked
+                              )
+                            }
+                          />
+                        }
+                        label="Primo corso"
+                      />
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        label="Note"
+                        value={c.note}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_courses",
+                            index,
+                            "note",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveEnacCourses}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva corsi ENAC"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Approvazioni ENAC
+                </Typography>
+
+                <Button variant="outlined" onClick={addEnacApprovalRow} sx={{ mb: 2 }}>
+                  Aggiungi approvazione ENAC
+                </Button>
+
+                {formData.enac_approvals.map((a, index) => (
+                  <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Data richiesta"
+                        InputLabelProps={{ shrink: true }}
+                        value={a.request_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_approvals",
+                            index,
+                            "request_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Data approvazione"
+                        InputLabelProps={{ shrink: true }}
+                        value={a.approval_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_approvals",
+                            index,
+                            "approval_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={2}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={a.is_first_approval}
+                            onChange={(e) =>
+                              handleArrayChange(
+                                "enac_approvals",
+                                index,
+                                "is_first_approval",
+                                e.target.checked
+                              )
+                            }
+                          />
+                        }
+                        label="Prima approvazione"
+                      />
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        label="Note"
+                        value={a.note}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "enac_approvals",
+                            index,
+                            "note",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveEnacApprovals}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva approvazioni ENAC"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Storico status
+                </Typography>
+
+                <Button variant="outlined" onClick={addStatusRow} sx={{ mb: 2 }}>
+                  Aggiungi status
+                </Button>
+
+                {formData.status_history.map((s, index) => (
+                  <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                    <Grid item xs={4}>
+                      <FormControl fullWidth>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={s.status_type_id ?? ""}
+                          label="Status"
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "status_history",
+                              index,
+                              "status_type_id",
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value)
+                            )
+                          }
+                        >
+                          <MenuItem value="">Seleziona</MenuItem>
+                          {statusTypes.map((st: any) => (
+                            <MenuItem key={st.id} value={st.id}>
+                              {st.code}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Dal"
+                        InputLabelProps={{ shrink: true }}
+                        value={s.from_date}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "status_history",
+                            index,
+                            "from_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        label="Note"
+                        value={s.note}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "status_history",
+                            index,
+                            "note",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveStatusHistory}
+                    disabled={saving}
+                  >
+                    {saving ? "Salvataggio..." : "Salva status"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      default:
+        return null;
+    }
   };
 
-  const renderStepWithCostCenters = () => {
-    if (activeStep === 4) return renderCostCentersAccordion();
-    return renderStep();
-  };
+/* ============================================================
+   LOADING SCREEN
+============================================================ */
+
+  if (!open) return null;
+
+  if (loading) {
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl">
+        <DialogTitle>Modifica dipendente</DialogTitle>
+        <DialogContent dividers sx={{ pt: 3 }}>
+          <Typography>Caricamento dati...</Typography>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+/* ============================================================
+   DIALOG PRINCIPALE
+============================================================ */
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Modifica dati dipendente</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl">
+      <DialogTitle>Modifica dipendente</DialogTitle>
 
-      <DialogContent>
-        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+      <DialogContent dividers sx={{ pt: 3 }}>
+        <Box sx={{ mb: 3 }}>
+          <Stepper activeStep={step} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
 
-        {renderStepWithCostCenters()}
+        {renderStep()}
       </DialogContent>
 
       <DialogActions>
-        {activeStep > 0 && (
-          <Button onClick={() => setActiveStep(activeStep - 1)}>Indietro</Button>
+        <Button onClick={onClose}>Chiudi</Button>
+
+        {step > 0 && (
+          <Button onClick={() => setStep(step - 1)}>Indietro</Button>
         )}
 
-        {activeStep < steps.length - 1 ? (
-          <Button variant="contained" onClick={() => setActiveStep(activeStep + 1)}>
-            Avanti
-          </Button>
-        ) : (
-          <Button variant="contained" onClick={handleSubmit}>
-            Salva modifiche
-          </Button>
+        {step < steps.length - 1 && (
+          <Button onClick={() => setStep(step + 1)}>Avanti</Button>
         )}
       </DialogActions>
     </Dialog>
   );
-}
+};
+
+export default EmployeeEditModal;

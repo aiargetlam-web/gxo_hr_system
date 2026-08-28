@@ -186,7 +186,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 # NUOVO CONTRATTO
 # ============================================================
 
-@router.post("/employees/{employee_id}/contracts")
+@router.post("/{employee_id}/contracts")
 def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_contracts import EmployeeContract
@@ -258,7 +258,7 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
 # NUOVO COST CENTER
 # ============================================================
 
-@router.post("/employees/{employee_id}/cost-centers")
+@router.post("/{employee_id}/cost-centers")
 def add_cost_center(employee_id: int, payload: CostCenterAssignmentCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_cost_centers import EmployeeCostCenter
@@ -291,7 +291,7 @@ def add_cost_center(employee_id: int, payload: CostCenterAssignmentCreate, db: S
 # NUOVO REPARTO
 # ============================================================
 
-@router.post("/employees/{employee_id}/departments")
+@router.post("/{employee_id}/departments")
 def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_departments import EmployeeDepartment
@@ -337,7 +337,7 @@ def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Se
 # NUOVA RAL
 # ============================================================
 
-@router.post("/employees/{employee_id}/salaries")
+@router.post("/{employee_id}/salaries")
 def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_salaries import EmployeeSalary
@@ -382,7 +382,7 @@ def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(ge
 # NUOVA AUTO AZIENDALE
 # ============================================================
 
-@router.post("/employees/{employee_id}/company-cars")
+@router.post("/{employee_id}/company-cars")
 def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_company_cars import EmployeeCompanyCar
@@ -474,7 +474,7 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
 # GET LISTA DIPENDENTI (FULL)
 # ============================================================
 
-@router.get("/employees/full")
+@router.get("/full")
 def get_employees_full(db: Session = Depends(get_db)):
     return list_employees(db)
 # ============================================================
@@ -697,7 +697,7 @@ def list_employees(db: Session = Depends(get_db)):
 # GET DETTAGLIO DIPENDENTE (VERSIONE CORRETTA)
 # ============================================================
 
-@router.get("/employees/{employee_id}")
+@router.get("/{employee_id}")
 def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_site_history import EmployeeSiteHistory

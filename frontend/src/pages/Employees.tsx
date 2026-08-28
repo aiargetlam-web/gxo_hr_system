@@ -560,7 +560,7 @@ export default function Employees() {
       <EmployeeEditModal
         open={openEdit}
         onClose={() => setOpenEdit(false)}
-        onSaved={loadData}
+        onUpdated={reload}
         employee={selectedEmployee}
       />
 

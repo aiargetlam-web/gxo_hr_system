@@ -704,7 +704,6 @@ def list_employees(db: Session = Depends(get_db)):
         # ============================================================
         enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
             EmployeeEnacApproval.employee_id == emp.id,
-            EmployeeEnacApproval.to_date.is_(None)
         ).all()
 
         enac_approvals = []
@@ -1024,7 +1023,6 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     # ============================================================
     enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
         EmployeeEnacApproval.employee_id == emp.id,
-        EmployeeEnacApproval.to_date.is_(None)
     ).all()
 
     enac_approvals = []

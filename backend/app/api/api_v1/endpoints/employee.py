@@ -44,8 +44,6 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_benefits import EmployeeBenefit
     from app.models.shift_type import ShiftType
-    from app.models.employee_manager import EmployeeManager
-
 
     try:
         employee = EmployeeModel(
@@ -500,6 +498,14 @@ def list_employees(db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
     from app.models.employee_salaries import EmployeeSalary
     from app.models.employee_company_cars import EmployeeCompanyCar
+    from app.models.employee_manager import EmployeeManager
+    from app.models.employee_union_history import EmployeeUnionHistory
+    from app.models.union import Union
+    from app.models.employee_employer_history import EmployeeEmployerHistory
+    from app.models.employer import Employer
+    from app.models.law_104_type import Law104Type
+
+
 
     employees = db.query(EmployeeModel).all()
     result = []
@@ -677,6 +683,42 @@ def list_employees(db: Session = Depends(get_db)):
                     "note": manager_hist.note
                 }
 
+        employer_hist = db.query(EmployeeEmployerHistory).filter(
+            EmployeeEmployerHistory.employee_id == emp.id
+        ).order_by(EmployeeEmployerHistory.from_date.desc()).all()
+
+        employer_history = []
+        for h in employer_hist:
+            emp_obj = db.query(Employer).filter(Employer.id == h.employer_id).first()
+            employer_history.append({
+                "id": h.id,
+                "employer": {
+                    "id": emp_obj.id,
+                    "name": emp_obj.name
+                } if emp_obj else None,
+                "from_date": h.from_date,
+                "to_date": h.to_date,
+                "note": h.note
+            })
+
+        union_hist = db.query(EmployeeUnionHistory).filter(
+            EmployeeUnionHistory.employee_id == emp.id
+        ).order_by(EmployeeUnionHistory.from_date.desc()).all()
+
+        union_history = []
+        for h in union_hist:
+            u_obj = db.query(Union).filter(Union.id == h.union_id).first()
+            union_history.append({
+                "id": h.id,
+                "union": {
+                    "id": u_obj.id,
+                    "name": u_obj.name
+                } if u_obj else None,
+                "from_date": h.from_date,
+                "to_date": h.to_date,
+                "note": h.note
+            })
+
 
         result.append({
             "id": emp.id,
@@ -700,12 +742,15 @@ def list_employees(db: Session = Depends(get_db)):
             "termination_date": emp.termination_date,
             "is_protected_category": emp.is_protected_category,
             "is_disadvantaged": emp.is_disadvantaged,
+            "has_law_104": emp.has_law_104,
+            "law_104_type": emp.law_104_type,
+            "law_104_note": emp.law_104_note,
+
 
             # 🔥 ORGANIZZAZIONE
             "role": role,
             "site": site,
             "department": department,
-            "manager": manager,
 
             # 🔥 HR
             "contract": contract,
@@ -715,6 +760,12 @@ def list_employees(db: Session = Depends(get_db)):
             "cost_centers": cost_centers,
             "manager": current_manager,
             "is_active": emp.is_active,
+            "employer_history": employer_history,
+            "union_history": union_history,
+            "protected_percentage": emp.protected_percentage,
+            "protected_type": emp.protected_type,
+
+
         })
 
     return result
@@ -734,6 +785,12 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_company_cars import EmployeeCompanyCar
     from app.models.employee_enac_courses import EmployeeEnacCourse
     from app.models.employee_enac_approvals import EmployeeEnacApproval
+    from app.models.employee_manager import EmployeeManager
+    from app.models.employee_employer_history import EmployeeEmployerHistory
+    from app.models.employer import Employer
+    from app.models.employee_union_history import EmployeeUnionHistory
+    from app.models.union import Union
+
 
 
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
@@ -787,6 +844,66 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         EmployeeStatusHistory.employee_id == employee_id
     ).order_by(EmployeeStatusHistory.from_date.desc()).all()
 
+    # RESPONSABILE ATTUALE
+    manager_hist = db.query(EmployeeManager).filter(
+        EmployeeManager.employee_id == employee_id,
+        EmployeeManager.to_date.is_(None)
+    ).first()
+
+    current_manager = None
+    if manager_hist:
+        manager_emp = db.query(EmployeeModel).filter(
+            EmployeeModel.id == manager_hist.manager_id
+        ).first()
+        if manager_emp:
+            current_manager = {
+                "id": manager_emp.id,
+                "name": f"{manager_emp.first_name} {manager_emp.last_name}",
+                "email": manager_emp.email,
+                "from_date": manager_hist.from_date,
+                "note": manager_hist.note
+            }
+
+    # EMPLOYER HISTORY
+    employer_hist = db.query(EmployeeEmployerHistory).filter(
+        EmployeeEmployerHistory.employee_id == employee_id
+    ).order_by(EmployeeEmployerHistory.from_date.desc()).all()
+
+    employer_history = []
+    for h in employer_hist:
+        emp_obj = db.query(Employer).filter(Employer.id == h.employer_id).first()
+        employer_history.append({
+            "id": h.id,
+            "employer": {
+                "id": emp_obj.id,
+                "name": emp_obj.name
+            } if emp_obj else None,
+            "from_date": h.from_date,
+            "to_date": h.to_date,
+            "note": h.note
+        })
+
+    # UNION HISTORY
+    union_hist = db.query(EmployeeUnionHistory).filter(
+        EmployeeUnionHistory.employee_id == employee_id
+    ).order_by(EmployeeUnionHistory.from_date.desc()).all()
+
+    union_history = []
+    for h in union_hist:
+        u_obj = db.query(Union).filter(Union.id == h.union_id).first()
+        union_history.append({
+            "id": h.id,
+            "union": {
+                "id": u_obj.id,
+                "name": u_obj.name
+            } if u_obj else None,
+            "from_date": h.from_date,
+            "to_date": h.to_date,
+            "note": h.note
+        })
+
+
+
 
     return {
         "id": employee.id,
@@ -829,6 +946,16 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "enac_courses": enac_courses,
         "enac_approvals": enac_approvals,
         "status_history": status_history,
+        "manager": current_manager,
+        "has_law_104": employee.has_law_104,
+        "law_104_type": employee.law_104_type,
+        "law_104_note": employee.law_104_note,
+        "protected_percentage": employee.protected_percentage,
+        "protected_type": employee.protected_type,
+        "employer_history": employer_history,
+        "union_history": union_history,
+
+
 
     }
 # ============================================================

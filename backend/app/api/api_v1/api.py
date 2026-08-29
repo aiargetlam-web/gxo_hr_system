@@ -29,6 +29,9 @@ from app.api.api_v1.endpoints.shift_types import router as shift_types_router
 from app.api.api_v1.endpoints.ccnl_levels import router as ccnl_levels_router
 from app.api.api_v1.endpoints import employee_table_views
 from app.api.api_v1.endpoints import status_types
+from app.api.api_v1.endpoints import law_104
+from app.api.api_v1.endpoints import employer_history
+from app.api.api_v1.endpoints import union_history
 
 
 
@@ -72,6 +75,9 @@ api_router.include_router(shift_types_router, prefix="/shift-types", tags=["shif
 api_router.include_router(ccnl_levels_router, prefix="/ccnl-levels", tags=["ccnl-levels"])
 api_router.include_router(employee_table_views.router, prefix="/employee-table-views", tags=["employee-table-views"])
 api_router.include_router(status_types.router)
+api_router.include_router(law_104.router, prefix="/law-104", tags=["law-104"])
+api_router.include_router(employer_history.router, prefix="/employees", tags=["employer-history"])
+api_router.include_router(union_history.router, prefix="/employees", tags=["union-history"])
 
 
 

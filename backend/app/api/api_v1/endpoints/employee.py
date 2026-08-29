@@ -1090,7 +1090,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
 # ============================================================
 # put anagrafica
 # ============================================================
-@router.put("/{employee_id}")
+@router.put("/{employee_id}", response_model=Employee)
 def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
 
@@ -1099,6 +1099,7 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Dep
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
     try:
+        # aggiorna solo i campi presenti nel payload
         for field, value in payload.dict(exclude_unset=True).items():
             setattr(employee, field, value)
 

@@ -372,18 +372,13 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
             note: a.note ?? "",
           })),
 
-          status_history: (
-            emp.status_history && emp.status_history.length > 0
-              ? emp.status_history
-              : emp.status
-                ? [emp.status]
-                : []
-          ).map((s: any) => ({
+          status_history: (emp.status_history ?? []).map((s: any) => ({
             id: s.id,
             status_type_id: s.status_type_id ?? null,
             from_date: s.from_date ?? "",
             note: s.note ?? "",
           })),
+
 
         });
 

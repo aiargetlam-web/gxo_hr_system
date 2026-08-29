@@ -358,10 +358,10 @@ export default function Employees() {
     field: "manager",
     headerName: "Responsabile",
     flex: 1,
-    renderCell: (params) =>
+    renderCell: (params: any) =>
       params.row.manager?.name ?? "-",
-
   },
+
 
 
   {

@@ -2234,7 +2234,7 @@ if (loading) {
         justifyContent: "center",
         zIndex: 1300,
       }}
-      onClick={onClose}
+      onClick={() => onClose()}
     >
       <Box
         sx={{
@@ -2263,7 +2263,7 @@ return (
       justifyContent: "center",
       zIndex: 1300,
     }}
-    onClick={onClose}
+    onClick={() => onClose()}
   >
     <Box
       sx={{

@@ -687,7 +687,6 @@ def list_employees(db: Session = Depends(get_db)):
         # ============================================================
         enac_courses_hist = db.query(EmployeeEnacCourse).filter(
             EmployeeEnacCourse.employee_id == emp.id,
-            EmployeeEnacCourse.to_date.is_(None)
         ).all()
 
         enac_courses = []
@@ -1008,7 +1007,6 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     # ============================================================
     enac_courses_hist = db.query(EmployeeEnacCourse).filter(
         EmployeeEnacCourse.employee_id == emp.id,
-        EmployeeEnacCourse.to_date.is_(None)
     ).all()
 
     enac_courses = []

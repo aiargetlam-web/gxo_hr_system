@@ -47,6 +47,7 @@ export interface Contract {
   fte: number;
   time_band?: string;
   shift_type?: string;
+  shift_type_id?: number | null;
   note?: string;
   level_ccnl_id?: number | null;
 }
@@ -272,6 +273,11 @@ export interface EmployeeFull extends Employee {
 
   is_protected_category: boolean;
   is_disadvantaged: boolean;
+  has_law_104: boolean;
+  law_104_type: number | null;
+  law_104_note: string | null;
+  protected_percentage: number | null;
+  protected_type: string | null;
 
   is_active: boolean;
   first_access: boolean;

@@ -114,11 +114,10 @@ class Employee(Base):
     # ============================
     preposto = Column(Boolean, default=False)
 
+    protected_percentage = Column(Integer)
+    protected_type = Column(String(50))
 
-   protected_percentage = Column(Integer)
-   protected_type = Column(String(50))
-
-   has_law_104 = Column(Boolean, default=False)
-   law_104_type_id = Column(Integer, ForeignKey("law_104_types.id"))
-   law_104_note = Column(Text)
-   law_104_type = relationship("Law104Type")
+    has_law_104 = Column(Boolean, default=False)
+    law_104_type_id = Column(Integer, ForeignKey("law_104_types.id"))
+    law_104_note = Column(Text)
+    law_104_type = relationship("Law104Type")

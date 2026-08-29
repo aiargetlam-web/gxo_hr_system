@@ -1,15 +1,27 @@
-from pydantic import BaseModel
 from datetime import date
+from typing import Optional
+from pydantic import BaseModel
+
 from app.schemas.employer import Employer
 
-class EmployeeEmployerHistory(BaseModel):
-    id: int
-    employee_id: int
+
+# Base per CREATE
+class EmployerHistoryBase(BaseModel):
     employer_id: int
     from_date: date
-    to_date: date | None = None
-    note: str | None = None
+    note: Optional[str] = None
 
-    employer: Employer | None = None
+
+# CREATE
+class EmployerHistoryCreate(EmployerHistoryBase):
+    pass
+
+
+# READ
+class EmployerHistory(EmployerHistoryBase):
+    id: int
+    employee_id: int
+    to_date: Optional[date] = None
+    employer: Optional[Employer] = None
 
     model_config = {"from_attributes": True}

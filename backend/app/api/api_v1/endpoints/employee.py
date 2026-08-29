@@ -44,6 +44,8 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_benefits import EmployeeBenefit
     from app.models.shift_type import ShiftType
+    from app.models.employee_manager import EmployeeManager
+
 
     try:
         employee = EmployeeModel(
@@ -653,6 +655,29 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": cc.note,
             })
 
+        # RESPONSABILE ATTUALE
+        manager_hist = (
+            db.query(EmployeeManager)
+            .filter(EmployeeManager.employee_id == emp.id,
+                    EmployeeManager.to_date.is_(None))
+            .first()
+        )
+
+        current_manager = None
+        if manager_hist:
+            manager_emp = db.query(EmployeeModel).filter(
+                EmployeeModel.id == manager_hist.manager_id
+            ).first()
+            if manager_emp:
+                current_manager = {
+                    "id": manager_emp.id,
+                    "name": f"{manager_emp.first_name} {manager_emp.last_name}",
+                    "email": manager_emp.email,
+                    "from_date": manager_hist.from_date,
+                    "note": manager_hist.note
+                }
+
+
         result.append({
             "id": emp.id,
             "email": emp.email,
@@ -688,7 +713,7 @@ def list_employees(db: Session = Depends(get_db)):
             "salary": salary,
             "company_car": company_car,
             "cost_centers": cost_centers,
-
+            "manager": current_manager,
             "is_active": emp.is_active,
         })
 
@@ -1086,6 +1111,119 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     db.refresh(new_status)
 
     return {"message": "Cambio stato registrato con successo", "status": new_status}
+
+# ============================================================
+# CAMBIO RESPONSABILE (STORICIZZATO)
+# ============================================================
+
+@router.post("/{employee_id}/manager")
+def change_manager(employee_id: int, payload: dict, db: Session = Depends(get_db)):
+    """
+    payload = {
+        "manager_id": int,
+        "from_date": date,
+        "note": str | None
+    }
+    """
+    from app.models.employee import Employee as EmployeeModel
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    manager_id = payload.get("manager_id")
+    from_date = payload.get("from_date")
+    note = payload.get("note")
+
+    if not manager_id or not from_date:
+        raise HTTPException(status_code=400, detail="manager_id e from_date sono obbligatori")
+
+    # Chiudi il responsabile attuale
+    current = (
+        db.query(EmployeeManager)
+        .filter(EmployeeManager.employee_id == employee_id,
+                EmployeeManager.to_date.is_(None))
+        .first()
+    )
+
+    if current:
+        current.to_date = from_date - timedelta(days=1)
+        db.add(current)
+
+    # Crea nuovo record
+    new_manager = EmployeeManager(
+        employee_id=employee_id,
+        manager_id=manager_id,
+        from_date=from_date,
+        note=note
+    )
+
+    db.add(new_manager)
+    db.commit()
+    db.refresh(new_manager)
+
+    return {
+        "message": "Responsabile aggiornato con successo",
+        "manager": new_manager
+    }
+
+# ============================================================
+# GET RESPONSABILE ATTUALE
+# ============================================================
+
+@router.get("/{employee_id}/manager")
+def get_current_manager(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
+    current = (
+        db.query(EmployeeManager)
+        .filter(EmployeeManager.employee_id == employee_id,
+                EmployeeManager.to_date.is_(None))
+        .first()
+    )
+
+    if not current:
+        return None
+
+    manager = db.query(EmployeeModel).filter(EmployeeModel.id == current.manager_id).first()
+
+    return {
+        "id": manager.id,
+        "name": f"{manager.first_name} {manager.last_name}",
+        "email": manager.email,
+        "from_date": current.from_date,
+        "note": current.note
+    }
+
+# ============================================================
+# GET STORICO RESPONSABILI
+# ============================================================
+
+@router.get("/{employee_id}/manager-history")
+def get_manager_history(employee_id: int, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
+    history = (
+        db.query(EmployeeManager)
+        .filter(EmployeeManager.employee_id == employee_id)
+        .order_by(EmployeeManager.from_date.desc())
+        .all()
+    )
+
+    result = []
+    for h in history:
+        manager = db.query(EmployeeModel).filter(EmployeeModel.id == h.manager_id).first()
+        result.append({
+            "id": h.id,
+            "manager_id": h.manager_id,
+            "manager_name": f"{manager.first_name} {manager.last_name}" if manager else None,
+            "from_date": h.from_date,
+            "to_date": h.to_date,
+            "note": h.note
+        })
+
+    return result
+
 
 # ============================================================
 # put anagrafica

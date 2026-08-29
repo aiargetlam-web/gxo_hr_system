@@ -1758,10 +1758,6 @@ const renderSection = () => {
               Benefit
             </Typography>
 
-            <Button variant="outlined" onClick={addBenefitRow} sx={{ mb: 2 }}>
-              Aggiungi benefit
-            </Button>
-
             {formData.benefits.map((b, index) => (
               <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
                 <Grid item xs={4}>
@@ -1942,9 +1938,6 @@ case "enac":
             Corsi ENAC
           </Typography>
 
-          <Button variant="outlined" onClick={addEnacCourseRow} sx={{ mb: 2 }}>
-            Aggiungi corso ENAC
-          </Button>
 
           {formData.enac_courses.map((c, index) => (
             <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
@@ -2040,10 +2033,6 @@ case "enac":
           <Typography variant="subtitle1" sx={{ mb: 2 }}>
             Approvazioni ENAC
           </Typography>
-
-          <Button variant="outlined" onClick={addEnacApprovalRow} sx={{ mb: 2 }}>
-            Aggiungi approvazione ENAC
-          </Button>
 
           {formData.enac_approvals.map((a, index) => (
             <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
@@ -2145,10 +2134,6 @@ case "enac":
             <Typography variant="h6" sx={{ mb: 2 }}>
               Storico status
             </Typography>
-
-            <Button variant="outlined" onClick={addStatusRow} sx={{ mb: 2 }}>
-              Aggiungi status
-            </Button>
 
             {formData.status_history.map((s, index) => (
               <Grid container spacing={2} key={index} sx={{ mb: 2 }}>

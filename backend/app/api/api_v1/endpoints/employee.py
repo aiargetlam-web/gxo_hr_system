@@ -477,8 +477,9 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
 @router.get("/full")
 def get_employees_full(db: Session = Depends(get_db)):
     return list_employees(db)
+
 # ============================================================
-# GET LISTA DIPENDENTI (VERSIONE CORRETTA)
+# GET LISTA DIPENDENTI (VERSIONE COMPLETA E CORRETTA)
 # ============================================================
 
 @router.get("/employees")
@@ -498,27 +499,31 @@ def list_employees(db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
     from app.models.employee_salaries import EmployeeSalary
     from app.models.employee_company_cars import EmployeeCompanyCar
+    from app.models.employee_benefits import EmployeeBenefit
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
     from app.models.employee_manager import EmployeeManager
     from app.models.employee_union_history import EmployeeUnionHistory
     from app.models.union import Union
     from app.models.employee_employer_history import EmployeeEmployerHistory
     from app.models.employer import Employer
-    from app.models.law_104_type import Law104Type
-
-
 
     employees = db.query(EmployeeModel).all()
     result = []
 
     for emp in employees:
 
-        # SITO ATTUALE
+        # ============================================================
+        # SITO ATTUALE + STORICO
+        # ============================================================
         site_hist = db.query(EmployeeSiteHistory).filter(
             EmployeeSiteHistory.employee_id == emp.id,
             EmployeeSiteHistory.to_date.is_(None)
         ).first()
 
         site = None
+        site_history = None
+
         if site_hist:
             site_obj = db.query(Site).filter(Site.id == site_hist.site_id).first()
             if site_obj:
@@ -527,7 +532,16 @@ def list_employees(db: Session = Depends(get_db)):
                     "name": site_obj.name or site_obj.code,
                 }
 
-        # REPARTO ATTUALE + MANAGER
+            site_history = {
+                "id": site_hist.id,
+                "site_id": site_hist.site_id,
+                "from_date": site_hist.from_date,
+                "note": site_hist.note
+            }
+
+        # ============================================================
+        # REPARTO ATTUALE + MANAGER + STORICO
+        # ============================================================
         dep_hist = db.query(EmployeeDepartment).filter(
             EmployeeDepartment.employee_id == emp.id,
             EmployeeDepartment.to_date.is_(None)
@@ -535,26 +549,36 @@ def list_employees(db: Session = Depends(get_db)):
 
         department = None
         manager = None
+
         if dep_hist:
             dep_obj = db.query(Department).filter(Department.id == dep_hist.department_id).first()
-            if dep_obj:
-                department = {
-                    "id": dep_obj.id,
-                    "name": dep_obj.name or dep_obj.code,
-                }
+
+            department = {
+                "id": dep_hist.id,
+                "department_id": dep_hist.department_id,
+                "name": dep_obj.name if dep_obj else None,
+                "manager_employee_id": dep_hist.manager_employee_id,
+                "from_date": dep_hist.from_date,
+                "note": dep_hist.note
+            }
 
             if dep_hist.manager_employee_id:
                 manager_emp = db.query(EmployeeModel).filter(
                     EmployeeModel.id == dep_hist.manager_employee_id
                 ).first()
+
                 if manager_emp:
                     manager = {
                         "id": manager_emp.id,
                         "name": f"{manager_emp.first_name} {manager_emp.last_name}",
                         "email": manager_emp.email,
+                        "from_date": dep_hist.from_date,
+                        "note": dep_hist.note
                     }
 
+        # ============================================================
         # CONTRATTO ATTUALE COMPLETO
+        # ============================================================
         contract_hist = db.query(EmployeeContract).filter(
             EmployeeContract.employee_id == emp.id,
             EmployeeContract.to_date.is_(None)
@@ -567,8 +591,10 @@ def list_employees(db: Session = Depends(get_db)):
 
             contract = {
                 "id": contract_hist.id,
-                "work_regime": wr.description or wr.code if wr else None,
-                "contract_nature": cn.description or cn.code if cn else None,
+                "work_regime": wr.description if wr else None,
+                "work_regime_id": contract_hist.work_regime_id,
+                "contract_nature": cn.description if cn else None,
+                "contract_nature_id": contract_hist.contract_nature_id,
                 "weekly_hours": contract_hist.weekly_hours,
                 "shift_type_id": contract_hist.shift_type_id,
                 "shift_type_name": contract_hist.shift_type.name if contract_hist.shift_type else None,
@@ -581,7 +607,9 @@ def list_employees(db: Session = Depends(get_db)):
                 "level_ccnl_description": contract_hist.level_ccnl.description if contract_hist.level_ccnl else None,
             }
 
+        # ============================================================
         # STATO ATTUALE
+        # ============================================================
         status_hist = db.query(EmployeeStatusHistory).filter(
             EmployeeStatusHistory.employee_id == emp.id,
             EmployeeStatusHistory.to_date.is_(None)
@@ -595,12 +623,15 @@ def list_employees(db: Session = Depends(get_db)):
 
             status = {
                 "id": status_hist.id,
+                "status_type_id": status_hist.status_type_id,
                 "name": st.code if st else None,
                 "from_date": status_hist.from_date,
                 "note": status_hist.note,
             }
 
+        # ============================================================
         # RAL ATTUALE
+        # ============================================================
         salary_hist = db.query(EmployeeSalary).filter(
             EmployeeSalary.employee_id == emp.id,
             EmployeeSalary.to_date.is_(None)
@@ -615,7 +646,9 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": salary_hist.note,
             }
 
-        # AUTO ATTUALE
+        # ============================================================
+        # AUTO AZIENDALE
+        # ============================================================
         car_hist = db.query(EmployeeCompanyCar).filter(
             EmployeeCompanyCar.employee_id == emp.id,
             EmployeeCompanyCar.to_date.is_(None)
@@ -631,15 +664,63 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": car_hist.note,
             }
 
-        # RUOLO
-        role = None
-        if emp.role:
-            role = {
-                "id": emp.role.id,
-                "name": emp.role.name or emp.role.code,
-            }
+        # ============================================================
+        # BENEFIT ATTUALI
+        # ============================================================
+        benefits_hist = db.query(EmployeeBenefit).filter(
+            EmployeeBenefit.employee_id == emp.id,
+            EmployeeBenefit.to_date.is_(None)
+        ).all()
 
-        # COST CENTER ATTUALI (code + description)
+        benefits = []
+        for b in benefits_hist:
+            benefits.append({
+                "id": b.id,
+                "benefit_type_id": b.benefit_type_id,
+                "has_benefit": b.has_benefit,
+                "from_date": b.from_date,
+                "note": b.note
+            })
+
+        # ============================================================
+        # ENAC CORSI
+        # ============================================================
+        enac_courses_hist = db.query(EmployeeEnacCourse).filter(
+            EmployeeEnacCourse.employee_id == emp.id,
+            EmployeeEnacCourse.to_date.is_(None)
+        ).all()
+
+        enac_courses = []
+        for c in enac_courses_hist:
+            enac_courses.append({
+                "id": c.id,
+                "course_date": c.course_date,
+                "expiry_date": c.expiry_date,
+                "is_first_course": c.is_first_course,
+                "note": c.note
+            })
+
+        # ============================================================
+        # ENAC APPROVAZIONI
+        # ============================================================
+        enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
+            EmployeeEnacApproval.employee_id == emp.id,
+            EmployeeEnacApproval.to_date.is_(None)
+        ).all()
+
+        enac_approvals = []
+        for a in enac_approvals_hist:
+            enac_approvals.append({
+                "id": a.id,
+                "request_date": a.request_date,
+                "approval_date": a.approval_date,
+                "is_first_approval": a.is_first_approval,
+                "note": a.note
+            })
+
+        # ============================================================
+        # COST CENTER ATTUALI
+        # ============================================================
         cc_hist = db.query(EmployeeCostCenter).filter(
             EmployeeCostCenter.employee_id == emp.id,
             EmployeeCostCenter.to_date.is_(None)
@@ -661,72 +742,26 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": cc.note,
             })
 
-        # RESPONSABILE ATTUALE
-        manager_hist = (
-            db.query(EmployeeManager)
-            .filter(EmployeeManager.employee_id == emp.id,
-                    EmployeeManager.to_date.is_(None))
-            .first()
-        )
+        # ============================================================
+        # RUOLO
+        # ============================================================
+        role = None
+        if emp.role:
+            role = {
+                "id": emp.role.id,
+                "name": emp.role.name or emp.role.code,
+            }
 
-        current_manager = None
-        if manager_hist:
-            manager_emp = db.query(EmployeeModel).filter(
-                EmployeeModel.id == manager_hist.manager_id
-            ).first()
-            if manager_emp:
-                current_manager = {
-                    "id": manager_emp.id,
-                    "name": f"{manager_emp.first_name} {manager_emp.last_name}",
-                    "email": manager_emp.email,
-                    "from_date": manager_hist.from_date,
-                    "note": manager_hist.note
-                }
-
-        employer_hist = db.query(EmployeeEmployerHistory).filter(
-            EmployeeEmployerHistory.employee_id == emp.id
-        ).order_by(EmployeeEmployerHistory.from_date.desc()).all()
-
-        employer_history = []
-        for h in employer_hist:
-            emp_obj = db.query(Employer).filter(Employer.id == h.employer_id).first()
-            employer_history.append({
-                "id": h.id,
-                "employer": {
-                    "id": emp_obj.id,
-                    "name": emp_obj.name
-                } if emp_obj else None,
-                "from_date": h.from_date,
-                "to_date": h.to_date,
-                "note": h.note
-            })
-
-        union_hist = db.query(EmployeeUnionHistory).filter(
-            EmployeeUnionHistory.employee_id == emp.id
-        ).order_by(EmployeeUnionHistory.from_date.desc()).all()
-
-        union_history = []
-        for h in union_hist:
-            u_obj = db.query(Union).filter(Union.id == h.union_id).first()
-            union_history.append({
-                "id": h.id,
-                "union": {
-                    "id": u_obj.id,
-                    "name": u_obj.name
-                } if u_obj else None,
-                "from_date": h.from_date,
-                "to_date": h.to_date,
-                "note": h.note
-            })
-
-
+        # ============================================================
+        # COSTRUZIONE RISPOSTA FINALE
+        # ============================================================
         result.append({
             "id": emp.id,
             "email": emp.email,
             "first_name": emp.first_name,
             "last_name": emp.last_name,
 
-            # 🔥 ANAGRAFICA COMPLETA
+            # ANAGRAFICA
             "phone": emp.phone,
             "fiscal_code": emp.fiscal_code,
             "gender": emp.gender,
@@ -737,7 +772,7 @@ def list_employees(db: Session = Depends(get_db)):
             "address_cap": emp.address_cap,
             "id_lul": emp.id_lul,
 
-            # 🔥 AZIENDALE
+            # AZIENDALE
             "hire_date": emp.hire_date,
             "termination_date": emp.termination_date,
             "is_protected_category": emp.is_protected_category,
@@ -746,36 +781,44 @@ def list_employees(db: Session = Depends(get_db)):
             "law_104_type": emp.law_104_type,
             "law_104_note": emp.law_104_note,
 
-
-            # 🔥 ORGANIZZAZIONE
+            # ORGANIZZAZIONE
             "role": role,
             "site": site,
+            "site_history": site_history,
             "department": department,
+            "manager": manager,
 
-            # 🔥 HR
+            # HR
             "contract": contract,
             "status": status,
             "salary": salary,
             "company_car": company_car,
             "cost_centers": cost_centers,
-            "manager": current_manager,
+            "benefits": benefits,
+            "enac_courses": enac_courses,
+            "enac_approvals": enac_approvals,
+
             "is_active": emp.is_active,
-            "employer_history": employer_history,
-            "union_history": union_history,
             "protected_percentage": emp.protected_percentage,
             "protected_type": emp.protected_type,
-
-
         })
 
     return result
+
 # ============================================================
-# GET DETTAGLIO DIPENDENTE (VERSIONE CORRETTA)
+# GET DETTAGLIO DIPENDENTE (VERSIONE COMPLETA E CORRETTA)
 # ============================================================
 
 @router.get("/{employee_id}")
 def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.site import Site
+    from app.models.department import Department
+    from app.models.work_regime import WorkRegime
+    from app.models.contract_nature import ContractNature
+    from app.models.employment_status_type import EmploymentStatusType
+    from app.models.cost_center import CostCenter as CostCenterModel
+
     from app.models.employee_site_history import EmployeeSiteHistory
     from app.models.employee_departments import EmployeeDepartment
     from app.models.employee_cost_centers import EmployeeCostCenter
@@ -783,182 +826,306 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
     from app.models.employee_salaries import EmployeeSalary
     from app.models.employee_company_cars import EmployeeCompanyCar
+    from app.models.employee_benefits import EmployeeBenefit
     from app.models.employee_enac_courses import EmployeeEnacCourse
     from app.models.employee_enac_approvals import EmployeeEnacApproval
-    from app.models.employee_manager import EmployeeManager
-    from app.models.employee_employer_history import EmployeeEmployerHistory
-    from app.models.employer import Employer
-    from app.models.employee_union_history import EmployeeUnionHistory
-    from app.models.union import Union
 
-
-
-    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
-    if not employee:
+    emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not emp:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
-    site = db.query(EmployeeSiteHistory).filter(
-        EmployeeSiteHistory.employee_id == employee_id,
+    # ============================================================
+    # SITO ATTUALE + STORICO
+    # ============================================================
+    site_hist = db.query(EmployeeSiteHistory).filter(
+        EmployeeSiteHistory.employee_id == emp.id,
         EmployeeSiteHistory.to_date.is_(None)
     ).first()
 
-    department = db.query(EmployeeDepartment).filter(
-        EmployeeDepartment.employee_id == employee_id,
+    site = None
+    site_history = None
+
+    if site_hist:
+        site_obj = db.query(Site).filter(Site.id == site_hist.site_id).first()
+        if site_obj:
+            site = {
+                "id": site_obj.id,
+                "name": site_obj.name or site_obj.code,
+            }
+
+        site_history = {
+            "id": site_hist.id,
+            "site_id": site_hist.site_id,
+            "from_date": site_hist.from_date,
+            "note": site_hist.note
+        }
+
+    # ============================================================
+    # REPARTO ATTUALE COMPLETO
+    # ============================================================
+    dep_hist = db.query(EmployeeDepartment).filter(
+        EmployeeDepartment.employee_id == emp.id,
         EmployeeDepartment.to_date.is_(None)
     ).first()
 
-    cost_centers = db.query(EmployeeCostCenter).filter(
-        EmployeeCostCenter.employee_id == employee_id,
-        EmployeeCostCenter.to_date.is_(None)
-    ).all()
+    department = None
+    manager = None
 
-    contract = db.query(EmployeeContract).filter(
-        EmployeeContract.employee_id == employee_id,
+    if dep_hist:
+        dep_obj = db.query(Department).filter(Department.id == dep_hist.department_id).first()
+
+        department = {
+            "id": dep_hist.id,
+            "department_id": dep_hist.department_id,
+            "name": dep_obj.name if dep_obj else None,
+            "manager_employee_id": dep_hist.manager_employee_id,
+            "from_date": dep_hist.from_date,
+            "note": dep_hist.note
+        }
+
+        if dep_hist.manager_employee_id:
+            manager_emp = db.query(EmployeeModel).filter(
+                EmployeeModel.id == dep_hist.manager_employee_id
+            ).first()
+
+            if manager_emp:
+                manager = {
+                    "id": manager_emp.id,
+                    "name": f"{manager_emp.first_name} {manager_emp.last_name}",
+                    "email": manager_emp.email,
+                    "from_date": dep_hist.from_date,
+                    "note": dep_hist.note
+                }
+
+    # ============================================================
+    # CONTRATTO ATTUALE COMPLETO
+    # ============================================================
+    contract_hist = db.query(EmployeeContract).filter(
+        EmployeeContract.employee_id == emp.id,
         EmployeeContract.to_date.is_(None)
     ).first()
 
-    status = db.query(EmployeeStatusHistory).filter(
-        EmployeeStatusHistory.employee_id == employee_id,
+    contract = None
+    if contract_hist:
+        wr = db.query(WorkRegime).filter(WorkRegime.id == contract_hist.work_regime_id).first()
+        cn = db.query(ContractNature).filter(ContractNature.id == contract_hist.contract_nature_id).first()
+
+        contract = {
+            "id": contract_hist.id,
+            "work_regime": wr.description if wr else None,
+            "work_regime_id": contract_hist.work_regime_id,
+            "contract_nature": cn.description if cn else None,
+            "contract_nature_id": contract_hist.contract_nature_id,
+            "weekly_hours": contract_hist.weekly_hours,
+            "shift_type_id": contract_hist.shift_type_id,
+            "shift_type_name": contract_hist.shift_type.name if contract_hist.shift_type else None,
+            "time_band": contract_hist.time_band,
+            "fte": contract_hist.fte,
+            "from_date": contract_hist.from_date,
+            "to_date": contract_hist.to_date,
+            "note": contract_hist.note,
+            "level_ccnl_id": contract_hist.level_ccnl_id,
+            "level_ccnl_description": contract_hist.level_ccnl.description if contract_hist.level_ccnl else None,
+        }
+
+    # ============================================================
+    # STATO ATTUALE
+    # ============================================================
+    status_hist = db.query(EmployeeStatusHistory).filter(
+        EmployeeStatusHistory.employee_id == emp.id,
         EmployeeStatusHistory.to_date.is_(None)
     ).first()
 
-    salary = db.query(EmployeeSalary).filter(
-        EmployeeSalary.employee_id == employee_id,
+    status = None
+    if status_hist:
+        st = db.query(EmploymentStatusType).filter(
+            EmploymentStatusType.id == status_hist.status_type_id
+        ).first()
+
+        status = {
+            "id": status_hist.id,
+            "status_type_id": status_hist.status_type_id,
+            "name": st.code if st else None,
+            "from_date": status_hist.from_date,
+            "note": status_hist.note,
+        }
+
+    # ============================================================
+    # RAL ATTUALE
+    # ============================================================
+    salary_hist = db.query(EmployeeSalary).filter(
+        EmployeeSalary.employee_id == emp.id,
         EmployeeSalary.to_date.is_(None)
     ).first()
 
-    car = db.query(EmployeeCompanyCar).filter(
-        EmployeeCompanyCar.employee_id == employee_id,
+    salary = None
+    if salary_hist:
+        salary = {
+            "id": salary_hist.id,
+            "ral_amount": salary_hist.ral_amount,
+            "from_date": salary_hist.from_date,
+            "note": salary_hist.note,
+        }
+
+    # ============================================================
+    # AUTO AZIENDALE
+    # ============================================================
+    car_hist = db.query(EmployeeCompanyCar).filter(
+        EmployeeCompanyCar.employee_id == emp.id,
         EmployeeCompanyCar.to_date.is_(None)
     ).first()
-    
-    enac_courses = db.query(EmployeeEnacCourse).filter(
-        EmployeeEnacCourse.employee_id == employee_id
-    ).order_by(EmployeeEnacCourse.course_date.desc()).all()
 
-    enac_approvals = db.query(EmployeeEnacApproval).filter(
-        EmployeeEnacApproval.employee_id == employee_id
-    ).order_by(EmployeeEnacApproval.request_date.desc()).all()
+    company_car = None
+    if car_hist:
+        company_car = {
+            "id": car_hist.id,
+            "car_model": car_hist.car_model,
+            "plate": car_hist.plate,
+            "from_date": car_hist.from_date,
+            "note": car_hist.note,
+        }
 
-    status_history = db.query(EmployeeStatusHistory).filter(
-        EmployeeStatusHistory.employee_id == employee_id
-    ).order_by(EmployeeStatusHistory.from_date.desc()).all()
+    # ============================================================
+    # BENEFIT ATTUALI
+    # ============================================================
+    benefits_hist = db.query(EmployeeBenefit).filter(
+        EmployeeBenefit.employee_id == emp.id,
+        EmployeeBenefit.to_date.is_(None)
+    ).all()
 
-    # RESPONSABILE ATTUALE
-    manager_hist = db.query(EmployeeManager).filter(
-        EmployeeManager.employee_id == employee_id,
-        EmployeeManager.to_date.is_(None)
-    ).first()
+    benefits = []
+    for b in benefits_hist:
+        benefits.append({
+            "id": b.id,
+            "benefit_type_id": b.benefit_type_id,
+            "has_benefit": b.has_benefit,
+            "from_date": b.from_date,
+            "note": b.note
+        })
 
-    current_manager = None
-    if manager_hist:
-        manager_emp = db.query(EmployeeModel).filter(
-            EmployeeModel.id == manager_hist.manager_id
+    # ============================================================
+    # ENAC CORSI
+    # ============================================================
+    enac_courses_hist = db.query(EmployeeEnacCourse).filter(
+        EmployeeEnacCourse.employee_id == emp.id,
+        EmployeeEnacCourse.to_date.is_(None)
+    ).all()
+
+    enac_courses = []
+    for c in enac_courses_hist:
+        enac_courses.append({
+            "id": c.id,
+            "course_date": c.course_date,
+            "expiry_date": c.expiry_date,
+            "is_first_course": c.is_first_course,
+            "note": c.note
+        })
+
+    # ============================================================
+    # ENAC APPROVAZIONI
+    # ============================================================
+    enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
+        EmployeeEnacApproval.employee_id == emp.id,
+        EmployeeEnacApproval.to_date.is_(None)
+    ).all()
+
+    enac_approvals = []
+    for a in enac_approvals_hist:
+        enac_approvals.append({
+            "id": a.id,
+            "request_date": a.request_date,
+            "approval_date": a.approval_date,
+            "is_first_approval": a.is_first_approval,
+            "note": a.note
+        })
+
+    # ============================================================
+    # COST CENTER ATTUALI
+    # ============================================================
+    cc_hist = db.query(EmployeeCostCenter).filter(
+        EmployeeCostCenter.employee_id == emp.id,
+        EmployeeCostCenter.to_date.is_(None)
+    ).all()
+
+    cost_centers = []
+    for cc in cc_hist:
+        cc_obj = db.query(CostCenterModel).filter(
+            CostCenterModel.id == cc.cost_center_id
         ).first()
-        if manager_emp:
-            current_manager = {
-                "id": manager_emp.id,
-                "name": f"{manager_emp.first_name} {manager_emp.last_name}",
-                "email": manager_emp.email,
-                "from_date": manager_hist.from_date,
-                "note": manager_hist.note
-            }
 
-    # EMPLOYER HISTORY
-    employer_hist = db.query(EmployeeEmployerHistory).filter(
-        EmployeeEmployerHistory.employee_id == employee_id
-    ).order_by(EmployeeEmployerHistory.from_date.desc()).all()
-
-    employer_history = []
-    for h in employer_hist:
-        emp_obj = db.query(Employer).filter(Employer.id == h.employer_id).first()
-        employer_history.append({
-            "id": h.id,
-            "employer": {
-                "id": emp_obj.id,
-                "name": emp_obj.name
-            } if emp_obj else None,
-            "from_date": h.from_date,
-            "to_date": h.to_date,
-            "note": h.note
+        cost_centers.append({
+            "id": cc.id,
+            "cost_center_id": cc.cost_center_id,
+            "code": cc_obj.code if cc_obj else None,
+            "description": cc_obj.description if cc_obj else None,
+            "weight_percent": cc.weight_percent,
+            "from_date": cc.from_date,
+            "note": cc.note,
         })
 
-    # UNION HISTORY
-    union_hist = db.query(EmployeeUnionHistory).filter(
-        EmployeeUnionHistory.employee_id == employee_id
-    ).order_by(EmployeeUnionHistory.from_date.desc()).all()
+    # ============================================================
+    # RUOLO
+    # ============================================================
+    role = None
+    if emp.role:
+        role = {
+            "id": emp.role.id,
+            "name": emp.role.name or emp.role.code,
+        }
 
-    union_history = []
-    for h in union_hist:
-        u_obj = db.query(Union).filter(Union.id == h.union_id).first()
-        union_history.append({
-            "id": h.id,
-            "union": {
-                "id": u_obj.id,
-                "name": u_obj.name
-            } if u_obj else None,
-            "from_date": h.from_date,
-            "to_date": h.to_date,
-            "note": h.note
-        })
-
-
-
-
+    # ============================================================
+    # RISPOSTA FINALE
+    # ============================================================
     return {
-        "id": employee.id,
-        "email": employee.email,
-        "first_name": employee.first_name,
-        "last_name": employee.last_name,
-        "phone": employee.phone,
-        "fiscal_code": employee.fiscal_code,
-        "gender": employee.gender,
-        "birth_date": employee.birth_date,
-        "birth_place": employee.birth_place,
-        "address_street": employee.address_street,
-        "address_city": employee.address_city,
-        "address_cap": employee.address_cap,
+        "id": emp.id,
+        "email": emp.email,
+        "first_name": emp.first_name,
+        "last_name": emp.last_name,
 
-        # 🔥 CORRETTO
-        "id_lul": employee.id_lul,
+        # ANAGRAFICA
+        "phone": emp.phone,
+        "fiscal_code": emp.fiscal_code,
+        "gender": emp.gender,
+        "birth_date": emp.birth_date,
+        "birth_place": emp.birth_place,
+        "address_street": emp.address_street,
+        "address_city": emp.address_city,
+        "address_cap": emp.address_cap,
+        "id_lul": emp.id_lul,
 
-        "role": employee.role,
-        "is_active": employee.is_active,
-        "hire_date": employee.hire_date,
-        "termination_date": employee.termination_date,
+        # AZIENDALE
+        "hire_date": emp.hire_date,
+        "termination_date": emp.termination_date,
+        "is_protected_category": emp.is_protected_category,
+        "is_disadvantaged": emp.is_disadvantaged,
+        "has_law_104": emp.has_law_104,
+        "law_104_type": emp.law_104_type,
+        "law_104_note": emp.law_104_note,
+
+        # ORGANIZZAZIONE
+        "role": role,
         "site": site,
+        "site_history": site_history,
         "department": department,
-        "cost_centers": cost_centers,
-        "contract": {
-            "id": contract.id,
-            "work_regime": contract.work_regime.description or contract.work_regime.code if contract.work_regime else None,
-            "contract_nature": contract.contract_nature.description or contract.contract_nature.code if contract.contract_nature else None,
-            "weekly_hours": contract.weekly_hours,
-            "shift_type": contract.shift_type,
-            "time_band": contract.time_band,
-            "fte": contract.fte,
-            "from_date": contract.from_date,
-            "note": contract.note,
-        } if contract else None,
+        "manager": manager,
+
+        # HR
+        "contract": contract,
         "status": status,
         "salary": salary,
-        "company_car": car,
+        "company_car": company_car,
+        "cost_centers": cost_centers,
+        "benefits": benefits,
         "enac_courses": enac_courses,
         "enac_approvals": enac_approvals,
-        "status_history": status_history,
-        "manager": current_manager,
-        "has_law_104": employee.has_law_104,
-        "law_104_type": employee.law_104_type,
-        "law_104_note": employee.law_104_note,
-        "protected_percentage": employee.protected_percentage,
-        "protected_type": employee.protected_type,
-        "employer_history": employer_history,
-        "union_history": union_history,
 
-
-
+        "is_active": emp.is_active,
+        "protected_percentage": emp.protected_percentage,
+        "protected_type": emp.protected_type,
     }
-# ============================================================
+
+
+ ============================================================
 # GET STORICO CONTRATTI
 # ============================================================
 
@@ -1439,3 +1606,320 @@ def add_enac_approval(employee_id: int, payload: EnacApprovalCreate, db: Session
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'approvazione ENAC: {str(e)}")
+
+# ============================================================
+# UPDATE ANAGRAFICA (EmployeeUpdate)
+# ============================================================
+
+@router.put("/{employee_id}", response_model=Employee)
+def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+
+    emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(emp, field, value)
+
+        db.add(emp)
+        db.commit()
+        db.refresh(emp)
+        return emp
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento anagrafica: {str(e)}")
+
+# ============================================================
+# UPDATE contratto
+# ============================================================
+@router.put("/{employee_id}/contracts/{contract_id}")
+def update_contract(employee_id: int, contract_id: int, payload: ContractUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_contracts import EmployeeContract
+
+    contract = db.query(EmployeeContract).filter(
+        EmployeeContract.id == contract_id,
+        EmployeeContract.employee_id == employee_id
+    ).first()
+
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contratto non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(contract, field, value)
+
+        db.add(contract)
+        db.commit()
+        db.refresh(contract)
+        return {"message": "Contratto aggiornato", "contract": contract}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento contratto: {str(e)}")
+
+# ============================================================
+# UPDATE cost center
+# ============================================================
+@router.put("/{employee_id}/cost-centers/{cc_id}")
+def update_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_cost_centers import EmployeeCostCenter
+
+    cc = db.query(EmployeeCostCenter).filter(
+        EmployeeCostCenter.id == cc_id,
+        EmployeeCostCenter.employee_id == employee_id
+    ).first()
+
+    if not cc:
+        raise HTTPException(status_code=404, detail="Cost center non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(cc, field, value)
+
+        db.add(cc)
+        db.commit()
+        db.refresh(cc)
+        return {"message": "Cost center aggiornato", "cost_center": cc}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento cost center: {str(e)}")
+
+# ============================================================
+# UPDATE reparto
+# ============================================================
+@router.put("/{employee_id}/departments/{dep_id}")
+def update_department(employee_id: int, dep_id: int, payload: DepartmentUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_departments import EmployeeDepartment
+
+    dep = db.query(EmployeeDepartment).filter(
+        EmployeeDepartment.id == dep_id,
+        EmployeeDepartment.employee_id == employee_id
+    ).first()
+
+    if not dep:
+        raise HTTPException(status_code=404, detail="Reparto non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(dep, field, value)
+
+        db.add(dep)
+        db.commit()
+        db.refresh(dep)
+        return {"message": "Reparto aggiornato", "department": dep}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento reparto: {str(e)}")
+
+# ============================================================
+# UPDATE ral
+# ============================================================
+@router.put("/{employee_id}/salaries/{salary_id}")
+def update_salary(employee_id: int, salary_id: int, payload: SalaryUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_salaries import EmployeeSalary
+
+    sal = db.query(EmployeeSalary).filter(
+        EmployeeSalary.id == salary_id,
+        EmployeeSalary.employee_id == employee_id
+    ).first()
+
+    if not sal:
+        raise HTTPException(status_code=404, detail="RAL non trovata")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(sal, field, value)
+
+        db.add(sal)
+        db.commit()
+        db.refresh(sal)
+        return {"message": "RAL aggiornata", "salary": sal}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento RAL: {str(e)}")
+
+# ============================================================
+# UPDATE benefit
+# ============================================================
+@router.put("/{employee_id}/benefits/{benefit_id}")
+def update_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_benefits import EmployeeBenefit
+
+    ben = db.query(EmployeeBenefit).filter(
+        EmployeeBenefit.id == benefit_id,
+        EmployeeBenefit.employee_id == employee_id
+    ).first()
+
+    if not ben:
+        raise HTTPException(status_code=404, detail="Benefit non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(ben, field, value)
+
+        db.add(ben)
+        db.commit()
+        db.refresh(ben)
+        return {"message": "Benefit aggiornato", "benefit": ben}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento benefit: {str(e)}")
+
+
+# ============================================================
+# UPDATE auto
+# ============================================================
+@router.put("/{employee_id}/company-cars/{car_id}")
+def update_company_car(employee_id: int, car_id: int, payload: CompanyCarUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_company_cars import EmployeeCompanyCar
+
+    car = db.query(EmployeeCompanyCar).filter(
+        EmployeeCompanyCar.id == car_id,
+        EmployeeCompanyCar.employee_id == employee_id
+    ).first()
+
+    if not car:
+        raise HTTPException(status_code=404, detail="Auto aziendale non trovata")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(car, field, value)
+
+        db.add(car)
+        db.commit()
+        db.refresh(car)
+        return {"message": "Auto aziendale aggiornata", "company_car": car}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")
+
+
+# ============================================================
+# UPDATE enac corsi
+# ============================================================
+@router.put("/{employee_id}/enac-courses/{course_id}")
+def update_enac_course(employee_id: int, course_id: int, payload: EnacCourseUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_enac_courses import EmployeeEnacCourse
+
+    course = db.query(EmployeeEnacCourse).filter(
+        EmployeeEnacCourse.id == course_id,
+        EmployeeEnacCourse.employee_id == employee_id
+    ).first()
+
+    if not course:
+        raise HTTPException(status_code=404, detail="Corso ENAC non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(course, field, value)
+
+        db.add(course)
+        db.commit()
+        db.refresh(course)
+        return {"message": "Corso ENAC aggiornato", "course": course}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento corso ENAC: {str(e)}")
+
+# ============================================================
+# UPDATE enac approvazioni
+# ============================================================
+@router.put("/{employee_id}/enac-approvals/{approval_id}")
+def update_enac_approval(employee_id: int, approval_id: int, payload: EnacApprovalUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_enac_approvals import EmployeeEnacApproval
+
+    appr = db.query(EmployeeEnacApproval).filter(
+        EmployeeEnacApproval.id == approval_id,
+        EmployeeEnacApproval.employee_id == employee_id
+    ).first()
+
+    if not appr:
+        raise HTTPException(status_code=404, detail="Approvazione ENAC non trovata")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(appr, field, value)
+
+        db.add(appr)
+        db.commit()
+        db.refresh(appr)
+        return {"message": "Approvazione ENAC aggiornata", "approval": appr}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento approvazione ENAC: {str(e)}")
+
+
+# ============================================================
+# UPDATE status
+# ============================================================
+@router.put("/{employee_id}/status/{status_id}")
+def update_status(employee_id: int, status_id: int, payload: StatusUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_status_history import EmployeeStatusHistory
+
+    st = db.query(EmployeeStatusHistory).filter(
+        EmployeeStatusHistory.id == status_id,
+        EmployeeStatusHistory.employee_id == employee_id
+    ).first()
+
+    if not st:
+        raise HTTPException(status_code=404, detail="Status non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(st, field, value)
+
+        db.add(st)
+        db.commit()
+        db.refresh(st)
+        return {"message": "Status aggiornato", "status": st}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento status: {str(e)}")
+
+
+
+# ============================================================
+# UPDATE sito
+# ============================================================
+@router.put("/{employee_id}/sites/{site_hist_id}")
+def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_site_history import EmployeeSiteHistory
+    from app.models.employee import Employee as EmployeeModel
+
+    hist = db.query(EmployeeSiteHistory).filter(
+        EmployeeSiteHistory.id == site_hist_id,
+        EmployeeSiteHistory.employee_id == employee_id
+    ).first()
+
+    if not hist:
+        raise HTTPException(status_code=404, detail="Storico sito non trovato")
+
+    try:
+        for field, value in payload.dict(exclude_unset=True).items():
+            setattr(hist, field, value)
+
+        # aggiorna anche il sito attuale del dipendente
+        emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+        if emp and payload.site_id:
+            emp.site_id = payload.site_id
+            db.add(emp)
+
+        db.add(hist)
+        db.commit()
+        db.refresh(hist)
+        return {"message": "Sito aggiornato", "site_history": hist}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento sito: {str(e)}")

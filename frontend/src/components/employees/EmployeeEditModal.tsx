@@ -261,7 +261,6 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
           ccnlLevelsRes,
           statusTypesRes,
         ] = await Promise.all([
-          api.get(`/api/v1/employees/${employeeId}`),
           siteService.getSites(),
           contractService.getWorkRegimes(),
           contractService.getContractNatures(),
@@ -273,8 +272,7 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
           api.get("/api/v1/ccnl-levels"),
           api.get("/api/v1/employment-status-types"),
         ]);
-
-        const emp = employeeRes.data;
+        const emp = employee;
 
         setFormData({
           first_name: emp.first_name ?? "",

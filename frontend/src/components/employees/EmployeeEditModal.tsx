@@ -38,7 +38,7 @@ interface EmployeeEditModalProps {
   open: boolean;
   onClose: () => void;
   employee: EmployeeFull | null;
-  onUpdated: () => void;
+  onUpdated: (employee: EmployeeFull) => void;
 }
 
 /* ============================================================

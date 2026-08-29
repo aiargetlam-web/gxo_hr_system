@@ -33,8 +33,8 @@ import { EmployeeFull } from "../../types";
 interface EmployeeEditModalProps {
   open: boolean;
   onClose: () => void;
+  onUpdated: () => Promise<void>;
   employeeId: number | null;
-  onUpdated: (employee: EmployeeFull) => void;
 }
 
 /* ============================================================

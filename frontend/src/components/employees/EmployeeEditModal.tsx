@@ -512,7 +512,7 @@ const handleSiteChange = async (siteId: number | null) => {
 const refreshEmployee = async () => {
   if (!employeeId) return;
   const updated = await api.get(`/api/v1/employees/${employeeId}`);
-  onUpdated(updated.data);
+  onUpdated();
 };
 
 /* ============================================================

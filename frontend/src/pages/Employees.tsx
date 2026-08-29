@@ -360,7 +360,6 @@ export default function Employees() {
     flex: 1,
     renderCell: (params) =>
       params.row.manager?.name ?? "-",
-  }
 
   },
 

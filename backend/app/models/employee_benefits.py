@@ -8,7 +8,7 @@ class EmployeeBenefit(Base):
     id = Column(Integer, primary_key=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
 
-    benefit_type = Column(String(50), nullable=False)  # MBO, PDR, FLEX, SMARTWORKING
+    benefit_type_id = Column(Integer, ForeignKey("benefit_types.id"), nullable=True)
     has_benefit = Column(Boolean, default=False)
     from_date = Column(Date, nullable=False)
     to_date = Column(Date)

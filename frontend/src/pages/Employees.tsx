@@ -561,7 +561,7 @@ export default function Employees() {
                     open={openEdit}
                     onClose={() => setOpenEdit(false)}
                     onUpdated={loadData}
-                    employeeId={selectedEmployee?.id ?? 0}
+                    employee={selectedEmployee}
                 />
 
       <EmployeeNewContractModal

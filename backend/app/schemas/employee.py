@@ -135,6 +135,74 @@ class StatusHistory(BaseModel):
 
     model_config = {"from_attributes": True}
 
+# ---------------------------------------------------------
+# EMPLOYER (DATORE DI LAVORO)
+# ---------------------------------------------------------
+
+class Employer(BaseModel):
+    id: int
+    name: str
+    type: str
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+# ---------------------------------------------------------
+# LAW104
+# ---------------------------------------------------------
+class Law104Type(BaseModel):
+    id: int
+    code: str
+    description: str
+
+    model_config = {"from_attributes": True}
+
+
+
+# ---------------------------------------------------------
+# EMPLOYER HISTORY (STORICO DATORE DI LAVORO)
+# ---------------------------------------------------------
+
+class EmployerHistory(BaseModel):
+    id: int
+    employee_id: int
+    employer_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    employer: Optional[Employer] = None
+
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# UNION (SINDACATO)
+# ---------------------------------------------------------
+
+class Union(BaseModel):
+    id: int
+    name: str
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# UNION HISTORY (STORICO SINDACATO)
+# ---------------------------------------------------------
+
+class UnionHistory(BaseModel):
+    id: int
+    employee_id: int
+    union_id: int
+    from_date: date
+    to_date: Optional[date] = None
+    note: Optional[str] = None
+
+    union: Optional[Union] = None
+
+    model_config = {"from_attributes": True}
 
 
 # ---------------------------------------------------------
@@ -278,6 +346,14 @@ class EmployeeBase(BaseModel):
 
     is_protected_category: bool = False
     is_disadvantaged: bool = False
+        # 🔥 INVALIDITÀ / CATEGORIA PROTETTA
+    protected_percentage: Optional[int] = None
+    protected_type: Optional[str] = None
+
+    # 🔥 LEGGE 104
+    has_law_104: bool = False
+    law_104_type_id: Optional[int] = None
+    law_104_note: Optional[str] = None
 
 
 # ---------------------------------------------------------
@@ -343,5 +419,15 @@ class Employee(EmployeeInDBBase):
     company_car: Optional[CompanyCar] = None
     status: Optional[Status] = None
     status_history: Optional[List[StatusHistory]] = None
+        # 🔥 LEGGE 104 (TIPO)
+    law_104_type: Optional[Law104Type] = None
+
+    # 🔥 STORICO DATORE DI LAVORO
+    employer_history: Optional[List[EmployerHistory]] = None
+
+    # 🔥 STORICO SINDACATO
+    union_history: Optional[List[UnionHistory]] = None
+
 
     model_config = {"from_attributes": True}
+    

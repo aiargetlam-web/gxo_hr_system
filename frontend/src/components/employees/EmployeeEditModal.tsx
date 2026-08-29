@@ -274,6 +274,11 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           api.get("/api/v1/employment-status-types"),
         ]);
         const emp = employee;
+        if (!emp) {
+          setLoading(false);
+          return;
+        }
+
 
         setFormData({
           first_name: emp.first_name ?? "",

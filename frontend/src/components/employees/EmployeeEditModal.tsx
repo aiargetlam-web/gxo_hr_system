@@ -31,6 +31,8 @@ import { genderService } from "../../services/genderService";
 import { roleService } from "../../services/roleService";
 import { getDepartmentsBySite, getPrepostiBySite } from "../../services/employeeService";
 import { CCNLLevel } from "../../types";
+import { EmployeeFull } from "../../types";
+
 
 interface EmployeeEditModalProps {
   open: boolean;
@@ -401,7 +403,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
     };
 
     loadAll();
-  }, [open, employeeId]);
+  }, [open, employee]);
 
 /* ============================================================
    HANDLER CAMPI
@@ -570,11 +572,11 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         is_disadvantaged: formData.is_disadvantaged,
       };
 
-      await api.put(`/api/v1/employees/${employeeId}`, payload);
+      await api.put(`/api/v1/employees/${employee?.Id}`, payload);
 
       setSaving(false);
       if (onUpdated) {
-        const updated = await api.get(`/api/v1/employees/${employeeId}`);
+        const updated = await api.get(`/api/v1/employees/${employee?.Id}`);
         onUpdated(updated.data);
       }
       alert("Anagrafica aggiornata con successo!");
@@ -602,7 +604,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         level_ccnl_id: formData.contract.level_ccnl_id,
       };
 
-      await api.post(`/api/v1/employees/${employeeId}/contracts`, payload);
+      await api.post(`/api/v1/employees/${employee?.Id}/contracts`, payload);
 
       setSaving(false);
       alert("Contratto aggiornato (storico) con successo!");
@@ -624,7 +626,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: cc.from_date,
           note: cc.note,
         };
-        await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
+        await api.post(`/api/v1/employees/${employee?.Id}/cost-centers`, payload);
       }
 
       setSaving(false);
@@ -647,7 +649,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.department.note,
       };
 
-      await api.post(`/api/v1/employees/${employeeId}/departments`, payload);
+      await api.post(`/api/v1/employees/${employee?.Id}/departments`, payload);
 
       setSaving(false);
       alert("Reparto aggiornato (storico) con successo!");
@@ -668,7 +670,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.salary.note,
       };
 
-      await api.post(`/api/v1/employees/${employeeId}/salaries`, payload);
+      await api.post(`/api/v1/employees/${employee?.Id}/salaries`, payload);
 
       setSaving(false);
       alert("RAL aggiornata (storico) con successo!");
@@ -690,7 +692,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: b.from_date,
           note: b.note,
         };
-        await api.post(`/api/v1/employees/${employeeId}/benefits`, payload);
+        await api.post(`/api/v1/employees/${employee?.Id}/benefits`, payload);
       }
 
       setSaving(false);
@@ -718,7 +720,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.company_car.note,
       };
 
-      await api.post(`/api/v1/employees/${employeeId}/company-cars`, payload);
+      await api.post(`/api/v1/employees/${employee?.Id}/company-cars`, payload);
 
       setSaving(false);
       alert("Auto aziendale aggiornata (storico) con successo!");
@@ -740,7 +742,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_course: c.is_first_course,
           note: c.note,
         };
-        await api.post(`/api/v1/employees/${employeeId}/enac-courses`, payload);
+        await api.post(`/api/v1/employees/${employee?.Id}/enac-courses`, payload);
       }
 
       setSaving(false);
@@ -763,7 +765,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_approval: a.is_first_approval,
           note: a.note,
         };
-        await api.post(`/api/v1/employees/${employeeId}/enac-approvals`, payload);
+        await api.post(`/api/v1/employees/${employee?.Id}/enac-approvals`, payload);
       }
 
       setSaving(false);
@@ -785,7 +787,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: s.from_date,
           note: s.note,
         };
-        await api.post(`/api/v1/employees/${employeeId}/status`, payload);
+        await api.post(`/api/v1/employees/${employee?.Id}/status`, payload);
       }
 
       setSaving(false);

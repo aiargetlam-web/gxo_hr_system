@@ -354,6 +354,16 @@ export default function Employees() {
   { field: "car_plate", headerName: "Targa", flex: 1, hide: true },
   { field: "car_from_date", headerName: "Assegnazione auto", flex: 1, hide: true },
   { field: "car_note", headerName: "Note auto", flex: 1, hide: true },
+  {
+    field: "manager",
+    headerName: "Responsabile",
+    flex: 1,
+    renderCell: (params) =>
+      params.row.manager?.name ?? "-",
+  }
+
+  },
+
 
   {
     field: "actions",

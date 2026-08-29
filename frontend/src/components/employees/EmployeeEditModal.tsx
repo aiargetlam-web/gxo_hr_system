@@ -278,8 +278,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           setLoading(false);
           return;
         }
-        const lastSite = emp.site_history?.[0];
-
+        const lastSite = emp.site_history?.[emp.site_history.length - 1];
 
         setFormData({
           first_name: emp.first_name ?? "",

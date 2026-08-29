@@ -308,9 +308,9 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
 
 
           contract: {
-            work_regime_id: workRegimes.find(w => w.name === emp.contract?.work_regime)?.id ?? null,
-            contract_nature_id: contractNatures.find(c => c.name === emp.contract?.contract_nature)?.id ?? null,
-            shift_type_id: shiftTypes.find(s => s.name === emp.contract?.shift_type)?.id ?? null,
+            work_regime_id: workRegimes?.find(w => w.name === emp.contract?.work_regime)?.id ?? null,
+            contract_nature_id: contractNatures?.find(c => c.name === emp.contract?.contract_nature)?.id ?? null,
+            shift_type_id: shiftTypes?.find(s => s.name === emp.contract?.shift_type)?.id ?? null,
             from_date: emp.contract?.from_date ?? "",
             to_date: emp.contract?.to_date ?? null,
             weekly_hours: emp.contract?.weekly_hours?.toString() ?? "",

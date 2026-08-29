@@ -268,6 +268,35 @@ export const getEmployeeStatusHistory = async (employeeId: number) => {
   return response.data;
 };
 
+export const changeManager = async (
+  employeeId: number,
+  data: {
+    manager_id: number;
+    from_date: string;
+    note?: string;
+  }
+) => {
+  const response = await api.post(
+    `/api/v1/employees/${employeeId}/manager`,
+    data
+  );
+  return response.data;
+};
+
+
+export const getCurrentManager = async (employeeId: number) => {
+  const response = await api.get(`/api/v1/employees/${employeeId}/manager`);
+  return response.data;
+};
+
+export const getManagerHistory = async (employeeId: number) => {
+  const response = await api.get(
+    `/api/v1/employees/${employeeId}/manager-history`
+  );
+  return response.data;
+};
+
+
 export const getContracts = async (employeeId: number) =>
   api.get(`/api/v1/employees/${employeeId}/contracts`).then(r => r.data);
 
@@ -343,6 +372,7 @@ export const employeeService = {
   getEnacCourses,
   getEnacApprovals,
   getBenefits,
-
-  
+  changeManager,
+  getCurrentManager,
+  getManagerHistory,  
 };

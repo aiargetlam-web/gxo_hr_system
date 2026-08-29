@@ -296,21 +296,33 @@ export interface EmployeeFull extends Employee {
     level_ccnl_description?: string | null;
   }) | null;
 
-
   // RAL (FLAT)
   salary: (Salary & {
     note?: string;
   }) | null;
-
 
   // AUTO (FLAT)
   company_car: (CompanyCar & {
     note?: string;
   }) | null;
 
-
-    // COST CENTER (stesso tipo di Employee)
+  // COST CENTER
   cost_centers: CostCenter[];
+
+  // ⭐ AGGIUNTO: STORICO SEDI
+  site_history?: SiteHistory[];
+
+  // ⭐ AGGIUNTO: BENEFIT
+  benefits?: BenefitCreate[];
+
+  // ⭐ AGGIUNTO: CORSI ENAC
+  enac_courses?: any[];
+
+  // ⭐ AGGIUNTO: APPROVAZIONI ENAC
+  enac_approvals?: any[];
+
+  // ⭐ AGGIUNTO: STORICO STATUS
+  status_history?: StatusHistory[];
 }
 
 /* ============================

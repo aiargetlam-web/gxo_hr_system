@@ -35,3 +35,5 @@ from app.models.union import Union
 from app.models.employee_employer_history import EmployeeEmployerHistory
 from app.models.employee_union_history import EmployeeUnionHistory
 from app.models.law_104_type import Law104Type
+from app.models.employee_manager import EmployeeManager
+

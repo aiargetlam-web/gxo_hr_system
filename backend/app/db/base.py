@@ -30,6 +30,7 @@ from app.models.ticket import Ticket
 from app.models.board import BoardFile, BoardFileSite
 from app.models.employee_table_view import EmployeeTableView
 from app.models.employee import Employee
+from app.models.employer import Employer
 from app.models.employee_employer_history import EmployeeEmployerHistory
 from app.models.employee_union_history import EmployeeUnionHistory
 from app.models.law_104_type import Law104Type

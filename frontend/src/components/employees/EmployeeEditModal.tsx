@@ -579,11 +579,11 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         is_disadvantaged: formData.is_disadvantaged,
       };
 
-      await api.put(`/api/v1/employees/${employee?.Id}`, payload);
+      await api.put(`/api/v1/employees/${employee?.id}`, payload);
 
       setSaving(false);
       if (onUpdated) {
-        const updated = await api.get(`/api/v1/employees/${employee?.Id}`);
+        const updated = await api.get(`/api/v1/employees/${employee?.id}`);
         onUpdated(updated.data);
       }
       alert("Anagrafica aggiornata con successo!");

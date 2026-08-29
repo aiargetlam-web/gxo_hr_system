@@ -1090,7 +1090,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
 # ============================================================
 # put anagrafica
 # ============================================================
-@router.put("/employees/{employee_id}")
+@router.put("/{employee_id}")
 def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
 

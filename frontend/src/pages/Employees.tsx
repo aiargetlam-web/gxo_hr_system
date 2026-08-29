@@ -263,7 +263,77 @@ export default function Employees() {
   { field: "hire_date", headerName: "Assunzione", flex: 1 },
   { field: "termination_date", headerName: "Cessazione", flex: 1 },
 
-  // 🔥 COLONNE EXTRA NASCOSTE (per viste future)
+// 🔥 COLONNE EXTRA NASCOSTE (per viste future)
+  {
+    field: "protected_percentage",
+    headerName: "Perc. Protetta",
+    flex: 1,
+    hide: false,
+    renderCell: (params: any) =>
+      params.row.protected_percentage
+        ? `${params.row.protected_percentage}%`
+        : "-",
+  },
+
+  {
+    field: "protected_type",
+    headerName: "Tipo Protetta",
+    flex: 1,
+    hide: false,
+    renderCell: (params: any) =>
+      params.row.protected_type ?? "-",
+  },
+  {
+    field: "has_law_104",
+    headerName: "Legge 104",
+    flex: 1,
+    hide: false,
+    renderCell: (params: any) =>
+      params.row.has_law_104 ? "Sì" : "No",
+  },
+
+  {
+    field: "law_104_type",
+    headerName: "Tipo 104",
+    flex: 1,
+    hide: true,
+    renderCell: (params: any) =>
+      params.row.law_104_type?.description ?? "-",
+  },
+
+  {
+    field: "law_104_note",
+    headerName: "Note 104",
+    flex: 1,
+    hide: true,
+    renderCell: (params: any) =>
+      params.row.law_104_note ?? "-",
+  },
+  {
+    field: "current_employer",
+    headerName: "Datore",
+    flex: 1,
+    hide: false,
+    valueGetter: (params: any) => {
+      const hist = params.row.employer_history;
+      if (!hist || hist.length === 0) return "-";
+      const last = hist[hist.length - 1];
+      return last.employer?.name ?? "-";
+    },
+  },
+  {
+    field: "current_union",
+    headerName: "Sindacato",
+    flex: 1,
+    hide: true,
+    valueGetter: (params: any) => {
+      const hist = params.row.union_history;
+      if (!hist || hist.length === 0) return "-";
+      const last = hist[hist.length - 1];
+      return last.union?.name ?? "-";
+    },
+  },
+
   { field: "gender", headerName: "Genere", flex: 1, hide: true },
   { field: "birth_date", headerName: "Data di nascita", flex: 1, hide: true },
   { field: "birth_place", headerName: "Luogo di nascita", flex: 1, hide: true },
@@ -271,7 +341,6 @@ export default function Employees() {
   { field: "address_city", headerName: "Città", flex: 1, hide: true },
   { field: "address_cap", headerName: "CAP", flex: 1, hide: true },
   { field: "id_lul", headerName: "ID LUL", flex: 1, hide: true },
-
   { field: "contract_nature", headerName: "Natura contratto", flex: 1, hide: true },
   { field: "weekly_hours", headerName: "Ore settimanali", flex: 1, hide: true },
   { field: "time_band", headerName: "Fascia oraria", flex: 1, hide: true },
@@ -280,15 +349,11 @@ export default function Employees() {
   { field: "contract_from_date", headerName: "Inizio contratto", flex: 1, hide: true },
   { field: "contract_to_date", headerName: "Fine contratto", flex: 1, hide: true },
   { field: "contract_note", headerName: "Note contratto", flex: 1, hide: true },
-
   { field: "salary_from_date", headerName: "Inizio RAL", flex: 1, hide: true },
   { field: "salary_note", headerName: "Note RAL", flex: 1, hide: true },
-
   { field: "car_plate", headerName: "Targa", flex: 1, hide: true },
   { field: "car_from_date", headerName: "Assegnazione auto", flex: 1, hide: true },
   { field: "car_note", headerName: "Note auto", flex: 1, hide: true },
-
-  { field: "manager", headerName: "Manager", flex: 1, hide: true },
 
   {
     field: "actions",

@@ -33,7 +33,6 @@ import { getDepartmentsBySite, getPrepostiBySite } from "../../services/employee
 import { CCNLLevel } from "../../types";
 import { EmployeeFull } from "../../types";
 
-
 interface EmployeeEditModalProps {
   open: boolean;
   onClose: () => void;
@@ -46,12 +45,14 @@ interface EmployeeEditModalProps {
 ============================================================ */
 
 type SiteHistory = {
+  id?: number;
   site_id: number | null;
   from_date: string;
   note: string;
 };
 
 type ContractForm = {
+  id?: number;
   work_regime_id: number | null;
   contract_nature_id: number | null;
   from_date: string;
@@ -65,6 +66,7 @@ type ContractForm = {
 };
 
 type DepartmentForm = {
+  id?: number;
   department_id: number | null;
   manager_employee_id: number | null;
   from_date: string;
@@ -72,12 +74,14 @@ type DepartmentForm = {
 };
 
 type SalaryForm = {
+  id?: number;
   ral_amount: string;
   from_date: string;
   note: string;
 };
 
 type CostCenterRow = {
+  id?: number;
   cost_center_id: number | null;
   weight_percent: string;
   from_date: string;
@@ -85,6 +89,7 @@ type CostCenterRow = {
 };
 
 type BenefitRow = {
+  id?: number;
   benefit_type_id: number | null;
   has_benefit: boolean;
   from_date: string;
@@ -92,6 +97,7 @@ type BenefitRow = {
 };
 
 type CompanyCarForm = {
+  id?: number;
   car_model: string;
   plate: string;
   from_date: string;
@@ -139,6 +145,11 @@ type EmployeeEditForm = {
   termination_date: string | null;
   is_protected_category: boolean;
   is_disadvantaged: boolean;
+  has_law_104: boolean;
+  law_104_type: number | null;
+  law_104_note: string;
+  protected_percentage: number | null;
+  protected_type: string | null;
   site_history: SiteHistory;
   contract: ContractForm;
   cost_centers: CostCenterRow[];
@@ -191,12 +202,19 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
     termination_date: null,
     is_protected_category: false,
     is_disadvantaged: false,
+    has_law_104: false,
+    law_104_type: null,
+    law_104_note: "",
+    protected_percentage: null,
+    protected_type: null,
     site_history: {
+      id: undefined,
       site_id: null,
       from_date: "",
       note: "",
     },
     contract: {
+      id: undefined,
       work_regime_id: null,
       contract_nature_id: null,
       from_date: "",
@@ -210,12 +228,14 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
     },
     cost_centers: [],
     department: {
+      id: undefined,
       department_id: null,
       manager_employee_id: null,
       from_date: "",
       note: "",
     },
     salary: {
+      id: undefined,
       ral_amount: "",
       from_date: "",
       note: "",
@@ -278,7 +298,8 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           setLoading(false);
           return;
         }
-        const lastSite = emp.site_history?.[emp.site_history.length - 1];
+
+        const lastSiteHist = emp.site_history?.[emp.site_history.length - 1];
 
         setFormData({
           first_name: emp.first_name ?? "",
@@ -298,18 +319,27 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           termination_date: emp.termination_date ?? null,
           is_protected_category: emp.is_protected_category ?? false,
           is_disadvantaged: emp.is_disadvantaged ?? false,
+          has_law_104: emp.has_law_104 ?? false,
+          law_104_type: emp.law_104_type ?? null,
+          law_104_note: emp.law_104_note ?? "",
+          protected_percentage: emp.protected_percentage ?? null,
+          protected_type: emp.protected_type ?? null,
 
           site_history: {
-            site_id: lastSite?.site_id ?? emp.site?.id ?? null,
-            from_date: lastSite?.from_date ?? "",
-            note: lastSite?.note ?? "",
+            id: lastSiteHist?.id,
+            site_id: lastSiteHist?.site_id ?? emp.site?.id ?? null,
+            from_date: lastSiteHist?.from_date ?? "",
+            note: lastSiteHist?.note ?? "",
           },
 
-
           contract: {
-            work_regime_id: workRegimes?.find(w => w.name === emp.contract?.work_regime)?.id ?? null,
-            contract_nature_id: contractNatures?.find(c => c.name === emp.contract?.contract_nature)?.id ?? null,
-            shift_type_id: shiftTypes?.find(s => s.name === emp.contract?.shift_type)?.id ?? null,
+            id: emp.contract?.id,
+            work_regime_id:
+              workRegimes?.find((w) => w.description === emp.contract?.work_regime || w.code === emp.contract?.work_regime)?.id ?? null,
+            contract_nature_id:
+              contractNatures?.find((c) => c.description === emp.contract?.contract_nature || c.code === emp.contract?.contract_nature)?.id ?? null,
+            shift_type_id:
+              shiftTypes?.find((s) => s.name === emp.contract?.shift_type_name)?.id ?? emp.contract?.shift_type_id ?? null,
             from_date: emp.contract?.from_date ?? "",
             to_date: emp.contract?.to_date ?? null,
             weekly_hours: emp.contract?.weekly_hours?.toString() ?? "",
@@ -320,6 +350,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           },
 
           cost_centers: (emp.cost_centers ?? []).map((cc: any) => ({
+            id: cc.id,
             cost_center_id: cc.cost_center_id,
             weight_percent: cc.weight_percent?.toString() ?? "",
             from_date: cc.from_date ?? "",
@@ -327,6 +358,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           })),
 
           department: {
+            id: emp.department?.id,
             department_id: emp.department?.id ?? null,
             manager_employee_id: emp.manager?.id ?? null,
             from_date: emp.department?.from_date ?? "",
@@ -334,12 +366,14 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           },
 
           salary: {
+            id: emp.salary?.id,
             ral_amount: emp.salary?.ral_amount?.toString() ?? "",
             from_date: emp.salary?.from_date ?? "",
             note: emp.salary?.note ?? "",
           },
 
           benefits: (emp.benefits ?? []).map((b: any) => ({
+            id: b.id,
             benefit_type_id: b.benefit_type_id,
             has_benefit: b.has_benefit,
             from_date: b.from_date ?? "",
@@ -348,6 +382,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
 
           company_car: emp.company_car
             ? {
+                id: emp.company_car.id,
                 car_model: emp.company_car.car_model ?? "",
                 plate: emp.company_car.plate ?? "",
                 from_date: emp.company_car.from_date ?? "",
@@ -377,8 +412,6 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
             from_date: s.from_date ?? "",
             note: s.note ?? "",
           })),
-
-
         });
 
         setSites(sitesRes);
@@ -400,7 +433,6 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           setDepartments(depsRes);
           setPreposti(prepostiRes);
         }
-
       } catch (err) {
         console.error("Errore caricamento dati modifica dipendente:", err);
       }
@@ -448,7 +480,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       ...prev,
       cost_centers: [
         ...prev.cost_centers,
-        { cost_center_id: null, weight_percent: "", from_date: "", note: "" },
+        { id: undefined, cost_center_id: null, weight_percent: "", from_date: "", note: "" },
       ],
     }));
   };
@@ -458,7 +490,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       ...prev,
       benefits: [
         ...prev.benefits,
-        { benefit_type_id: null, has_benefit: true, from_date: "", note: "" },
+        { id: undefined, benefit_type_id: null, has_benefit: true, from_date: "", note: "" },
       ],
     }));
   };
@@ -468,6 +500,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       ...prev,
       company_car: {
         ...(prev.company_car || {
+          id: undefined,
           car_model: "",
           plate: "",
           from_date: "",
@@ -484,6 +517,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       enac_courses: [
         ...prev.enac_courses,
         {
+          id: undefined,
           course_date: "",
           expiry_date: "",
           is_first_course: false,
@@ -499,6 +533,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       enac_approvals: [
         ...prev.enac_approvals,
         {
+          id: undefined,
           request_date: "",
           approval_date: "",
           is_first_approval: false,
@@ -514,6 +549,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
       status_history: [
         ...prev.status_history,
         {
+          id: undefined,
           status_type_id: null,
           from_date: "",
           note: "",
@@ -551,8 +587,14 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
   };
 
 /* ============================================================
-   SALVATAGGI PER STEP
+   SALVATAGGI PER SEZIONE (CORRETTIVI, NON STORICI)
 ============================================================ */
+
+  const refreshEmployee = async () => {
+    if (!employee?.id) return;
+    const updated = await api.get(`/api/v1/employees/${employee.id}`);
+    onUpdated(updated.data);
+  };
 
   const saveAnagrafica = async () => {
     try {
@@ -576,19 +618,50 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         termination_date: formData.termination_date,
         is_protected_category: formData.is_protected_category,
         is_disadvantaged: formData.is_disadvantaged,
+        has_law_104: formData.has_law_104,
+        law_104_type: formData.law_104_type,
+        law_104_note: formData.law_104_note,
+        protected_percentage: formData.protected_percentage,
+        protected_type: formData.protected_type,
       };
 
       await api.put(`/api/v1/employees/${employee?.id}`, payload);
 
-      setSaving(false);
-      if (onUpdated) {
-        const updated = await api.get(`/api/v1/employees/${employee?.id}`);
-        onUpdated(updated.data);
-      }
+      await refreshEmployee();
       alert("Anagrafica aggiornata con successo!");
     } catch (err) {
       console.error("Errore salvataggio anagrafica:", err);
       alert("Errore durante il salvataggio dell'anagrafica");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveSite = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        site_id: formData.site_history.site_id,
+        from_date: formData.site_history.from_date,
+        note: formData.site_history.note,
+      };
+
+      if (formData.site_history.id) {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/sites/${formData.site_history.id}`,
+          payload
+        );
+      } else {
+        await api.put(`/api/v1/employees/${employee?.id}/sites/current`, payload);
+      }
+
+      await refreshEmployee();
+      alert("Sito aggiornato con successo!");
+    } catch (err) {
+      console.error("Errore salvataggio sito:", err);
+      alert("Errore durante il salvataggio del sito");
+    } finally {
       setSaving(false);
     }
   };
@@ -610,13 +683,21 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         level_ccnl_id: formData.contract.level_ccnl_id,
       };
 
-      await api.post(`/api/v1/employees/${employee?.id}/contracts`, payload);
+      if (formData.contract.id) {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/contracts/${formData.contract.id}`,
+          payload
+        );
+      } else {
+        await api.put(`/api/v1/employees/${employee?.id}/contracts/current`, payload);
+      }
 
-      setSaving(false);
-      alert("Contratto aggiornato (storico) con successo!");
+      await refreshEmployee();
+      alert("Contratto aggiornato con successo!");
     } catch (err) {
       console.error("Errore salvataggio contratto:", err);
       alert("Errore durante il salvataggio del contratto");
+    } finally {
       setSaving(false);
     }
   };
@@ -632,14 +713,26 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: cc.from_date,
           note: cc.note,
         };
-        await api.post(`/api/v1/employees/${employee?.id}/cost-centers`, payload);
+
+        if (cc.id) {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/cost-centers/${cc.id}`,
+            payload
+          );
+        } else {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/cost-centers/current`,
+            payload
+          );
+        }
       }
 
-      setSaving(false);
-      alert("Cost center aggiornati (storico) con successo!");
+      await refreshEmployee();
+      alert("Cost center aggiornati con successo!");
     } catch (err) {
       console.error("Errore salvataggio cost center:", err);
       alert("Errore durante il salvataggio dei cost center");
+    } finally {
       setSaving(false);
     }
   };
@@ -655,13 +748,24 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.department.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.id}/departments`, payload);
+      if (formData.department.id) {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/departments/${formData.department.id}`,
+          payload
+        );
+      } else {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/departments/current`,
+          payload
+        );
+      }
 
-      setSaving(false);
-      alert("Reparto aggiornato (storico) con successo!");
+      await refreshEmployee();
+      alert("Reparto aggiornato con successo!");
     } catch (err) {
       console.error("Errore salvataggio reparto:", err);
       alert("Errore durante il salvataggio del reparto");
+    } finally {
       setSaving(false);
     }
   };
@@ -676,13 +780,24 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.salary.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.id}/salaries`, payload);
+      if (formData.salary.id) {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/salaries/${formData.salary.id}`,
+          payload
+        );
+      } else {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/salaries/current`,
+          payload
+        );
+      }
 
-      setSaving(false);
-      alert("RAL aggiornata (storico) con successo!");
+      await refreshEmployee();
+      alert("RAL aggiornata con successo!");
     } catch (err) {
       console.error("Errore salvataggio RAL:", err);
       alert("Errore durante il salvataggio della RAL");
+    } finally {
       setSaving(false);
     }
   };
@@ -698,14 +813,26 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: b.from_date,
           note: b.note,
         };
-        await api.post(`/api/v1/employees/${employee?.id}/benefits`, payload);
+
+        if (b.id) {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/benefits/${b.id}`,
+            payload
+          );
+        } else {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/benefits/current`,
+            payload
+          );
+        }
       }
 
-      setSaving(false);
-      alert("Benefit aggiornati (storico) con successo!");
+      await refreshEmployee();
+      alert("Benefit aggiornati con successo!");
     } catch (err) {
       console.error("Errore salvataggio benefit:", err);
       alert("Errore durante il salvataggio dei benefit");
+    } finally {
       setSaving(false);
     }
   };
@@ -726,13 +853,24 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.company_car.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.id}/company-cars`, payload);
+      if (formData.company_car.id) {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/company-cars/${formData.company_car.id}`,
+          payload
+        );
+      } else {
+        await api.put(
+          `/api/v1/employees/${employee?.id}/company-cars/current`,
+          payload
+        );
+      }
 
-      setSaving(false);
-      alert("Auto aziendale aggiornata (storico) con successo!");
+      await refreshEmployee();
+      alert("Auto aziendale aggiornata con successo!");
     } catch (err) {
       console.error("Errore salvataggio auto aziendale:", err);
       alert("Errore durante il salvataggio dell'auto aziendale");
+    } finally {
       setSaving(false);
     }
   };
@@ -748,14 +886,26 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_course: c.is_first_course,
           note: c.note,
         };
-        await api.post(`/api/v1/employees/${employee?.id}/enac-courses`, payload);
+
+        if (c.id) {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/enac-courses/${c.id}`,
+            payload
+          );
+        } else {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/enac-courses/current`,
+            payload
+          );
+        }
       }
 
-      setSaving(false);
-      alert("Corsi ENAC aggiornati (storico) con successo!");
+      await refreshEmployee();
+      alert("Corsi ENAC aggiornati con successo!");
     } catch (err) {
       console.error("Errore salvataggio corsi ENAC:", err);
       alert("Errore durante il salvataggio dei corsi ENAC");
+    } finally {
       setSaving(false);
     }
   };
@@ -771,14 +921,26 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_approval: a.is_first_approval,
           note: a.note,
         };
-        await api.post(`/api/v1/employees/${employee?.id}/enac-approvals`, payload);
+
+        if (a.id) {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/enac-approvals/${a.id}`,
+            payload
+          );
+        } else {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/enac-approvals/current`,
+            payload
+          );
+        }
       }
 
-      setSaving(false);
-      alert("Approvazioni ENAC aggiornate (storico) con successo!");
+      await refreshEmployee();
+      alert("Approvazioni ENAC aggiornate con successo!");
     } catch (err) {
       console.error("Errore salvataggio approvazioni ENAC:", err);
       alert("Errore durante il salvataggio delle approvazioni ENAC");
+    } finally {
       setSaving(false);
     }
   };
@@ -793,14 +955,26 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: s.from_date,
           note: s.note,
         };
-        await api.post(`/api/v1/employees/${employee?.id}/status`, payload);
+
+        if (s.id) {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/status/${s.id}`,
+            payload
+          );
+        } else {
+          await api.put(
+            `/api/v1/employees/${employee?.id}/status/current`,
+            payload
+          );
+        }
       }
 
-      setSaving(false);
-      alert("Storico status aggiornato con successo!");
+      await refreshEmployee();
+      alert("Status aggiornato con successo!");
     } catch (err) {
       console.error("Errore salvataggio status:", err);
       alert("Errore durante il salvataggio dello status");
+    } finally {
       setSaving(false);
     }
   };
@@ -1088,9 +1262,70 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
                     label="Svantaggiato"
                   />
                 </Grid>
+
+                <Grid item xs={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.has_law_104}
+                        onChange={(e) =>
+                          handleChange("has_law_104", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Legge 104"
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Note Legge 104"
+                    value={formData.law_104_note ?? ""}
+                    onChange={(e) =>
+                      handleChange("law_104_note", e.target.value)
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="% categoria protetta"
+                    value={formData.protected_percentage ?? ""}
+                    onChange={(e) =>
+                      handleChange(
+                        "protected_percentage",
+                        e.target.value === ""
+                          ? null
+                          : Number(e.target.value)
+                      )
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Tipo categoria protetta"
+                    value={formData.protected_type ?? ""}
+                    onChange={(e) =>
+                      handleChange("protected_type", e.target.value)
+                    }
+                  />
+                </Grid>
               </Grid>
 
-              <Box sx={{ mt: 3, textAlign: "right" }}>
+              <Box sx={{ mt: 3, textAlign: "right", display: "flex", gap: 2, justifyContent: "flex-end" }}>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={saveSite}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva sito"}
+                </Button>
                 <Button
                   variant="contained"
                   color="primary"
@@ -1570,474 +1805,526 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           </Card>
         );
 
- case "ral":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          RAL
-        </Typography>
+      case "ral":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                RAL
+              </Typography>
 
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              type="number"
-              label="RAL *"
-              value={formData.salary.ral_amount}
-              onChange={(e) =>
-                handleNestedChange("salary", "ral_amount", e.target.value)
-              }
-            />
-          </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="RAL *"
+                    value={formData.salary.ral_amount}
+                    onChange={(e) =>
+                      handleNestedChange("salary", "ral_amount", e.target.value)
+                    }
+                  />
+                </Grid>
 
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Dal *"
-              InputLabelProps={{ shrink: true }}
-              value={formData.salary.from_date}
-              onChange={(e) =>
-                handleNestedChange("salary", "from_date", e.target.value)
-              }
-            />
-          </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal *"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.salary.from_date}
+                    onChange={(e) =>
+                      handleNestedChange("salary", "from_date", e.target.value)
+                    }
+                  />
+                </Grid>
 
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Note RAL"
-              value={formData.salary.note}
-              onChange={(e) =>
-                handleNestedChange("salary", "note", e.target.value)
-              }
-            />
-          </Grid>
-        </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    label="Note RAL"
+                    value={formData.salary.note}
+                    onChange={(e) =>
+                      handleNestedChange("salary", "note", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
 
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveSalary}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva RAL"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-case "benefit":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Benefit
-        </Typography>
-
-        <Button variant="outlined" onClick={addBenefitRow} sx={{ mb: 2 }}>
-          Aggiungi benefit
-        </Button>
-
-        {formData.benefits.map((b, index) => (
-          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-            <Grid item xs={4}>
-              <FormControl fullWidth>
-                <InputLabel>Benefit</InputLabel>
-                <Select
-                  value={b.benefit_type_id ?? ""}
-                  label="Benefit"
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "benefits",
-                      index,
-                      "benefit_type_id",
-                      e.target.value === "" ? null : Number(e.target.value)
-                    )
-                  }
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveSalary}
+                  disabled={saving}
                 >
-                  <MenuItem value="">Seleziona</MenuItem>
-                  {benefitTypes.map((bt) => (
-                    <MenuItem key={bt.id} value={bt.id}>
-                      {bt.description}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+                  {saving ? "Salvataggio..." : "Salva RAL"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
 
-            <Grid item xs={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={b.has_benefit}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "benefits",
-                        index,
-                        "has_benefit",
-                        e.target.checked
-                      )
-                    }
-                  />
-                }
-                label="Attivo"
-              />
-            </Grid>
+      case "benefit":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Benefit
+              </Typography>
 
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Dal"
-                InputLabelProps={{ shrink: true }}
-                value={b.from_date}
-                onChange={(e) =>
-                  handleArrayChange("benefits", index, "from_date", e.target.value)
-                }
-              />
-            </Grid>
+              <Button variant="outlined" onClick={addBenefitRow} sx={{ mb: 2 }}>
+                Aggiungi benefit
+              </Button>
 
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                label="Note"
-                value={b.note}
-                onChange={(e) =>
-                  handleArrayChange("benefits", index, "note", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-        ))}
+              {formData.benefits.map((b, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <FormControl fullWidth>
+                      <InputLabel>Benefit</InputLabel>
+                      <Select
+                        value={b.benefit_type_id ?? ""}
+                        label="Benefit"
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "benefits",
+                            index,
+                            "benefit_type_id",
+                            e.target.value === "" ? null : Number(e.target.value)
+                          )
+                        }
+                      >
+                        <MenuItem value="">Seleziona</MenuItem>
+                        {benefitTypes.map((bt) => (
+                          <MenuItem key={bt.id} value={bt.id}>
+                            {bt.description}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveBenefits}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva benefit"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-case "auto":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Auto aziendale
-        </Typography>
+                  <Grid item xs={2}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={b.has_benefit}
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "benefits",
+                              index,
+                              "has_benefit",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      }
+                      label="Attivo"
+                    />
+                  </Grid>
 
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Modello auto"
-              value={formData.company_car?.car_model ?? ""}
-              onChange={(e) => setCompanyCar("car_model", e.target.value)}
-            />
-          </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={b.from_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "benefits",
+                          index,
+                          "from_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
 
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Targa"
-              value={formData.company_car?.plate ?? ""}
-              onChange={(e) => setCompanyCar("plate", e.target.value)}
-            />
-          </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={b.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "benefits",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
 
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Dal"
-              InputLabelProps={{ shrink: true }}
-              value={formData.company_car?.from_date ?? ""}
-              onChange={(e) => setCompanyCar("from_date", e.target.value)}
-            />
-          </Grid>
-
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Note auto"
-              value={formData.company_car?.note ?? ""}
-              onChange={(e) => setCompanyCar("note", e.target.value)}
-            />
-          </Grid>
-        </Grid>
-
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveCompanyCar}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva auto aziendale"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-
-case "enac_corsi":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Corsi ENAC
-        </Typography>
-
-        <Button variant="outlined" onClick={addEnacCourseRow} sx={{ mb: 2 }}>
-          Aggiungi corso ENAC
-        </Button>
-
-        {formData.enac_courses.map((c, index) => (
-          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Data corso"
-                InputLabelProps={{ shrink: true }}
-                value={c.course_date}
-                onChange={(e) =>
-                  handleArrayChange("enac_courses", index, "course_date", e.target.value)
-                }
-              />
-            </Grid>
-
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Scadenza"
-                InputLabelProps={{ shrink: true }}
-                value={c.expiry_date}
-                onChange={(e) =>
-                  handleArrayChange("enac_courses", index, "expiry_date", e.target.value)
-                }
-              />
-            </Grid>
-
-            <Grid item xs={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={c.is_first_course}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "enac_courses",
-                        index,
-                        "is_first_course",
-                        e.target.checked
-                      )
-                    }
-                  />
-                }
-                label="Primo corso"
-              />
-            </Grid>
-
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label="Note"
-                value={c.note}
-                onChange={(e) =>
-                  handleArrayChange("enac_courses", index, "note", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-        ))}
-
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveEnacCourses}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva corsi ENAC"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-case "enac_approvazioni":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Approvazioni ENAC
-        </Typography>
-
-        <Button variant="outlined" onClick={addEnacApprovalRow} sx={{ mb: 2 }}>
-          Aggiungi approvazione ENAC
-        </Button>
-
-        {formData.enac_approvals.map((a, index) => (
-          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Data richiesta"
-                InputLabelProps={{ shrink: true }}
-                value={a.request_date}
-                onChange={(e) =>
-                  handleArrayChange("enac_approvals", index, "request_date", e.target.value)
-                }
-              />
-            </Grid>
-
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Data approvazione"
-                InputLabelProps={{ shrink: true }}
-                value={a.approval_date}
-                onChange={(e) =>
-                  handleArrayChange("enac_approvals", index, "approval_date", e.target.value)
-                }
-              />
-            </Grid>
-
-            <Grid item xs={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={a.is_first_approval}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "enac_approvals",
-                        index,
-                        "is_first_approval",
-                        e.target.checked
-                      )
-                    }
-                  />
-                }
-                label="Prima approvazione"
-              />
-            </Grid>
-
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label="Note"
-                value={a.note}
-                onChange={(e) =>
-                  handleArrayChange("enac_approvals", index, "note", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-        ))}
-
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveEnacApprovals}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva approvazioni ENAC"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-case "status":
-  return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Storico status
-        </Typography>
-
-        <Button variant="outlined" onClick={addStatusRow} sx={{ mb: 2 }}>
-          Aggiungi status
-        </Button>
-
-        {formData.status_history.map((s, index) => (
-          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-            <Grid item xs={4}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={s.status_type_id ?? ""}
-                  label="Status"
-                  onChange={(e) =>
-                    handleArrayChange(
-                      "status_history",
-                      index,
-                      "status_type_id",
-                      e.target.value === "" ? null : Number(e.target.value)
-                    )
-                  }
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveBenefits}
+                  disabled={saving}
                 >
-                  <MenuItem value="">Seleziona</MenuItem>
-                  {statusTypes.map((st: any) => (
-                    <MenuItem key={st.id} value={st.id}>
-                      {st.code}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+                  {saving ? "Salvataggio..." : "Salva benefit"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
 
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Dal"
-                InputLabelProps={{ shrink: true }}
-                value={s.from_date}
-                onChange={(e) =>
-                  handleArrayChange("status_history", index, "from_date", e.target.value)
-                }
-              />
-            </Grid>
+      case "auto":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Auto aziendale
+              </Typography>
 
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label="Note"
-                value={s.note}
-                onChange={(e) =>
-                  handleArrayChange("status_history", index, "note", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-        ))}
+              <Grid container spacing={2}>
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    label="Modello auto"
+                    value={formData.company_car?.car_model ?? ""}
+                    onChange={(e) => setCompanyCar("car_model", e.target.value)}
+                  />
+                </Grid>
 
-        <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveStatusHistory}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva status"}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    label="Targa"
+                    value={formData.company_car?.plate ?? ""}
+                    onChange={(e) => setCompanyCar("plate", e.target.value)}
+                  />
+                </Grid>
 
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Dal"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.company_car?.from_date ?? ""}
+                    onChange={(e) => setCompanyCar("from_date", e.target.value)}
+                  />
+                </Grid>
 
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    label="Note auto"
+                    value={formData.company_car?.note ?? ""}
+                    onChange={(e) => setCompanyCar("note", e.target.value)}
+                  />
+                </Grid>
+              </Grid>
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveCompanyCar}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva auto aziendale"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
+
+      case "enac_corsi":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Corsi ENAC
+              </Typography>
+
+              <Button variant="outlined" onClick={addEnacCourseRow} sx={{ mb: 2 }}>
+                Aggiungi corso ENAC
+              </Button>
+
+              {formData.enac_courses.map((c, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Data corso"
+                      InputLabelProps={{ shrink: true }}
+                      value={c.course_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_courses",
+                          index,
+                          "course_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Scadenza"
+                      InputLabelProps={{ shrink: true }}
+                      value={c.expiry_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_courses",
+                          index,
+                          "expiry_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={2}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={c.is_first_course}
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "enac_courses",
+                              index,
+                              "is_first_course",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      }
+                      label="Primo corso"
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={c.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_courses",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveEnacCourses}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva corsi ENAC"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
+
+      case "enac_approvazioni":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Approvazioni ENAC
+              </Typography>
+
+              <Button variant="outlined" onClick={addEnacApprovalRow} sx={{ mb: 2 }}>
+                Aggiungi approvazione ENAC
+              </Button>
+
+              {formData.enac_approvals.map((a, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Data richiesta"
+                      InputLabelProps={{ shrink: true }}
+                      value={a.request_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_approvals",
+                          index,
+                          "request_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Data approvazione"
+                      InputLabelProps={{ shrink: true }}
+                      value={a.approval_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_approvals",
+                          index,
+                          "approval_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={2}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={a.is_first_approval}
+                          onChange={(e) =>
+                            handleArrayChange(
+                              "enac_approvals",
+                              index,
+                              "is_first_approval",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      }
+                      label="Prima approvazione"
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={a.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "enac_approvals",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveEnacApprovals}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva approvazioni ENAC"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
+
+      case "status":
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Storico status
+              </Typography>
+
+              <Button variant="outlined" onClick={addStatusRow} sx={{ mb: 2 }}>
+                Aggiungi status
+              </Button>
+
+              {formData.status_history.map((s, index) => (
+                <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={s.status_type_id ?? ""}
+                        label="Status"
+                        onChange={(e) =>
+                          handleArrayChange(
+                            "status_history",
+                            index,
+                            "status_type_id",
+                            e.target.value === "" ? null : Number(e.target.value)
+                          )
+                        }
+                      >
+                        <MenuItem value="">Seleziona</MenuItem>
+                        {statusTypes.map((st: any) => (
+                          <MenuItem key={st.id} value={st.id}>
+                            {st.code}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Dal"
+                      InputLabelProps={{ shrink: true }}
+                      value={s.from_date}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "status_history",
+                          index,
+                          "from_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      value={s.note}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "status_history",
+                          index,
+                          "note",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={saveStatusHistory}
+                  disabled={saving}
+                >
+                  {saving ? "Salvataggio..." : "Salva status"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
 
       default:
         return null;
@@ -2047,9 +2334,39 @@ case "status":
 /* ============================================================
    LOADING SCREEN
 ============================================================ */
-if (!open) return null;
 
-if (loading) {
+  if (!open) return null;
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          position: "fixed",
+          inset: 0,
+          bgcolor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1300,
+        }}
+        onClick={onClose}
+      >
+        <Box
+          sx={{
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            p: 3,
+            minWidth: 600,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Typography variant="h6">Modifica dipendente</Typography>
+          <Typography sx={{ mt: 2 }}>Caricamento dati...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -2057,7 +2374,7 @@ if (loading) {
         inset: 0,
         bgcolor: "rgba(0,0,0,0.5)",
         display: "flex",
-        alignItems: "center",
+        alignItems: "stretch",
         justifyContent: "center",
         zIndex: 1300,
       }}
@@ -2067,98 +2384,67 @@ if (loading) {
         sx={{
           bgcolor: "background.paper",
           borderRadius: 2,
-          p: 3,
-          minWidth: 600,
+          m: 4,
+          width: "90%",
+          height: "90%",
+          display: "flex",
+          overflow: "hidden",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Typography variant="h6">Modifica dipendente</Typography>
-        <Typography sx={{ mt: 2 }}>Caricamento dati...</Typography>
+        {/* Sidebar */}
+        <Box
+          sx={{
+            width: 260,
+            borderRight: 1,
+            borderColor: "divider",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Modifica dipendente
+          </Typography>
+
+          {[
+            { key: "anagrafica", label: "Anagrafica" },
+            { key: "contratto", label: "Contratto" },
+            { key: "cost_center", label: "Cost Center" },
+            { key: "reparto", label: "Reparto" },
+            { key: "ral", label: "RAL" },
+            { key: "benefit", label: "Benefit" },
+            { key: "auto", label: "Auto aziendale" },
+            { key: "enac_corsi", label: "ENAC Corsi" },
+            { key: "enac_approvazioni", label: "ENAC Approvazioni" },
+            { key: "status", label: "Status" },
+          ].map((item) => (
+            <Button
+              key={item.key}
+              variant={activeSection === item.key ? "contained" : "text"}
+              color={activeSection === item.key ? "primary" : "inherit"}
+              onClick={() => setActiveSection(item.key)}
+              sx={{ justifyContent: "flex-start" }}
+            >
+              {item.label}
+            </Button>
+          ))}
+
+          <Box sx={{ mt: "auto", pt: 2 }}>
+            <Button fullWidth variant="outlined" onClick={onClose}>
+              Chiudi
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Contenuto */}
+        <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
+          {renderSection()}
+        </Box>
       </Box>
     </Box>
   );
-}
-
-return (
-  <Box
-    sx={{
-      position: "fixed",
-      inset: 0,
-      bgcolor: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "stretch",
-      justifyContent: "center",
-      zIndex: 1300,
-    }}
-    onClick={onClose}
-  >
-    <Box
-      sx={{
-        bgcolor: "background.paper",
-        borderRadius: 2,
-        m: 4,
-        width: "90%",
-        height: "90%",
-        display: "flex",
-        overflow: "hidden",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Sidebar */}
-      <Box
-        sx={{
-          width: 260,
-          borderRight: 1,
-          borderColor: "divider",
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Modifica dipendente
-        </Typography>
-
-        {[
-          { key: "anagrafica", label: "Anagrafica" },
-          { key: "contratto", label: "Contratto" },
-          { key: "cost_center", label: "Cost Center" },
-          { key: "reparto", label: "Reparto" },
-          { key: "ral", label: "RAL" },
-          { key: "benefit", label: "Benefit" },
-          { key: "auto", label: "Auto aziendale" },
-          { key: "enac_corsi", label: "ENAC Corsi" },
-          { key: "enac_approvazioni", label: "ENAC Approvazioni" },
-          { key: "status", label: "Status" },
-        ].map((item) => (
-          <Button
-            key={item.key}
-            variant={activeSection === item.key ? "contained" : "text"}
-            color={activeSection === item.key ? "primary" : "inherit"}
-            onClick={() => setActiveSection(item.key)}
-            sx={{ justifyContent: "flex-start" }}
-          >
-            {item.label}
-          </Button>
-        ))}
-
-        <Box sx={{ mt: "auto", pt: 2 }}>
-          <Button fullWidth variant="outlined" onClick={onClose}>
-            Chiudi
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Contenuto */}
-      <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
-        {renderSection()}
-      </Box>
-    </Box>
-  </Box>
-);
-
-
 };
 
 export default EmployeeEditModal;

@@ -35,8 +35,8 @@ import { CCNLLevel } from "../../types";
 interface EmployeeEditModalProps {
   open: boolean;
   onClose: () => void;
-  employeeId: number;
-  onUpdated?: (employee: any) => void;
+  employee: EmployeeFull | null;
+  onUpdated: () => void;
 }
 
 /* ============================================================
@@ -166,7 +166,7 @@ const steps = [
    COMPONENTE
 ============================================================ */
 
-const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEditModalProps) => {
+const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditModalProps) => {
   const [activeSection, setActiveSection] = useState("anagrafica");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -249,7 +249,6 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
       setLoading(true);
       try {
         const [
-          employeeRes,
           sitesRes,
           workRegRes,
           contractNatRes,

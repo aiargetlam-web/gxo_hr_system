@@ -278,6 +278,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           setLoading(false);
           return;
         }
+        const lastSite = emp.site_history?.[0];
 
 
         setFormData({
@@ -300,20 +301,21 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_disadvantaged: emp.is_disadvantaged ?? false,
 
           site_history: {
-            site_id: emp.site?.id ?? null,
-            from_date: emp.site?.from_date ?? "",
-            note: emp.site?.note ?? "",
+            site_id: lastSite?.site_id ?? emp.site?.id ?? null,
+            from_date: lastSite?.from_date ?? "",
+            note: lastSite?.note ?? "",
           },
 
+
           contract: {
-            work_regime_id: emp.contract?.work_regime_id ?? null,
-            contract_nature_id: emp.contract?.contract_nature_id ?? null,
+            work_regime_id: workRegimes.find(w => w.name === emp.contract?.work_regime)?.id ?? null,
+            contract_nature_id: contractNatures.find(c => c.name === emp.contract?.contract_nature)?.id ?? null,
+            shift_type_id: shiftTypes.find(s => s.name === emp.contract?.shift_type)?.id ?? null,
             from_date: emp.contract?.from_date ?? "",
             to_date: emp.contract?.to_date ?? null,
             weekly_hours: emp.contract?.weekly_hours?.toString() ?? "",
             fte: emp.contract?.fte?.toString() ?? "",
             time_band: emp.contract?.time_band ?? "",
-            shift_type_id: emp.contract?.shift_type_id ?? null,
             note: emp.contract?.note ?? "",
             level_ccnl_id: emp.contract?.level_ccnl_id ?? null,
           },
@@ -408,7 +410,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
     };
 
     loadAll();
-  }, [open, employee]);
+  }, [open, employee?.id]);
 
 /* ============================================================
    HANDLER CAMPI
@@ -609,7 +611,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         level_ccnl_id: formData.contract.level_ccnl_id,
       };
 
-      await api.post(`/api/v1/employees/${employee?.Id}/contracts`, payload);
+      await api.post(`/api/v1/employees/${employee?.id}/contracts`, payload);
 
       setSaving(false);
       alert("Contratto aggiornato (storico) con successo!");
@@ -631,7 +633,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: cc.from_date,
           note: cc.note,
         };
-        await api.post(`/api/v1/employees/${employee?.Id}/cost-centers`, payload);
+        await api.post(`/api/v1/employees/${employee?.id}/cost-centers`, payload);
       }
 
       setSaving(false);
@@ -654,7 +656,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.department.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.Id}/departments`, payload);
+      await api.post(`/api/v1/employees/${employee?.id}/departments`, payload);
 
       setSaving(false);
       alert("Reparto aggiornato (storico) con successo!");
@@ -675,7 +677,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.salary.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.Id}/salaries`, payload);
+      await api.post(`/api/v1/employees/${employee?.id}/salaries`, payload);
 
       setSaving(false);
       alert("RAL aggiornata (storico) con successo!");
@@ -697,7 +699,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: b.from_date,
           note: b.note,
         };
-        await api.post(`/api/v1/employees/${employee?.Id}/benefits`, payload);
+        await api.post(`/api/v1/employees/${employee?.id}/benefits`, payload);
       }
 
       setSaving(false);
@@ -725,7 +727,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
         note: formData.company_car.note,
       };
 
-      await api.post(`/api/v1/employees/${employee?.Id}/company-cars`, payload);
+      await api.post(`/api/v1/employees/${employee?.id}/company-cars`, payload);
 
       setSaving(false);
       alert("Auto aziendale aggiornata (storico) con successo!");
@@ -747,7 +749,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_course: c.is_first_course,
           note: c.note,
         };
-        await api.post(`/api/v1/employees/${employee?.Id}/enac-courses`, payload);
+        await api.post(`/api/v1/employees/${employee?.id}/enac-courses`, payload);
       }
 
       setSaving(false);
@@ -770,7 +772,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           is_first_approval: a.is_first_approval,
           note: a.note,
         };
-        await api.post(`/api/v1/employees/${employee?.Id}/enac-approvals`, payload);
+        await api.post(`/api/v1/employees/${employee?.id}/enac-approvals`, payload);
       }
 
       setSaving(false);
@@ -792,7 +794,7 @@ const EmployeeEditModal = ({ open, onClose, employee, onUpdated }: EmployeeEditM
           from_date: s.from_date,
           note: s.note,
         };
-        await api.post(`/api/v1/employees/${employee?.Id}/status`, payload);
+        await api.post(`/api/v1/employees/${employee?.id}/status`, payload);
       }
 
       setSaving(false);

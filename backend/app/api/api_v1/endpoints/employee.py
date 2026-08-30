@@ -751,6 +751,27 @@ def list_employees(db: Session = Depends(get_db)):
             }
 
         # ============================================================
+        # Employer attuale
+        # ============================================================
+        emp_hist = db.query(EmployeeEmployerHistory).filter(
+            EmployeeEmployerHistory.employee_id == emp.id,
+            EmployeeEmployerHistory.to_date.is_(None)
+        ).first()
+
+        employer = None
+        if emp_hist:
+            emp_obj = db.query(Employer).filter(Employer.id == emp_hist.employer_id).first()
+            if emp_obj:
+                employer = {
+                    "id": emp_obj.id,
+                    "name": emp_obj.name,
+                    "from_date": emp_hist.from_date,
+                    "note": emp_hist.note
+                }
+
+        contract["employer"] = employer
+
+        # ============================================================
         # COSTRUZIONE RISPOSTA FINALE
         # ============================================================
         result.append({
@@ -1068,7 +1089,26 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
             "id": emp.role.id,
             "name": emp.role.name or emp.role.code,
         }
+    # ============================================================
+    # Employer attuale
+    # ============================================================
+    emp_hist = db.query(EmployeeEmployerHistory).filter(
+        EmployeeEmployerHistory.employee_id == emp.id,
+        EmployeeEmployerHistory.to_date.is_(None)
+    ).first()
 
+    employer = None
+    if emp_hist:
+        emp_obj = db.query(Employer).filter(Employer.id == emp_hist.employer_id).first()
+        if emp_obj:
+            employer = {
+                "id": emp_obj.id,
+                "name": emp_obj.name,
+                "from_date": emp_hist.from_date,
+                "note": emp_hist.note
+            }
+
+    contract["employer"] = employer
     # ============================================================
     # RISPOSTA FINALE
     # ============================================================
@@ -1919,3 +1959,48 @@ def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Se
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento sito: {str(e)}")
+
+# ============================================================
+# get employers
+# ============================================================
+@router.get("/employers")
+def get_employers(db: Session = Depends(get_db)):
+    from app.models.employer import Employer
+    employers = db.query(Employer).all()
+    return [{"id": e.id, "name": e.name} for e in employers]
+
+# ============================================================
+# put employers
+# ============================================================
+@router.put("/{employee_id}/employer/current")
+def update_employer(employee_id: int, payload: EmployerUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_employer_history import EmployeeEmployerHistory
+    from app.models.employee import Employee as EmployeeModel
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(404, "Dipendente non trovato")
+
+    # Chiudi il precedente employer
+    current = db.query(EmployeeEmployerHistory).filter(
+        EmployeeEmployerHistory.employee_id == employee_id,
+        EmployeeEmployerHistory.to_date.is_(None)
+    ).first()
+
+    if current:
+        current.to_date = payload.from_date - timedelta(days=1)
+        db.add(current)
+
+    # Nuovo employer
+    new_emp = EmployeeEmployerHistory(
+        employee_id=employee_id,
+        employer_id=payload.employer_id,
+        from_date=payload.from_date,
+        note=payload.note
+    )
+    db.add(new_emp)
+
+    db.commit()
+    db.refresh(new_emp)
+    return new_emp
+

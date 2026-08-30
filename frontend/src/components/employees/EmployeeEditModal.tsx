@@ -275,7 +275,8 @@ useEffect(() => {
         shiftTypesRes,
         ccnlLevelsRes,
         statusTypesRes,
-        employeeRes
+        employeeRes,
+        employersRes
       ] = await Promise.all([
         siteService.getSites(),
         contractService.getWorkRegimes(),
@@ -287,7 +288,7 @@ useEffect(() => {
         contractService.getShiftTypes(),
         api.get("/api/v1/ccnl-levels"),
         api.get("/api/v1/employment-status-types"),
-        api.get(`/api/v1/employees/${employeeId}`)
+        api.get(`/api/v1/employees/${employeeId}`),
         api.get("/api/v1/employers")
       ]);
 

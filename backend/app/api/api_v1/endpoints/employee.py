@@ -30,7 +30,7 @@ router = APIRouter(tags=["Employees"])
 # CREATE EMPLOYEE COMPLETO (CORRETTO)
 # ============================================================
 
-@router.post("/", response_model=Employee)
+@router.post("/")
 def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_contracts import EmployeeContract
@@ -176,7 +176,22 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 
         db.commit()
         db.refresh(employee)
-        return employee
+        return {
+            "id": employee.id,
+            "email": employee.email,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "phone": employee.phone,
+            "fiscal_code": employee.fiscal_code,
+            "gender": employee.gender,
+            "birth_date": employee.birth_date,
+            "birth_place": employee.birth_place,
+            "address_street": employee.address_street,
+            "address_city": employee.address_city,
+            "address_cap": employee.address_cap,
+            "id_lul": employee.id_lul,
+        }
+
 
     except Exception as e:
         print("ERRORE CREAZIONE DIPENDENTE:", e)
@@ -1563,7 +1578,7 @@ def get_manager_history(employee_id: int, db: Session = Depends(get_db)):
 # ============================================================
 # put anagrafica
 # ============================================================
-@router.put("/{employee_id}", response_model=Employee)
+@router.put("/{employee_id}")
 def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
 
@@ -1572,7 +1587,6 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Dep
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
     try:
-        # aggiorna solo i campi presenti nel payload
         for field, value in payload.dict(exclude_unset=True).items():
             setattr(employee, field, value)
 
@@ -1580,11 +1594,27 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Dep
         db.commit()
         db.refresh(employee)
 
-        return employee
+        # restituisci solo i campi anagrafici, senza status_history
+        return {
+            "id": employee.id,
+            "email": employee.email,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "phone": employee.phone,
+            "fiscal_code": employee.fiscal_code,
+            "gender": employee.gender,
+            "birth_date": employee.birth_date,
+            "birth_place": employee.birth_place,
+            "address_street": employee.address_street,
+            "address_city": employee.address_city,
+            "address_cap": employee.address_cap,
+            "id_lul": employee.id_lul,
+        }
 
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento dipendente: {str(e)}")
+
 
 # ============================================================
 # Post Enac corsi
@@ -1648,30 +1678,6 @@ def add_enac_approval(employee_id: int, payload: EnacApprovalCreate, db: Session
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'approvazione ENAC: {str(e)}")
 
-# ============================================================
-# UPDATE ANAGRAFICA (EmployeeUpdate)
-# ============================================================
-
-@router.put("/{employee_id}", response_model=Employee)
-def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
-    from app.models.employee import Employee as EmployeeModel
-
-    emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
-    if not emp:
-        raise HTTPException(status_code=404, detail="Dipendente non trovato")
-
-    try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(emp, field, value)
-
-        db.add(emp)
-        db.commit()
-        db.refresh(emp)
-        return emp
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento anagrafica: {str(e)}")
 
 # ============================================================
 # UPDATE contratto
@@ -1689,8 +1695,16 @@ def update_contract(employee_id: int, contract_id: int, payload: ContractUpdate,
         raise HTTPException(status_code=404, detail="Contratto non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(contract, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        # 🔥 AGGIORNA LA DATA SE PRESENTE
+        if "from_date" in data:
+            contract.from_date = data["from_date"]
+
+        # 🔥 AGGIORNA GLI ALTRI CAMPI
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(contract, field, value)
 
         db.add(contract)
         db.commit()
@@ -1717,8 +1731,14 @@ def update_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, 
         raise HTTPException(status_code=404, detail="Cost center non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(cc, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        if "from_date" in data:
+            cc.from_date = data["from_date"]
+
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(cc, field, value)
 
         db.add(cc)
         db.commit()
@@ -1745,8 +1765,14 @@ def update_department(employee_id: int, dep_id: int, payload: DepartmentUpdate, 
         raise HTTPException(status_code=404, detail="Reparto non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(dep, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        if "from_date" in data:
+            dep.from_date = data["from_date"]
+
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(dep, field, value)
 
         db.add(dep)
         db.commit()
@@ -1773,8 +1799,14 @@ def update_salary(employee_id: int, salary_id: int, payload: SalaryUpdate, db: S
         raise HTTPException(status_code=404, detail="RAL non trovata")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(sal, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        if "from_date" in data:
+            salary.from_date = data["from_date"]
+
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(salary, field, value)
 
         db.add(sal)
         db.commit()
@@ -1801,8 +1833,14 @@ def update_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db
         raise HTTPException(status_code=404, detail="Benefit non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(ben, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        if "from_date" in data:
+            benefit.from_date = data["from_date"]
+
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(benefit, field, value)
 
         db.add(ben)
         db.commit()
@@ -1830,8 +1868,14 @@ def update_company_car(employee_id: int, car_id: int, payload: CompanyCarUpdate,
         raise HTTPException(status_code=404, detail="Auto aziendale non trovata")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(car, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        if "from_date" in data:
+            car.from_date = data["from_date"]
+
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(car, field, value)
 
         db.add(car)
         db.commit()
@@ -1859,8 +1903,19 @@ def update_enac_course(employee_id: int, course_id: int, payload: EnacCourseUpda
         raise HTTPException(status_code=404, detail="Corso ENAC non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(course, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        # 🔥 Aggiorna manualmente le date
+        if "course_date" in data:
+            course.course_date = data["course_date"]
+
+        if "expiry_date" in data:
+            course.expiry_date = data["expiry_date"]
+
+        # 🔥 Aggiorna gli altri campi
+        for field, value in data.items():
+            if field not in ["course_date", "expiry_date"]:
+                setattr(course, field, value)
 
         db.add(course)
         db.commit()
@@ -1887,8 +1942,19 @@ def update_enac_approval(employee_id: int, approval_id: int, payload: EnacApprov
         raise HTTPException(status_code=404, detail="Approvazione ENAC non trovata")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(appr, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        # 🔥 Aggiorna manualmente le date
+        if "request_date" in data:
+            approval.request_date = data["request_date"]
+
+        if "approval_date" in data:
+            approval.approval_date = data["approval_date"]
+
+        # 🔥 Aggiorna gli altri campi
+        for field, value in data.items():
+            if field not in ["request_date", "approval_date"]:
+                setattr(approval, field, value)
 
         db.add(appr)
         db.commit()
@@ -1916,8 +1982,16 @@ def update_status(employee_id: int, status_id: int, payload: StatusUpdate, db: S
         raise HTTPException(status_code=404, detail="Status non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(st, field, value)
+        data = payload.dict(exclude_unset=True)
+
+        # 🔥 Aggiorna manualmente la data
+        if "from_date" in data:
+            status.from_date = data["from_date"]
+
+        # 🔥 Aggiorna gli altri campi
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(status, field, value)
 
         db.add(st)
         db.commit()
@@ -1947,10 +2021,18 @@ def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Se
         raise HTTPException(status_code=404, detail="Storico sito non trovato")
 
     try:
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(hist, field, value)
+        data = payload.dict(exclude_unset=True)
 
-        # aggiorna anche il sito attuale del dipendente
+        # 🔥 AGGIORNA LA DATA
+        if "from_date" in data:
+            hist.from_date = data["from_date"]
+
+        # 🔥 AGGIORNA GLI ALTRI CAMPI
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(hist, field, value)
+
+        # 🔥 AGGIORNA IL SITO ATTUALE DEL DIPENDENTE
         emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
         if emp and payload.site_id:
             emp.site_id = payload.site_id
@@ -1964,6 +2046,7 @@ def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Se
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento sito: {str(e)}")
+
 
 # ============================================================
 # get employers

@@ -1972,6 +1972,7 @@ def update_enac_approval(employee_id: int, approval_id: int, payload: EnacApprov
 @router.put("/{employee_id}/status/{status_id}")
 def update_status(employee_id: int, status_id: int, payload: StatusUpdate, db: Session = Depends(get_db)):
     from app.models.employee_status_history import EmployeeStatusHistory
+    from app.models.employee import Employee as EmployeeModel
 
     st = db.query(EmployeeStatusHistory).filter(
         EmployeeStatusHistory.id == status_id,
@@ -1986,12 +1987,23 @@ def update_status(employee_id: int, status_id: int, payload: StatusUpdate, db: S
 
         # 🔥 Aggiorna manualmente la data
         if "from_date" in data:
-            status.from_date = data["from_date"]
+            st.from_date = data["from_date"]
 
-        # 🔥 Aggiorna gli altri campi
+        # 🔥 Aggiorna gli altri campi dello storico
         for field, value in data.items():
             if field != "from_date":
-                setattr(status, field, value)
+                setattr(st, field, value)
+
+        # 🔥 Aggiorna anche l'anagrafica (se presente nel payload)
+        emp = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+        if emp:
+            if "has_law_104" in data:
+                emp.has_law_104 = data["has_law_104"]
+            if "is_protected_category" in data:
+                emp.is_protected_category = data["is_protected_category"]
+            if "is_disadvantaged" in data:
+                emp.is_disadvantaged = data["is_disadvantaged"]
+            db.add(emp)
 
         db.add(st)
         db.commit()
@@ -2092,3 +2104,105 @@ def update_employer(employee_id: int, payload: EmployerUpdate, db: Session = Dep
     db.refresh(new_emp)
     return new_emp
 
+# ============================================================
+# put roles
+# ============================================================
+@router.put("/{employee_id}/roles/{role_id}")
+def update_role(employee_id: int, role_id: int, payload: RoleUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_role_history import EmployeeRoleHistory
+
+    role = db.query(EmployeeRoleHistory).filter(
+        EmployeeRoleHistory.id == role_id,
+        EmployeeRoleHistory.employee_id == employee_id
+    ).first()
+
+    if not role:
+        raise HTTPException(status_code=404, detail="Ruolo non trovato")
+
+    data = payload.dict(exclude_unset=True)
+
+    if "from_date" in data:
+        role.from_date = data["from_date"]
+
+    for field, value in data.items():
+        if field != "from_date":
+            setattr(role, field, value)
+
+    db.add(role)
+    db.commit()
+    db.refresh(role)
+    return {"message": "Ruolo aggiornato", "role": role}
+
+# ============================================================
+# UPDATE employer (correttivo)
+# ============================================================
+@router.put("/{employee_id}/employer/{employer_hist_id}")
+def update_employer(employee_id: int, employer_hist_id: int, payload: EmployerUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_employer_history import EmployeeEmployerHistory
+
+    hist = db.query(EmployeeEmployerHistory).filter(
+        EmployeeEmployerHistory.id == employer_hist_id,
+        EmployeeEmployerHistory.employee_id == employee_id
+    ).first()
+
+    if not hist:
+        raise HTTPException(status_code=404, detail="Storico employer non trovato")
+
+    try:
+        data = payload.dict(exclude_unset=True)
+
+        # 🔥 Aggiorna manualmente la data
+        if "from_date" in data:
+            hist.from_date = data["from_date"]
+
+        # 🔥 Aggiorna gli altri campi
+        for field, value in data.items():
+            if field != "from_date":
+                setattr(hist, field, value)
+
+        db.add(hist)
+        db.commit()
+        db.refresh(hist)
+        return {"message": "Employer aggiornato", "employer": hist}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore aggiornamento employer: {str(e)}")
+
+# ============================================================
+# UPDATE managers
+# ============================================================
+@router.put("/{employee_id}/managers/{manager_id}")
+def update_manager(employee_id: int, manager_id: int, payload: ManagerUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_managers import EmployeeManager
+
+    manager = db.query(EmployeeManager).filter(
+        EmployeeManager.id == manager_id,
+        EmployeeManager.employee_id == employee_id
+    ).first()
+
+    if not manager:
+        raise HTTPException(status_code=404, detail="Manager non trovato")
+
+    data = payload.dict(exclude_unset=True)
+
+    if "from_date" in data:
+        manager.from_date = data["from_date"]
+
+    for field, value in data.items():
+        if field != "from_date":
+            setattr(manager, field, value)
+
+    db.add(manager)
+    db.commit()
+    db.refresh(manager)
+    return {"message": "Manager aggiornato", "manager": manager}
+
+
+# ============================================================
+# get L104
+# ============================================================
+@router.get("/law-104-types")
+def get_law_104_types(db: Session = Depends(get_db)):
+    from app.models.law_104_type import Law104Type
+    return db.query(Law104Type).all()

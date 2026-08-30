@@ -320,15 +320,25 @@ class SiteUpdate(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status_type_id: int
-    from_date: date
+    class StatusUpdate(BaseModel):
+    status_type_id: Optional[int] = None
+    law_104_type_id: Optional[int] = None
+    from_date: Optional[date] = None
     note: Optional[str] = None
+    has_law_104: Optional[bool] = None
+    is_protected_category: Optional[bool] = None
+    is_disadvantaged: Optional[bool] = None
 
 
 class CompanyCarUpdate(BaseModel):
     car_model: Optional[str] = None
     plate: Optional[str] = None
     from_date: Optional[date] = None     # AGGIUNTO
+    note: Optional[str] = None
+
+class EmployerUpdate(BaseModel):
+    employer_id: Optional[int] = None
+    from_date: Optional[date] = None
     note: Optional[str] = None
 
 

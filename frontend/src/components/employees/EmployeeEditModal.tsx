@@ -2227,13 +2227,42 @@ case "ral":
         </Card>
       );
 
-/* ============================================================
-   LOADING SCREEN
-============================================================ */
+  /* ============================================================
+     LOADING SCREEN
+  ============================================================ */
 
-if (!open) return null;
+  if (!open) return null;
 
-if (loading) {
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          position: "fixed",
+          inset: 0,
+          bgcolor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1300,
+        }}
+        onClick={() => onClose()}
+      >
+        <Box
+          sx={{
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            p: 3,
+            minWidth: 600,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Typography variant="h6">Modifica dipendente</Typography>
+          <Typography sx={{ mt: 2 }}>Caricamento dati...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -2241,7 +2270,7 @@ if (loading) {
         inset: 0,
         bgcolor: "rgba(0,0,0,0.5)",
         display: "flex",
-        alignItems: "center",
+        alignItems: "stretch",
         justifyContent: "center",
         zIndex: 1300,
       }}
@@ -2251,95 +2280,66 @@ if (loading) {
         sx={{
           bgcolor: "background.paper",
           borderRadius: 2,
-          p: 3,
-          minWidth: 600,
+          m: 4,
+          width: "90%",
+          height: "90%",
+          display: "flex",
+          overflow: "hidden",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Typography variant="h6">Modifica dipendente</Typography>
-        <Typography sx={{ mt: 2 }}>Caricamento dati...</Typography>
+        {/* Sidebar */}
+        <Box
+          sx={{
+            width: 260,
+            borderRight: 1,
+            borderColor: "divider",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Modifica dipendente
+          </Typography>
+
+          {[
+            { key: "anagrafica", label: "Anagrafica" },
+            { key: "assegnazione", label: "Assegnazione" },
+            { key: "contratto", label: "Contratto" },
+            { key: "status", label: "Status" },
+            { key: "ral", label: "RAL" },
+            { key: "cost_center", label: "Cost Center" },
+            { key: "benefit", label: "Benefit" },
+            { key: "auto", label: "Auto aziendale" },
+            { key: "enac", label: "ENAC" },
+          ].map((item) => (
+            <Button
+              key={item.key}
+              variant={activeSection === item.key ? "contained" : "text"}
+              color={activeSection === item.key ? "primary" : "inherit"}
+              onClick={() => setActiveSection(item.key)}
+              sx={{ justifyContent: "flex-start" }}
+            >
+              {item.label}
+            </Button>
+          ))}
+
+          <Box sx={{ mt: "auto", pt: 2 }}>
+            <Button fullWidth variant="outlined" onClick={onClose}>
+              Chiudi
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Contenuto */}
+        <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
+          {renderSection()}
+        </Box>
       </Box>
     </Box>
   );
-}
-
-return (
-  <Box
-    sx={{
-      position: "fixed",
-      inset: 0,
-      bgcolor: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "stretch",
-      justifyContent: "center",
-      zIndex: 1300,
-    }}
-    onClick={() => onClose()}
-  >
-    <Box
-      sx={{
-        bgcolor: "background.paper",
-        borderRadius: 2,
-        m: 4,
-        width: "90%",
-        height: "90%",
-        display: "flex",
-        overflow: "hidden",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Sidebar */}
-      <Box
-        sx={{
-          width: 260,
-          borderRight: 1,
-          borderColor: "divider",
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Modifica dipendente
-        </Typography>
-
-        {[
-          { key: "anagrafica", label: "Anagrafica" },
-          { key: "assegnazione", label: "Assegnazione" },
-          { key: "contratto", label: "Contratto" },
-          { key: "status", label: "Status" },
-          { key: "ral", label: "RAL" },
-          { key: "cost_center", label: "Cost Center" },
-          { key: "benefit", label: "Benefit" },
-          { key: "auto", label: "Auto aziendale" },
-          { key: "enac", label: "ENAC" },
-        ].map((item) => (
-          <Button
-            key={item.key}
-            variant={activeSection === item.key ? "contained" : "text"}
-            color={activeSection === item.key ? "primary" : "inherit"}
-            onClick={() => setActiveSection(item.key)}
-            sx={{ justifyContent: "flex-start" }}
-          >
-            {item.label}
-          </Button>
-        ))}
-
-        <Box sx={{ mt: "auto", pt: 2 }}>
-          <Button fullWidth variant="outlined" onClick={onClose}>
-            Chiudi
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Contenuto */}
-      <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
-        {renderSection()}
-      </Box>
-    </Box>
-  </Box>
-);
 
 };
 

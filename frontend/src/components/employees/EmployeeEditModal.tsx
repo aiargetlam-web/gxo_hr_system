@@ -921,335 +921,81 @@ const renderSection = () => {
 
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Nome *"
-                  value={formData.first_name}
-                  onChange={(e) => handleChange("first_name", e.target.value)}
-                />
+                <TextField fullWidth label="Nome *" value={formData.first_name}
+                  onChange={(e) => handleChange("first_name", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Cognome *"
-                  value={formData.last_name}
-                  onChange={(e) => handleChange("last_name", e.target.value)}
-                />
+                <TextField fullWidth label="Cognome *" value={formData.last_name}
+                  onChange={(e) => handleChange("last_name", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Email *"
-                  value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                />
+                <TextField fullWidth label="Email *" value={formData.email}
+                  onChange={(e) => handleChange("email", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Telefono"
-                  value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                />
+                <TextField fullWidth label="Telefono" value={formData.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Codice fiscale"
-                  value={formData.fiscal_code}
-                  onChange={(e) => handleChange("fiscal_code", e.target.value)}
-                />
+                <TextField fullWidth label="Codice fiscale" value={formData.fiscal_code}
+                  onChange={(e) => handleChange("fiscal_code", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Genere *</InputLabel>
-                  <Select
-                    value={formData.gender ?? ""}
-                    label="Genere *"
-                    onChange={(e) => handleChange("gender", e.target.value)}
-                  >
+                  <Select value={formData.gender ?? ""} label="Genere *"
+                    onChange={(e) => handleChange("gender", e.target.value)}>
                     <MenuItem value="">Seleziona</MenuItem>
                     {genders.map((g) => (
-                      <MenuItem key={g.id} value={g.code}>
-                        {g.description}
-                      </MenuItem>
+                      <MenuItem key={g.id} value={g.code}>{g.description}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data di nascita"
+                <TextField fullWidth type="date" label="Data di nascita"
                   InputLabelProps={{ shrink: true }}
                   value={formData.birth_date ?? ""}
-                  onChange={(e) => handleChange("birth_date", e.target.value)}
-                />
+                  onChange={(e) => handleChange("birth_date", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Luogo di nascita"
-                  value={formData.birth_place ?? ""}
-                  onChange={(e) => handleChange("birth_place", e.target.value)}
-                />
+                <TextField fullWidth label="Luogo di nascita" value={formData.birth_place}
+                  onChange={(e) => handleChange("birth_place", e.target.value)} />
               </Grid>
 
               <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Indirizzo"
-                  value={formData.address_street ?? ""}
-                  onChange={(e) => handleChange("address_street", e.target.value)}
-                />
+                <TextField fullWidth label="Indirizzo" value={formData.address_street}
+                  onChange={(e) => handleChange("address_street", e.target.value)} />
               </Grid>
 
               <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Città"
-                  value={formData.address_city ?? ""}
-                  onChange={(e) => handleChange("address_city", e.target.value)}
-                />
+                <TextField fullWidth label="Città" value={formData.address_city}
+                  onChange={(e) => handleChange("address_city", e.target.value)} />
               </Grid>
 
               <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="CAP"
-                  value={formData.address_cap ?? ""}
-                  onChange={(e) => handleChange("address_cap", e.target.value)}
-                />
-              </Grid>
-
-              {/* SITO */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ mt: 3 }}>
-                  Sito di assegnazione
-                </Typography>
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Sito *</InputLabel>
-                  <Select
-                    value={
-                      formData.site_history.site_id !== null
-                        ? String(formData.site_history.site_id)
-                        : ""
-                    }
-                    label="Sito *"
-                    onChange={(e) =>
-                      handleSiteChange(
-                        e.target.value === "" ? null : Number(e.target.value)
-                      )
-                    }
-                  >
-                    <MenuItem value="">Seleziona</MenuItem>
-                    {sites.map((s) => (
-                      <MenuItem key={s.id} value={String(s.id)}>
-                        {s.name || s.code}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Dal"
-                  InputLabelProps={{ shrink: true }}
-                  value={formData.site_history.from_date ?? ""}
-                  onChange={(e) =>
-                    handleNestedChange("site_history", "from_date", e.target.value)
-                  }
-                />
-              </Grid>
-
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Note sito"
-                  value={formData.site_history.note ?? ""}
-                  onChange={(e) =>
-                    handleNestedChange("site_history", "note", e.target.value)
-                  }
-                />
-              </Grid>
-
-              {/* LUL */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ mt: 3 }}>
-                  LUL
-                </Typography>
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="ID LUL"
-                  value={formData.id_lul ?? ""}
-                  onChange={(e) => handleChange("id_lul", e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Ruolo *</InputLabel>
-                  <Select
-                    value={formData.role_id ?? ""}
-                    label="Ruolo *"
-                    onChange={(e) =>
-                      handleChange(
-                        "role_id",
-                        e.target.value === "" ? null : Number(e.target.value)
-                      )
-                    }
-                  >
-                    <MenuItem value="">Seleziona</MenuItem>
-                    {roles.map((r: any) => (
-                      <MenuItem key={r.id} value={r.id}>
-                        {r.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              {/* Stato lavorativo */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ mt: 3 }}>
-                  Stato lavorativo
-                </Typography>
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data assunzione *"
-                  InputLabelProps={{ shrink: true }}
-                  value={formData.hire_date ?? ""}
-                  onChange={(e) => handleChange("hire_date", e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.is_protected_category}
-                      onChange={(e) =>
-                        handleChange("is_protected_category", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Categoria protetta"
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.is_disadvantaged}
-                      onChange={(e) =>
-                        handleChange("is_disadvantaged", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Svantaggiato"
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.has_law_104}
-                      onChange={(e) =>
-                        handleChange("has_law_104", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Legge 104"
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Note Legge 104"
-                  value={formData.law_104_note ?? ""}
-                  onChange={(e) => handleChange("law_104_note", e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="% categoria protetta"
-                  value={formData.protected_percentage ?? ""}
-                  onChange={(e) =>
-                    handleChange(
-                      "protected_percentage",
-                      e.target.value === "" ? null : Number(e.target.value)
-                    )
-                  }
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Tipo categoria protetta"
-                  value={formData.protected_type ?? ""}
-                  onChange={(e) => handleChange("protected_type", e.target.value)}
-                />
+                <TextField fullWidth label="CAP" value={formData.address_cap}
+                  onChange={(e) => handleChange("address_cap", e.target.value)} />
               </Grid>
             </Grid>
 
-            <Box
-              sx={{
-                mt: 3,
-                textAlign: "right",
-                display: "flex",
-                gap: 2,
-                justifyContent: "flex-end",
-              }}
-            >
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={saveSite}
-                disabled={saving}
-              >
-                {saving ? "Salvataggio..." : "Salva sito"}
-              </Button>
-
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={saveAnagrafica}
-                disabled={saving}
-              >
+            <Box sx={{ mt: 3, textAlign: "right" }}>
+              <Button variant="contained" color="primary"
+                onClick={saveAnagrafica} disabled={saving}>
                 {saving ? "Salvataggio..." : "Salva anagrafica"}
               </Button>
             </Box>
           </CardContent>
         </Card>
       );
+
 
     /* ============================================================
        STEP 1 — CONTRATTO
@@ -1455,6 +1201,55 @@ const renderSection = () => {
                   }
                 />
               </Grid>
+
+              {/* DATORE DI LAVORO */}
+              <Grid item xs={12} sx={{ mt: 3 }}>
+                <Typography variant="subtitle1">Datore di lavoro</Typography>
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Datore *</InputLabel>
+                  <Select
+                    value={formData.contract.employer_id ?? ""}
+                    label="Datore *"
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "contract",
+                        "employer_id",
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                  >
+                    <MenuItem value="">Seleziona</MenuItem>
+                    {employers.map((emp) => (
+                      <MenuItem key={emp.id} value={emp.id}>
+                        {emp.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={3}>
+                <TextField fullWidth type="date" label="Dal"
+                  InputLabelProps={{ shrink: true }}
+                  value={formData.contract.employer_from_date ?? ""}
+                  onChange={(e) =>
+                    handleNestedChange("contract", "employer_from_date", e.target.value)
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <TextField fullWidth label="Note datore"
+                  value={formData.contract.employer_note ?? ""}
+                  onChange={(e) =>
+                    handleNestedChange("contract", "employer_note", e.target.value)
+                  }
+                />
+              </Grid>
+
             </Grid>
 
             <Box sx={{ mt: 3, textAlign: "right" }}>
@@ -1581,24 +1376,71 @@ const renderSection = () => {
     /* ============================================================
        STEP 3 — REPARTO
     ============================================================ */
-    case "reparto":
+    case "assegnazione":
       return (
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Reparto
+              Assegnazione (Sito + Reparto)
             </Typography>
 
             <Grid container spacing={2}>
+              {/* SITO */}
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Sito</Typography>
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Sito *</InputLabel>
+                  <Select
+                    value={formData.site_history.site_id ?? ""}
+                    label="Sito *"
+                    onChange={(e) =>
+                      handleSiteChange(
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                 >
+                    <MenuItem value="">Seleziona</MenuItem>
+                    {sites.map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={3}>
+                <TextField fullWidth type="date" label="Dal"
+                  InputLabelProps={{ shrink: true }}
+                  value={formData.site_history.from_date}
+                  onChange={(e) =>
+                    handleNestedChange("site_history", "from_date", e.target.value)
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <TextField fullWidth label="Note sito"
+                  value={formData.site_history.note}
+                  onChange={(e) =>
+                    handleNestedChange("site_history", "note", e.target.value)
+                  }
+                />
+              </Grid>
+
+              {/* REPARTO */}
+              <Grid item xs={12} sx={{ mt: 3 }}>
+                <Typography variant="subtitle1">Reparto</Typography>
+              </Grid>
+
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Reparto *</InputLabel>
                   <Select
-                    value={
-                      formData.department.department_id !== null
-                        ? String(formData.department.department_id)
-                        : ""
-                    }
+                    value={formData.department.department_id ?? ""}
                     label="Reparto *"
                     onChange={(e) =>
                       handleNestedChange(
@@ -1610,8 +1452,8 @@ const renderSection = () => {
                   >
                     <MenuItem value="">Seleziona</MenuItem>
                     {departments.map((d) => (
-                      <MenuItem key={d.id} value={String(d.id)}>
-                        {d.name || d.code}
+                      <MenuItem key={d.id} value={d.id}>
+                        {d.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1622,11 +1464,7 @@ const renderSection = () => {
                 <FormControl fullWidth>
                   <InputLabel>Preposto *</InputLabel>
                   <Select
-                    value={
-                      formData.department.manager_employee_id !== null
-                        ? String(formData.department.manager_employee_id)
-                        : ""
-                    }
+                    value={formData.department.manager_employee_id ?? ""}
                     label="Preposto *"
                     onChange={(e) =>
                       handleNestedChange(
@@ -1638,7 +1476,7 @@ const renderSection = () => {
                   >
                     <MenuItem value="">Seleziona</MenuItem>
                     {preposti.map((p) => (
-                      <MenuItem key={p.id} value={String(p.id)}>
+                      <MenuItem key={p.id} value={p.id}>
                         {p.last_name} {p.first_name}
                       </MenuItem>
                     ))}
@@ -1647,10 +1485,7 @@ const renderSection = () => {
               </Grid>
 
               <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Dal *"
+                <TextField fullWidth type="date" label="Dal"
                   InputLabelProps={{ shrink: true }}
                   value={formData.department.from_date}
                   onChange={(e) =>
@@ -1660,9 +1495,7 @@ const renderSection = () => {
               </Grid>
 
               <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Note reparto"
+                <TextField fullWidth label="Note reparto"
                   value={formData.department.note}
                   onChange={(e) =>
                     handleNestedChange("department", "note", e.target.value)
@@ -1671,81 +1504,21 @@ const renderSection = () => {
               </Grid>
             </Grid>
 
-            <Box sx={{ mt: 3, textAlign: "right" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={saveDepartment}
+            <Box sx={{ mt: 3, textAlign: "right", display: "flex", gap: 2 }}>
+              <Button variant="contained" color="primary"
+                onClick={async () => {
+                  await saveSite();
+                  await saveDepartment();
+                }}
                 disabled={saving}
               >
-                {saving ? "Salvataggio..." : "Salva reparto"}
+                {saving ? "Salvataggio..." : "Salva assegnazione"}
               </Button>
             </Box>
           </CardContent>
         </Card>
       );
-    /* ============================================================
-       STEP 4 — RAL
-    ============================================================ */
-    case "ral":
-      return (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              RAL
-            </Typography>
 
-            <Grid container spacing={2}>
-              <Grid item xs={4}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="RAL *"
-                  value={formData.salary.ral_amount}
-                  onChange={(e) =>
-                    handleNestedChange("salary", "ral_amount", e.target.value)
-                  }
-                />
-              </Grid>
-
-              <Grid item xs={4}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Dal *"
-                  InputLabelProps={{ shrink: true }}
-                  value={formData.salary.from_date}
-                  onChange={(e) =>
-                    handleNestedChange("salary", "from_date", e.target.value)
-                  }
-                />
-              </Grid>
-
-              <Grid item xs={4}>
-                <TextField
-                  fullWidth
-                  label="Note RAL"
-                  value={formData.salary.note}
-                  onChange={(e) =>
-                    handleNestedChange("salary", "note", e.target.value)
-                  }
-                />
-              </Grid>
-            </Grid>
-
-            <Box sx={{ mt: 3, textAlign: "right" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={saveSalary}
-                disabled={saving}
-              >
-                {saving ? "Salvataggio..." : "Salva RAL"}
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-      );
 
     /* ============================================================
        STEP 5 — BENEFIT
@@ -2132,85 +1905,129 @@ case "enac":
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Storico status
+              Stato amministrativo
             </Typography>
 
-            {formData.status_history.map((s, index) => (
-              <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={s.status_type_id ?? ""}
-                      label="Status"
-                      onChange={(e) =>
-                        handleArrayChange(
-                          "status_history",
-                          index,
-                          "status_type_id",
-                          e.target.value === "" ? null : Number(e.target.value)
-                        )
-                      }
-                    >
-                      <MenuItem value="">Seleziona</MenuItem>
-                      {statusTypes.map((st: any) => (
-                        <MenuItem key={st.id} value={st.id}>
-                          {st.code}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Dal"
-                    InputLabelProps={{ shrink: true }}
-                    value={s.from_date}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "status_history",
-                        index,
-                        "from_date",
-                        e.target.value
-                      )
-                    }
-                  />
-                </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    value={s.note}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "status_history",
-                        index,
-                        "note",
-                        e.target.value
-                      )
-                    }
-                  />
-                </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField fullWidth type="date" label="Data assunzione"
+                  InputLabelProps={{ shrink: true }}
+                  value={formData.hire_date}
+                  onChange={(e) => handleChange("hire_date", e.target.value)}
+                />
               </Grid>
-            ))}
+
+              <Grid item xs={6}>
+                <TextField fullWidth label="ID LUL"
+                  value={formData.id_lul}
+                  onChange={(e) => handleChange("id_lul", e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Ruolo *</InputLabel>
+                  <Select
+                    value={formData.role_id ?? ""}
+                    label="Ruolo *"
+                    onChange={(e) =>
+                      handleChange(
+                        "role_id",
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                  >
+                    <MenuItem value="">Seleziona</MenuItem>
+                    {roles.map((r) => (
+                      <MenuItem key={r.id} value={r.id}>
+                        {r.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.is_protected_category}
+                      onChange={(e) =>
+                        handleChange("is_protected_category", e.target.checked)
+                      }
+                    />
+                  }
+                  label="Categoria protetta"
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.is_disadvantaged}
+                      onChange={(e) =>
+                        handleChange("is_disadvantaged", e.target.checked)
+                      }
+                    />
+                  }
+                  label="Svantaggiato"
+               />
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.has_law_104}
+                      onChange={(e) =>
+                        handleChange("has_law_104", e.target.checked)
+                      }
+                    />
+                  }
+                  label="Legge 104"
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField fullWidth label="Note 104"
+                  value={formData.law_104_note}
+                  onChange={(e) => handleChange("law_104_note", e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField fullWidth type="number" label="% categoria protetta"
+                  value={formData.protected_percentage ?? ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "protected_percentage",
+                      e.target.value === "" ? null : Number(e.target.value)
+                    )
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField fullWidth label="Tipo categoria protetta"
+                  value={formData.protected_type ?? ""}
+                  onChange={(e) => handleChange("protected_type", e.target.value)}
+                />
+              </Grid>
+            </Grid>
 
             <Box sx={{ mt: 3, textAlign: "right" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={saveStatusHistory}
+              <Button variant="contained" color="primary"
+                onClick={saveStatus}
                 disabled={saving}
               >
-                {saving ? "Salvataggio..." : "Salva status"}
+                {saving ? "Salvataggio..." : "Salva stato"}
               </Button>
             </Box>
           </CardContent>
         </Card>
       );
+
 
     default:
       return null;
@@ -2295,14 +2112,14 @@ return (
 
         {[
           { key: "anagrafica", label: "Anagrafica" },
+          { key: "assegnazione", label: "Assegnazione" },
           { key: "contratto", label: "Contratto" },
-          { key: "cost_center", label: "Cost Center" },
-          { key: "reparto", label: "Reparto" },
+          { key: "status", label: "Status" },
           { key: "ral", label: "RAL" },
+          { key: "cost_center", label: "Cost Center" },
           { key: "benefit", label: "Benefit" },
           { key: "auto", label: "Auto aziendale" },
           { key: "enac", label: "ENAC" },
-          { key: "status", label: "Status" },
         ].map((item) => (
           <Button
             key={item.key}

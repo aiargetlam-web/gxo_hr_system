@@ -60,6 +60,9 @@ type ContractForm = {
   shift_type_id: number | null;
   note: string;
   level_ccnl_id: number | null;
+  employer_id: number | null;
+  employer_from_date: string;
+  employer_note: string;
 };
 
 type DepartmentForm = {
@@ -248,6 +251,8 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
   const [shiftTypes, setShiftTypes] = useState<any[]>([]);
   const [ccnlLevels, setCcnlLevels] = useState<CCNLLevel[]>([]);
   const [statusTypes, setStatusTypes] = useState<any[]>([]);
+  const [employers, setEmployers] = useState<any[]>([]);
+
 
 /* ============================================================
    LOAD DATA (EMPLOYEE + DIZIONARI)
@@ -283,6 +288,7 @@ useEffect(() => {
         api.get("/api/v1/ccnl-levels"),
         api.get("/api/v1/employment-status-types"),
         api.get(`/api/v1/employees/${employeeId}`)
+        api.get("/api/v1/employers")
       ]);
 
       const emp = employeeRes.data;
@@ -411,6 +417,7 @@ useEffect(() => {
       setShiftTypes(shiftTypesRes);
       setCcnlLevels(ccnlLevelsRes.data);
       setStatusTypes(statusTypesRes.data);
+      setEmployers(employersRes.data);
 
       if (emp.site?.id) {
         const [depsRes, prepostiRes] = await Promise.all([
@@ -868,29 +875,25 @@ const saveEnacApprovals = async () => {
   }
 };
 
-const saveStatusHistory = async () => {
+const saveStatus = async () => {
   try {
     setSaving(true);
 
-    for (const s of formData.status_history) {
-      const payload = {
-        status_type_id: s.status_type_id,
-        from_date: s.from_date,
-        note: s.note,
-      };
+    const payload = {
+      hire_date: formData.hire_date,
+      termination_date: formData.termination_date,
+      id_lul: formData.id_lul,
+      role_id: formData.role_id,
+      is_disadvantaged: formData.is_disadvantaged,
+      is_protected_category: formData.is_protected_category,
+      protected_type: formData.protected_type,
+      protected_percentage: formData.protected_percentage,
+      has_law_104: formData.has_law_104,
+      law_104_type: formData.law_104_type,
+      law_104_note: formData.law_104_note,
+    };
 
-      if (s.id) {
-        await api.put(
-          `/api/v1/employees/${employeeId}/status/${s.id}`,
-          payload
-        );
-      } else {
-        await api.put(
-          `/api/v1/employees/${employeeId}/status/current`,
-          payload
-        );
-      }
-    }
+    await api.put(`/api/v1/employees/${employeeId}`, payload);
 
     await refreshEmployee();
     alert("Status aggiornato con successo!");
@@ -901,6 +904,7 @@ const saveStatusHistory = async () => {
     setSaving(false);
   }
 };
+
 /* ============================================================
    RENDER SECTION
 ============================================================ */
@@ -1222,7 +1226,7 @@ const renderSection = () => {
                     }
                   >
                     <MenuItem value="">Seleziona</MenuItem>
-                    {employers.map((emp) => (
+                    {employers.map((emp: any) => (
                       <MenuItem key={emp.id} value={emp.id}>
                         {emp.name}
                       </MenuItem>

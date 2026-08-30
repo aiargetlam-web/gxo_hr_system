@@ -292,7 +292,7 @@ useEffect(() => {
         api.get("/api/v1/ccnl-levels"),
         api.get("/api/v1/employment-status-types"),
         api.get(`/api/v1/employees/${employeeId}`),
-        api.get("/api/v1/employers")
+        api.get("/api/v1/employees/employers")
       ]);
 
       const emp = employeeRes.data;

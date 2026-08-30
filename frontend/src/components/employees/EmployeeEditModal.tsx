@@ -348,10 +348,10 @@ useEffect(() => {
         is_protected_category: emp.is_protected_category ?? false,
         is_disadvantaged: emp.is_disadvantaged ?? false,
         has_law_104: emp.has_law_104 ?? false,
-        law_104_type: emp.law_104_type ?? null,
+        law_104_type_id: emp.law_104_type_id ?? null,
         law_104_note: emp.law_104_note ?? "",
         protected_percentage: emp.protected_percentage ?? null,
-        protected_type: emp.protected_type ?? null,
+        protected_type: emp.protected_type ?? "",
 
         site_history: {
           id: emp.site_history?.id,

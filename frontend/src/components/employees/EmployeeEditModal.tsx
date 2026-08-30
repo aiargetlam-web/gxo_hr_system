@@ -326,6 +326,7 @@ useEffect(() => {
         api.get("/api/v1/employment-status-types"),
         api.get(`/api/v1/employees/${employeeId}`),
         api.get("/api/v1/employees/employers/list")
+        const law104TypesRes = await api.get("/api/v1/law-104-types");
       ]);
 
       const emp = employeeRes.data;

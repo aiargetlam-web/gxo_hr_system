@@ -220,6 +220,10 @@ class ContractCreate(BaseModel):
     note: Optional[str] = None
     to_date: Optional[date] = None
     level_ccnl_id: Optional[int] = None
+    employer_id: int | None
+    employer_from_date: date | None
+    employer_note: str | None
+
 
 
 
@@ -276,6 +280,10 @@ class ContractUpdate(BaseModel):
     time_band: Optional[str] = None
     shift_type: Optional[str] = None
     note: Optional[str] = None
+    employer_id: int | None
+    employer_from_date: date | None
+    employer_note: str | None
+
 
 
 class SalaryUpdate(BaseModel):

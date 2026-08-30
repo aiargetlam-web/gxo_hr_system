@@ -214,6 +214,9 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
       shift_type_id: null,
       note: "",
       level_ccnl_id: null,
+      employer_id: null,
+      employer_from_date: "",
+      employer_note: "",
     },
 
     cost_centers: [],
@@ -341,6 +344,9 @@ useEffect(() => {
           time_band: emp.contract?.time_band ?? "",
           note: emp.contract?.note ?? "",
           level_ccnl_id: emp.contract?.level_ccnl_id ?? null,
+          employer_id: emp.contract?.employer_id ?? null,
+          employer_from_date: emp.contract?.employer_from_date ?? "",
+          employer_note: emp.contract?.employer_note ?? "",
         },
 
         cost_centers: (emp.cost_centers ?? []).map((cc: any) => ({

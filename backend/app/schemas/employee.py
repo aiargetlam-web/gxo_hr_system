@@ -113,9 +113,12 @@ class Status(BaseModel):
 
 class EmploymentStatusType(BaseModel):
     id: int
-    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
 
     model_config = {"from_attributes": True}
+
 
 
 # ---------------------------------------------------------

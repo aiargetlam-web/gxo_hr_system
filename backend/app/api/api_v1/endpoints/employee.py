@@ -769,7 +769,8 @@ def list_employees(db: Session = Depends(get_db)):
                     "note": emp_hist.note
                 }
 
-        contract["employer"] = employer
+        if contract is not None:
+            contract["employer"] = employer
 
         # ============================================================
         # COSTRUZIONE RISPOSTA FINALE
@@ -1108,7 +1109,8 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
                 "note": emp_hist.note
             }
 
-    contract["employer"] = employer
+    if contract is not None:
+        contract["employer"] = employer
     # ============================================================
     # RISPOSTA FINALE
     # ============================================================

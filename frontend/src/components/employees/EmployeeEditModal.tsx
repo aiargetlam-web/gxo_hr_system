@@ -1909,6 +1909,70 @@ case "enac":
   );
 
     /* ============================================================
+       STEP ral
+    ============================================================ */
+case "ral":
+  return (
+    <Card sx={{ mb: 3 }}>
+      <CardContent>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          RAL
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              type="number"
+              label="RAL *"
+              value={formData.salary.ral_amount}
+              onChange={(e) =>
+                handleNestedChange("salary", "ral_amount", e.target.value)
+              }
+            />
+          </Grid>
+
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              type="date"
+              label="Dal *"
+              InputLabelProps={{ shrink: true }}
+              value={formData.salary.from_date}
+              onChange={(e) =>
+                handleNestedChange("salary", "from_date", e.target.value)
+              }
+            />
+          </Grid>
+
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              label="Note RAL"
+              value={formData.salary.note}
+              onChange={(e) =>
+                handleNestedChange("salary", "note", e.target.value)
+              }
+            />
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 3, textAlign: "right" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={saveSalary}
+            disabled={saving}
+          >
+            {saving ? "Salvataggio..." : "Salva RAL"}
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+
+    /* ============================================================
        STEP 9 — STATUS
     ============================================================ */
     case "status":

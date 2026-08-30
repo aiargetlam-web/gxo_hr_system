@@ -584,7 +584,7 @@ const saveAnagrafica = async () => {
       is_protected_category: formData.is_protected_category,
       is_disadvantaged: formData.is_disadvantaged,
       has_law_104: formData.has_law_104,
-      law_104_type: formData.law_104_type,
+      law_104_type_id: formData.law_104_type_id,
       law_104_note: formData.law_104_note,
       protected_percentage: formData.protected_percentage,
       protected_type: formData.protected_type,

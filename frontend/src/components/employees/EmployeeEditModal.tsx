@@ -208,7 +208,7 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
       law_104_type_id: null,
     },
 
-  // 🔥 SITO
+    // 🔥 SITO
     site_history: {
       id: undefined,
       site_id: null,

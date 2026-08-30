@@ -127,6 +127,15 @@ type StatusRow = {
   note: string;
 };
 
+type StatusCurrent = {
+  id?: number;
+  status_type_id: number | null;
+  from_date: string;
+  note: string;
+  law_104_type_id: number | null;
+};
+
+
 type EmployeeEditForm = {
   first_name: string;
   last_name: string;
@@ -150,7 +159,6 @@ type EmployeeEditForm = {
   law_104_note: string;
   protected_percentage: number | null;
   protected_type: string;              // ✔ CORRETTO
-
   status_from_date: string;           // ✔ AGGIUNTO
   status_type_id: number | null;      // ✔ AGGIUNTO
   status: StatusCurrent;              // ✔ AGGIUNTO
@@ -359,6 +367,16 @@ useEffect(() => {
         law_104_note: emp.law_104_note ?? "",
         protected_percentage: emp.protected_percentage ?? null,
         protected_type: emp.protected_type ?? "",
+        status_from_date: emp.status?.from_date ?? "",
+        status_type_id: emp.status?.status_type_id ?? null,
+        status: {
+          id: emp.status?.id,
+          status_type_id: emp.status?.status_type_id ?? null,
+          from_date: emp.status?.from_date ?? "",
+          note: emp.status?.note ?? "",
+          law_104_type_id: emp.status?.law_104_type_id ?? null,
+        },
+
 
         site_history: {
           id: emp.site_history?.id,

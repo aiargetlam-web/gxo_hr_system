@@ -278,6 +278,8 @@ class CompanyCarCreate(BaseModel):
 class ContractUpdate(BaseModel):
     work_regime_id: Optional[int] = None
     contract_nature_id: Optional[int] = None
+    from_date: Optional[date] = None        # 🔥 AGGIUNTO
+    to_date: Optional[date] = None          # 🔥 AGGIUNTO
     weekly_hours: Optional[float] = None
     fte: Optional[float] = None
     time_band: Optional[str] = None
@@ -291,24 +293,26 @@ class ContractUpdate(BaseModel):
 
 class SalaryUpdate(BaseModel):
     ral_amount: Optional[float] = None
+    from_date: Optional[date] = None     # AGGIUNTO
     note: Optional[str] = None
-
 
 class DepartmentUpdate(BaseModel):
     department_id: Optional[int] = None
     manager_employee_id: Optional[int] = None
+    from_date: Optional[date] = None     # AGGIUNTO
     note: Optional[str] = None
-
 
 class CostCenterUpdate(BaseModel):
     id: int
     cost_center_id: Optional[int] = None
     weight_percent: Optional[float] = None
+    from_date: Optional[date] = None     # AGGIUNTO
     note: Optional[str] = None
 
 
 class SiteUpdate(BaseModel):
     site_id: Optional[int] = None
+    from_date: Optional[date] = None     # AGGIUNTO
     note: Optional[str] = None
 
 
@@ -321,8 +325,8 @@ class StatusUpdate(BaseModel):
 class CompanyCarUpdate(BaseModel):
     car_model: Optional[str] = None
     plate: Optional[str] = None
+    from_date: Optional[date] = None     # AGGIUNTO
     note: Optional[str] = None
-
 
 
 

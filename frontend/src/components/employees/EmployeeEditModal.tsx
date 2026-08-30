@@ -146,10 +146,21 @@ type EmployeeEditForm = {
   is_protected_category: boolean;
   is_disadvantaged: boolean;
   has_law_104: boolean;
-  law_104_type: number | null;
+  law_104_type_id: number | null;      // ✔ CORRETTO
   law_104_note: string;
   protected_percentage: number | null;
-  protected_type: string | null;
+  protected_type: string;              // ✔ CORRETTO
+
+  status_from_date: string;            // ✔ AGGIUNTO
+  status_type_id: number | null;       // ✔ AGGIUNTO
+  status: {
+    id?: number;
+    status_type_id: number | null;
+    from_date: string;
+    note: string;
+    law_104_type_id: number | null;
+  };                                   // ✔ AGGIUNTO
+
   site_history: SiteHistory;
   contract: ContractForm;
   cost_centers: CostCenterRow[];

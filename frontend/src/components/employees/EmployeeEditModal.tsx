@@ -151,16 +151,9 @@ type EmployeeEditForm = {
   protected_percentage: number | null;
   protected_type: string;              // ✔ CORRETTO
 
-  status_from_date: string;            // ✔ AGGIUNTO
-  status_type_id: number | null;       // ✔ AGGIUNTO
-  status: {
-    id?: number;
-    status_type_id: number | null;
-    from_date: string;
-    note: string;
-    law_104_type_id: number | null;
-  };                                   // ✔ AGGIUNTO
-
+  status_from_date: string;           // ✔ AGGIUNTO
+  status_type_id: number | null;      // ✔ AGGIUNTO
+  status: StatusCurrent;              // ✔ AGGIUNTO
   site_history: SiteHistory;
   contract: ContractForm;
   cost_centers: CostCenterRow[];
@@ -294,6 +287,7 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
   const [ccnlLevels, setCcnlLevels] = useState<CCNLLevel[]>([]);
   const [statusTypes, setStatusTypes] = useState<any[]>([]);
   const [employers, setEmployers] = useState<any[]>([]);
+  const [law104Types, setLaw104Types] = useState<any[]>([]);
 
 
 /* ============================================================

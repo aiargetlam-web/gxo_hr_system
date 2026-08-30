@@ -171,76 +171,104 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [formData, setFormData] = useState<EmployeeEditForm>({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    fiscal_code: "",
-    gender: "",
-    birth_date: "",
-    birth_place: "",
-    address_street: "",
-    address_city: "",
-    address_cap: "",
-    id_lul: "",
-    role_id: null,
-    hire_date: "",
-    termination_date: null,
-    is_protected_category: false,
-    is_disadvantaged: false,
-    has_law_104: false,
-    law_104_type: null,
-    law_104_note: "",
-    protected_percentage: null,
-    protected_type: null,
+const [formData, setFormData] = useState<EmployeeEditForm>({
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  fiscal_code: "",
+  gender: "",
+  birth_date: "",
+  birth_place: "",
+  address_street: "",
+  address_city: "",
+  address_cap: "",
+  id_lul: "",
+  role_id: null,
+  hire_date: "",
+  termination_date: null,
 
-    site_history: {
-      id: undefined,
-      site_id: null,
-      from_date: "",
-      note: "",
-    },
+  // 🔥 STATUS (ANAGRAFICA + STORICO)
+  is_protected_category: false,
+  is_disadvantaged: false,
+  has_law_104: false,
+  law_104_type_id: null,        // <— CORRETTO
+  law_104_note: "",
+  protected_percentage: null,
+  protected_type: "",
 
-    contract: {
-      id: undefined,
-      work_regime_id: null,
-      contract_nature_id: null,
-      from_date: "",
-      to_date: null,
-      weekly_hours: "",
-      fte: "",
-      time_band: "",
-      shift_type_id: null,
-      note: "",
-      level_ccnl_id: null,
-      employer_id: null,
-      employer_from_date: "",
-      employer_note: "",
-    },
+  // 🔥 STORICO STATO
+  status_from_date: "",         // <— AGGIUNTO
+  status_type_id: null,         // <— AGGIUNTO
+  status: {                     // <— AGGIUNTO
+    id: undefined,
+    status_type_id: null,
+    from_date: "",
+    note: "",
+    law_104_type_id: null
+  },
 
-    cost_centers: [],
-    department: {
-      id: undefined,
-      department_id: null,
-      manager_employee_id: null,
-      from_date: "",
-      note: "",
-    },
+  // 🔥 SITO
+  site_history: {
+    id: undefined,
+    site_id: null,
+    from_date: "",
+    note: "",
+  },
 
-    salary: {
-      id: undefined,
-      ral_amount: "",
-      from_date: "",
-      note: "",
-    },
+  // 🔥 CONTRATTO
+  contract: {
+    id: undefined,
+    work_regime_id: null,
+    contract_nature_id: null,
+    from_date: "",
+    to_date: null,
+    weekly_hours: "",
+    fte: "",
+    time_band: "",
+    shift_type_id: null,
+    note: "",
+    level_ccnl_id: null,
 
-    benefits: [],
-    company_car: null,
-    enac_courses: [],
-    enac_approvals: [],
-    status_history: [],
-  });
+    employer_id: null,
+    employer_from_date: "",
+    employer_note: "",
+  },
+
+  // 🔥 COST CENTER
+  cost_centers: [],
+
+  // 🔥 REPARTO
+  department: {
+    id: undefined,
+    department_id: null,
+    manager_employee_id: null,
+    from_date: "",
+    note: "",
+  },
+
+  // 🔥 SALARY
+  salary: {
+    id: undefined,
+    ral_amount: "",
+    from_date: "",
+    note: "",
+  },
+
+  // 🔥 BENEFIT
+  benefits: [],
+
+  // 🔥 AUTO
+  company_car: null,
+
+  // 🔥 ENAC
+  enac_courses: [],
+  enac_approvals: [],
+
+  // 🔥 STORICI
+  status_history: [],
+});
+
 
   const [sites, setSites] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -886,7 +914,10 @@ const saveStatus = async () => {
   try {
     setSaving(true);
 
-    const payload = {
+    /* ============================================================
+       1) UPDATE ANAGRAFICA
+    ============================================================ */
+    const anagraficaPayload = {
       hire_date: formData.hire_date,
       termination_date: formData.termination_date,
       id_lul: formData.id_lul,
@@ -896,17 +927,36 @@ const saveStatus = async () => {
       protected_type: formData.protected_type,
       protected_percentage: formData.protected_percentage,
       has_law_104: formData.has_law_104,
-      law_104_type: formData.law_104_type,
-      law_104_note: formData.law_104_note,
+      law_104_note: formData.law_104_note
     };
 
-    await api.put(`/api/v1/employees/${employeeId}`, payload);
+    await api.put(`/api/v1/employees/${employeeId}`, anagraficaPayload);
+
+    /* ============================================================
+       2) UPDATE STORICO STATO
+    ============================================================ */
+    const statusPayload = {
+      status_type_id: formData.status_type_id,
+      law_104_type_id: formData.law_104_type_id,
+      from_date: formData.status_from_date,
+      note: formData.law_104_note,
+      has_law_104: formData.has_law_104,
+      is_protected_category: formData.is_protected_category,
+      is_disadvantaged: formData.is_disadvantaged,
+      protected_percentage: formData.protected_percentage,
+      protected_type: formData.protected_type
+    };
+
+    await api.put(
+      `/api/v1/employees/${employeeId}/status/${formData.status.id}`,
+      statusPayload
+    );
 
     await refreshEmployee();
     alert("Status aggiornato con successo!");
   } catch (err) {
     console.error("Errore salvataggio status:", err);
-    alert("Errore durante il salvataggio dello status");
+    alert("Errore durante il salvataggio dello stato");
   } finally {
     setSaving(false);
   }
@@ -1973,7 +2023,7 @@ case "ral":
 
 
     /* ============================================================
-       STEP 9 — STATUS
+       STEP 9 — STATUS (COMPLETO)
     ============================================================ */
     case "status":
       return (
@@ -1984,21 +2034,46 @@ case "ral":
             </Typography>
 
             <Grid container spacing={2}>
+
+              {/* DATA STATO */}
               <Grid item xs={6}>
-                <TextField fullWidth type="date" label="Data assunzione"
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data stato"
                   InputLabelProps={{ shrink: true }}
-                  value={formData.hire_date}
-                  onChange={(e) => handleChange("hire_date", e.target.value)}
+                  value={formData.status_from_date ?? ""}
+                  onChange={(e) =>
+                    handleChange("status_from_date", e.target.value)
+                  }
                 />
               </Grid>
 
+              {/* STATO AMMINISTRATIVO */}
               <Grid item xs={6}>
-                <TextField fullWidth label="ID LUL"
-                  value={formData.id_lul}
-                  onChange={(e) => handleChange("id_lul", e.target.value)}
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Stato *</InputLabel>
+                  <Select
+                    value={formData.status_type_id ?? ""}
+                    label="Stato *"
+                    onChange={(e) =>
+                      handleChange(
+                        "status_type_id",
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                  >
+                    <MenuItem value="">Seleziona</MenuItem>
+                    {statusTypes.map((st) => (
+                      <MenuItem key={st.id} value={st.id}>
+                        {st.description}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
+              {/* RUOLO */}
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Ruolo *</InputLabel>
@@ -2021,7 +2096,18 @@ case "ral":
                   </Select>
                 </FormControl>
               </Grid>
+ 
+              {/* ID LUL */}
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="ID LUL"
+                  value={formData.id_lul}
+                  onChange={(e) => handleChange("id_lul", e.target.value)}
+                />
+              </Grid>
 
+              {/* CATEGORIA PROTETTA */}
               <Grid item xs={6}>
                 <FormControlLabel
                   control={
@@ -2036,6 +2122,7 @@ case "ral":
                 />
               </Grid>
 
+              {/* SVANTAGGIATO */}
               <Grid item xs={6}>
                 <FormControlLabel
                   control={
@@ -2047,9 +2134,10 @@ case "ral":
                     />
                   }
                   label="Svantaggiato"
-               />
+                />
               </Grid>
 
+              {/* LEGGE 104 */}
               <Grid item xs={6}>
                 <FormControlLabel
                   control={
@@ -2064,15 +2152,46 @@ case "ral":
                 />
               </Grid>
 
+              {/* TIPO 104 (SELECT) */}
               <Grid item xs={6}>
-                <TextField fullWidth label="Note 104"
-                  value={formData.law_104_note}
+                <FormControl fullWidth>
+                  <InputLabel>Tipo 104</InputLabel>
+                  <Select
+                    value={formData.law_104_type_id ?? ""}
+                    label="Tipo 104"
+                    onChange={(e) =>
+                      handleChange(
+                        "law_104_type_id",
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                  >
+                    <MenuItem value="">Seleziona</MenuItem>
+                    {law104Types.map((t) => (
+                      <MenuItem key={t.id} value={t.id}>
+                        {t.description}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* NOTE 104 */}
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Note 104"
+                  value={formData.law_104_note ?? ""}
                   onChange={(e) => handleChange("law_104_note", e.target.value)}
                 />
               </Grid>
 
+              {/* % CATEGORIA PROTETTA */}
               <Grid item xs={6}>
-                <TextField fullWidth type="number" label="% categoria protetta"
+               <TextField
+                  fullWidth
+                  type="number"
+                  label="% categoria protetta"
                   value={formData.protected_percentage ?? ""}
                   onChange={(e) =>
                     handleChange(
@@ -2083,8 +2202,11 @@ case "ral":
                 />
               </Grid>
 
+              {/* TIPO CATEGORIA PROTETTA */}
               <Grid item xs={6}>
-                <TextField fullWidth label="Tipo categoria protetta"
+                <TextField
+                  fullWidth
+                  label="Tipo categoria protetta"
                   value={formData.protected_type ?? ""}
                   onChange={(e) => handleChange("protected_type", e.target.value)}
                 />
@@ -2092,7 +2214,9 @@ case "ral":
             </Grid>
 
             <Box sx={{ mt: 3, textAlign: "right" }}>
-              <Button variant="contained" color="primary"
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={saveStatus}
                 disabled={saving}
               >
@@ -2103,11 +2227,6 @@ case "ral":
         </Card>
       );
 
-
-    default:
-      return null;
-  }
-};
 /* ============================================================
    LOADING SCREEN
 ============================================================ */

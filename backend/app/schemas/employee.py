@@ -278,16 +278,19 @@ class CompanyCarCreate(BaseModel):
 class ContractUpdate(BaseModel):
     work_regime_id: Optional[int] = None
     contract_nature_id: Optional[int] = None
-    from_date: Optional[date] = None        # 🔥 AGGIUNTO
-    to_date: Optional[date] = None          # 🔥 AGGIUNTO
+    from_date: Optional[date] = None
+    to_date: Optional[date] = None
     weekly_hours: Optional[float] = None
     fte: Optional[float] = None
     time_band: Optional[str] = None
-    shift_type: Optional[str] = None
+    shift_type_id: Optional[int] = None
     note: Optional[str] = None
-    employer_id: int | None
-    employer_from_date: date | None
-    employer_note: str | None
+    level_ccnl_id: Optional[int] = None
+    # 🔥 Campi employer (corretti)
+    employer_id: Optional[int] = None
+    employer_from_date: Optional[date] = None
+    employer_note: Optional[str] = None
+    model_config = {"from_attributes": True}
 
 
 

@@ -1968,7 +1968,7 @@ def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Se
 # ============================================================
 # get employers
 # ============================================================
-@router.get("/employers")
+@router.get("/employers/list")
 def get_employers(db: Session = Depends(get_db)):
     from app.models.employer import Employer
     employers = db.query(Employer).all()

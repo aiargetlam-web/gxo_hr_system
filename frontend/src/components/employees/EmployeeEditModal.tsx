@@ -171,103 +171,103 @@ const EmployeeEditModal = ({ open, onClose, employeeId, onUpdated }: EmployeeEdi
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-const [formData, setFormData] = useState<EmployeeEditForm>({
-  first_name: "",
-  last_name: "",
-  email: "",
-  phone: "",
-  fiscal_code: "",
-  gender: "",
-  birth_date: "",
-  birth_place: "",
-  address_street: "",
-  address_city: "",
-  address_cap: "",
-  id_lul: "",
-  role_id: null,
-  hire_date: "",
-  termination_date: null,
+  const [formData, setFormData] = useState<EmployeeEditForm>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    fiscal_code: "",
+    gender: "",
+    birth_date: "",
+    birth_place: "",
+    address_street: "",
+    address_city: "",
+    address_cap: "",
+    id_lul: "",
+    role_id: null,
+    hire_date: "",
+    termination_date: null,
 
-  // 🔥 STATUS (ANAGRAFICA + STORICO)
-  is_protected_category: false,
-  is_disadvantaged: false,
-  has_law_104: false,
-  law_104_type_id: null,        // <— CORRETTO
-  law_104_note: "",
-  protected_percentage: null,
-  protected_type: "",
+    // 🔥 STATUS (ANAGRAFICA)
+    is_protected_category: false,
+    is_disadvantaged: false,
+    has_law_104: false,
+    law_104_type_id: null,
+    law_104_note: "",
+    protected_percentage: null,
+    protected_type: "",
 
-  // 🔥 STORICO STATO
-  status_from_date: "",         // <— AGGIUNTO
-  status_type_id: null,         // <— AGGIUNTO
-  status: {                     // <— AGGIUNTO
-    id: undefined,
+    // 🔥 STORICO STATO (per PUT /status/{id})
+    status_from_date: "",
     status_type_id: null,
-    from_date: "",
-    note: "",
-    law_104_type_id: null
-  },
+    status: {
+      id: undefined,
+      status_type_id: null,
+      from_date: "",
+      note: "",
+      law_104_type_id: null,
+    },
 
   // 🔥 SITO
-  site_history: {
-    id: undefined,
-    site_id: null,
-    from_date: "",
-    note: "",
-  },
+    site_history: {
+      id: undefined,
+      site_id: null,
+      from_date: "",
+      note: "",
+    },
 
-  // 🔥 CONTRATTO
-  contract: {
-    id: undefined,
-    work_regime_id: null,
-    contract_nature_id: null,
-    from_date: "",
-    to_date: null,
-    weekly_hours: "",
-    fte: "",
-    time_band: "",
-    shift_type_id: null,
-    note: "",
-    level_ccnl_id: null,
+    // 🔥 CONTRATTO
+    contract: {
+      id: undefined,
+      work_regime_id: null,
+      contract_nature_id: null,
+      from_date: "",
+      to_date: null,
+      weekly_hours: "",
+      fte: "",
+      time_band: "",
+      shift_type_id: null,
+      note: "",
+      level_ccnl_id: null,
 
-    employer_id: null,
-    employer_from_date: "",
-    employer_note: "",
-  },
+      employer_id: null,
+      employer_from_date: "",
+      employer_note: "",
+    },
 
-  // 🔥 COST CENTER
-  cost_centers: [],
+    // 🔥 COST CENTER
+    cost_centers: [],
 
-  // 🔥 REPARTO
-  department: {
-    id: undefined,
-    department_id: null,
-    manager_employee_id: null,
-    from_date: "",
-    note: "",
-  },
+    // 🔥 REPARTO
+    department: {
+      id: undefined,
+      department_id: null,
+      manager_employee_id: null,
+      from_date: "",
+      note: "",
+    },
 
-  // 🔥 SALARY
-  salary: {
-    id: undefined,
-    ral_amount: "",
-    from_date: "",
-    note: "",
-  },
+    // 🔥 SALARY
+    salary: {
+      id: undefined,
+      ral_amount: "",
+      from_date: "",
+      note: "",
+    },
 
-  // 🔥 BENEFIT
-  benefits: [],
+    // 🔥 BENEFIT
+    benefits: [],
 
-  // 🔥 AUTO
-  company_car: null,
+    // 🔥 AUTO
+    company_car: null,
 
-  // 🔥 ENAC
-  enac_courses: [],
-  enac_approvals: [],
+    // 🔥 ENAC
+    enac_courses: [],
+    enac_approvals: [],
 
-  // 🔥 STORICI
-  status_history: [],
-});
+    // 🔥 STORICI
+    status_history: [],
+  });
 
 
   const [sites, setSites] = useState<any[]>([]);

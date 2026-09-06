@@ -2206,3 +2206,125 @@ def update_manager(employee_id: int, manager_id: int, payload: ManagerUpdate, db
 def get_law_104_types(db: Session = Depends(get_db)):
     from app.models.law_104_type import Law104Type
     return db.query(Law104Type).all()
+
+# ============================================================
+# CHIUSURA COST CENTER
+# ============================================================
+
+@router.patch("/{employee_id}/cost-centers/{cc_id}")
+def close_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_cost_centers import EmployeeCostCenter
+
+    cc = db.query(EmployeeCostCenter).filter(
+        EmployeeCostCenter.id == cc_id,
+        EmployeeCostCenter.employee_id == employee_id,
+        EmployeeCostCenter.to_date.is_(None)
+    ).first()
+
+    if not cc:
+        raise HTTPException(status_code=404, detail="Cost center attuale non trovato")
+
+    try:
+        cc.to_date = payload.to_date
+        db.add(cc)
+        db.commit()
+        db.refresh(cc)
+
+        return {"message": "Cost center chiuso con successo", "cost_center": cc}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore chiusura cost center: {str(e)}")
+
+
+# ============================================================
+# CHIUSURA BENEFIT
+# ============================================================
+
+@router.patch("/{employee_id}/benefits/{benefit_id}")
+def close_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_benefits import EmployeeBenefit
+
+    benefit = db.query(EmployeeBenefit).filter(
+        EmployeeBenefit.id == benefit_id,
+        EmployeeBenefit.employee_id == employee_id,
+        EmployeeBenefit.to_date.is_(None)
+    ).first()
+
+    if not benefit:
+        raise HTTPException(status_code=404, detail="Benefit attuale non trovato")
+
+    try:
+        benefit.to_date = payload.to_date
+        db.add(benefit)
+        db.commit()
+        db.refresh(benefit)
+
+        return {"message": "Benefit chiuso con successo", "benefit": benefit}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore chiusura benefit: {str(e)}")
+
+
+# ============================================================
+# CHIUSURA EMPLOYER
+# ============================================================
+
+@router.patch("/{employee_id}/employers/{hist_id}")
+def close_employer(employee_id: int, hist_id: int, payload: EmployerUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_employer_history import EmployeeEmployerHistory
+
+    hist = db.query(EmployeeEmployerHistory).filter(
+        EmployeeEmployerHistory.id == hist_id,
+        EmployeeEmployerHistory.employee_id == employee_id,
+        EmployeeEmployerHistory.to_date.is_(None)
+    ).first()
+
+    if not hist:
+        raise HTTPException(status_code=404, detail="Employer attuale non trovato")
+
+    try:
+        hist.to_date = payload.to_date
+        db.add(hist)
+        db.commit()
+        db.refresh(hist)
+
+        return {"message": "Employer chiuso con successo", "employer": hist}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore chiusura employer: {str(e)}")
+
+
+# ============================================================
+# CHIUSURA SINDACATO
+# ============================================================
+
+@router.patch("/{employee_id}/unions/{hist_id}")
+def close_union(employee_id: int, hist_id: int, payload: UnionUpdate, db: Session = Depends(get_db)):
+    from app.models.employee_union_history import EmployeeUnionHistory
+
+    hist = db.query(EmployeeUnionHistory).filter(
+        EmployeeUnionHistory.id == hist_id,
+        EmployeeUnionHistory.employee_id == employee_id,
+        EmployeeUnionHistory.to_date.is_(None)
+    ).first()
+
+    if not hist:
+        raise HTTPException(status_code=404, detail="Sindacato attuale non trovato")
+
+    try:
+        hist.to_date = payload.to_date
+        db.add(hist)
+        db.commit()
+        db.refresh(hist)
+
+        return {"message": "Sindacato chiuso con successo", "union": hist}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore chiusura sindacato: {str(e)}")
+
+
+

@@ -320,7 +320,6 @@ class SiteUpdate(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    class StatusUpdate(BaseModel):
     status_type_id: Optional[int] = None
     law_104_type_id: Optional[int] = None
     from_date: Optional[date] = None

@@ -28,19 +28,13 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { employeeService } from "../services/employeeService";
 import { EmployeeFull } from "../types";
 import { CostCenter } from "../types";
+import { useNavigate } from "react-router-dom";
+
 
 
 // Modali HR
 import EmployeeCreateModal from "../components/employees/EmployeeCreateModal";
 import EmployeeEditModal from "../components/employees/EmployeeEditModal";
-
-import EmployeeNewContractModal from "../components/employees/EmployeeNewContractModal";
-import EmployeeNewSalaryModal from "../components/employees/EmployeeNewSalaryModal";
-import EmployeeNewDepartmentModal from "../components/employees/EmployeeNewDepartmentModal";
-import EmployeeNewCostCenterModal from "../components/employees/EmployeeNewCostCenterModal";
-import EmployeeNewCompanyCarModal from "../components/employees/EmployeeNewCompanyCarModal";
-import EmployeeChangeSiteModal from "../components/employees/EmployeeChangeSiteModal";
-import EmployeeChangeStatusModal from "../components/employees/EmployeeChangeStatusModal";
 import EmployeeViewModal from "../components/employees/EmployeeViewModal";
 import { employeeViewsService } from "../services/employeeViewsService";
 
@@ -57,14 +51,6 @@ export default function Employees() {
   // Modali HR
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-
-  const [openNewContract, setOpenNewContract] = useState<EmployeeFull | null>(null);
-  const [openNewSalary, setOpenNewSalary] = useState<EmployeeFull | null>(null);
-  const [openNewDepartment, setOpenNewDepartment] = useState<EmployeeFull | null>(null);
-  const [openNewCostCenter, setOpenNewCostCenter] = useState<EmployeeFull | null>(null);
-  const [openNewCompanyCar, setOpenNewCompanyCar] = useState<EmployeeFull | null>(null);
-  const [openChangeSite, setOpenChangeSite] = useState<EmployeeFull | null>(null);
-  const [openChangeStatus, setOpenChangeStatus] = useState<EmployeeFull | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ceased">("all");
   const [views, setViews] = useState<any[]>([]);
@@ -76,9 +62,7 @@ export default function Employees() {
   const [viewToEdit, setViewToEdit] = useState<any | null>(null);
   const [openDeleteView, setOpenDeleteView] = useState(false);
   const [viewToDelete, setViewToDelete] = useState<any | null>(null);
-
-
-
+  const navigate = useNavigate();
   
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
@@ -562,67 +546,14 @@ export default function Employees() {
 
         <MenuItem
           onClick={() => {
-            setOpenNewContract(selectedEmployee);
+            navigate(`/employees/${selectedEmployee?.id}/variations`);
             handleMenuClose();
           }}
         >
-          Nuovo Contratto
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenNewSalary(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Nuova RAL
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenNewDepartment(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Nuovo Reparto
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenNewCostCenter(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Nuovo Cost Center
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenNewCompanyCar(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Nuova Auto Aziendale
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenChangeSite(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Cambio Sito
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setOpenChangeStatus(selectedEmployee);
-            handleMenuClose();
-          }}
-        >
-          Cambio Stato Lavorativo
+          Variazioni
         </MenuItem>
       </Menu>
+
 
       {/* MODALI */}
       <EmployeeCreateModal
@@ -638,54 +569,6 @@ export default function Employees() {
                          employeeId={selectedEmployee?.id ?? null}
                />
 
-      <EmployeeNewContractModal
-        open={!!openNewContract}
-        employee={openNewContract}
-        onClose={() => setOpenNewContract(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeNewSalaryModal
-        open={!!openNewSalary}
-        employee={openNewSalary}
-        onClose={() => setOpenNewSalary(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeNewDepartmentModal
-        open={!!openNewDepartment}
-        employee={openNewDepartment}
-        onClose={() => setOpenNewDepartment(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeNewCostCenterModal
-        open={!!openNewCostCenter}
-        employee={openNewCostCenter}
-        onClose={() => setOpenNewCostCenter(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeNewCompanyCarModal
-        open={!!openNewCompanyCar}
-        employee={openNewCompanyCar}
-        onClose={() => setOpenNewCompanyCar(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeChangeSiteModal
-        open={!!openChangeSite}
-        employee={openChangeSite}
-        onClose={() => setOpenChangeSite(null)}
-        onSaved={loadData}
-      />
-
-      <EmployeeChangeStatusModal
-        open={!!openChangeStatus}
-        employee={openChangeStatus}
-        onClose={() => setOpenChangeStatus(null)}
-        onSaved={loadData}
-      />
       <EmployeeViewModal
                     open={detailOpen}
                     onClose={() => setDetailOpen(false)}

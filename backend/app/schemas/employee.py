@@ -341,6 +341,13 @@ class EmployerUpdate(BaseModel):
     from_date: Optional[date] = None
     note: Optional[str] = None
 
+class BenefitUpdate(BaseModel):
+    to_date: date
+    note: Optional[str] = None
+
+class UnionUpdate(BaseModel):
+    to_date: date
+    note: Optional[str] = None
 
 
 # ---------------------------------------------------------

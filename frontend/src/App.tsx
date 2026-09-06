@@ -16,6 +16,8 @@ import ChangePassword from './pages/ChangePassword';
 // ⭐ PAGINE HR REALI
 import Employees from "./pages/Employees";
 import EmployeeDetail from "./pages/EmployeeDetail";
+import EmployeeEditPage from "./pages/EmployeeEditPage";
+
 
 // ⭐ IMPORT CORRETTI DA Audit.tsx
 import ActivityLogs from "./pages/Audit";
@@ -62,7 +64,7 @@ const App: React.FC = () => {
             {/* ⭐ PAGINE HR */}
             <Route path="/employees" element={<Employees />} />
             <Route path="/employee/:id" element={<EmployeeDetail />} />
-            <Route path="/employees/:id/variations" element={<EmployeeVariationsPage />} />
+            <Route path="/employees/:id/variations" element={<EmployeeEditPage />} />
 
             {/* ⭐ LOG & STORICO */}
             <Route path="/activity-log" element={<ActivityLogs />} />

@@ -1434,3 +1434,126 @@ return (
     </Box>
   </Box>
 )}
+{/* ===============================
+    SEZIONE: AUTO AZIENDALE
+   =============================== */}
+{selectedSection === "companyCar" && (
+  <Box>
+    <Typography variant="h5" mb={2}>Variazione Auto Aziendale</Typography>
+
+    {/* AUTO ATTUALE */}
+    {currentCompanyCar && (
+      <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
+        <Typography variant="subtitle1">Auto attuale</Typography>
+        <Typography>Modello: {currentCompanyCar.car_model}</Typography>
+        <Typography>Targa: {currentCompanyCar.plate}</Typography>
+        <Typography>Data inizio: {currentCompanyCar.from_date}</Typography>
+
+        <TextField
+          fullWidth
+          type="date"
+          label="Data fine (chiusura)"
+          sx={{ mt: 2 }}
+          value={currentCompanyCar.to_date || ""}
+          onChange={(e) =>
+            setCurrentCompanyCar({
+              ...currentCompanyCar,
+              to_date: e.target.value,
+            })
+          }
+        />
+
+        <Button
+          variant="outlined"
+          color="error"
+          sx={{ mt: 2 }}
+          onClick={async () => {
+            if (!currentCompanyCar.to_date) {
+              alert("Inserisci una data di fine.");
+              return;
+            }
+
+            await api.patch(
+              `/api/v1/employees/${employeeId}/company-cars/${currentCompanyCar.id}`,
+              { to_date: currentCompanyCar.to_date }
+            );
+
+            alert("Auto aziendale chiusa.");
+            loadCurrentData();
+          }}
+        >
+          Chiudi auto aziendale
+        </Button>
+      </Box>
+    )}
+
+    {/* NUOVA AUTO */}
+    <Box p={2} border="1px solid #ddd" borderRadius="8px">
+      <Typography variant="subtitle1" mb={2}>Nuova auto aziendale</Typography>
+
+      <TextField
+        fullWidth
+        label="Modello"
+        sx={{ mb: 2 }}
+        value={newCompanyCar.model}
+        onChange={(e) =>
+          setNewCompanyCar({ ...newCompanyCar, model: e.target.value })
+        }
+      />
+
+      <TextField
+        fullWidth
+        label="Targa"
+        sx={{ mb: 2 }}
+        value={newCompanyCar.plate}
+        onChange={(e) =>
+          setNewCompanyCar({ ...newCompanyCar, plate: e.target.value })
+        }
+      />
+
+      <TextField
+        fullWidth
+        type="date"
+        label="Data inizio"
+        sx={{ mb: 2 }}
+        value={newCompanyCar.from_date}
+        onChange={(e) =>
+          setNewCompanyCar({ ...newCompanyCar, from_date: e.target.value })
+        }
+      />
+
+      <TextField
+        fullWidth
+        label="Note"
+        multiline
+        rows={3}
+        sx={{ mb: 2 }}
+        value={newCompanyCar.note}
+        onChange={(e) =>
+          setNewCompanyCar({ ...newCompanyCar, note: e.target.value })
+        }
+      />
+
+      <Button
+        variant="contained"
+        onClick={async () => {
+          if (!newCompanyCar.model || !newCompanyCar.from_date) {
+            alert("Compila tutti i campi.");
+            return;
+          }
+
+          await api.post(
+            `/api/v1/employees/${employeeId}/company-cars`,
+            newCompanyCar
+          );
+
+          alert("Nuova auto aziendale aggiunta.");
+          setNewCompanyCar({ model: "", plate: "", from_date: "", note: "" });
+          loadCurrentData();
+        }}
+      >
+        Aggiungi nuova auto aziendale
+      </Button>
+    </Box>
+  </Box>
+)}

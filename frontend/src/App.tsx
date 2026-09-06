@@ -16,7 +16,7 @@ import ChangePassword from './pages/ChangePassword';
 // ⭐ PAGINE HR REALI
 import Employees from "./pages/Employees";
 import EmployeeDetail from "./pages/EmployeeDetail";
-import EmployeeEditPage from "./pages/EmployeeEditPage";
+import EmployeeEditPage from './components/employees/EmployeeEditPage';
 
 
 // ⭐ IMPORT CORRETTI DA Audit.tsx

@@ -62,6 +62,7 @@ const App: React.FC = () => {
             {/* ⭐ PAGINE HR */}
             <Route path="/employees" element={<Employees />} />
             <Route path="/employee/:id" element={<EmployeeDetail />} />
+            <Route path="/employees/:id/variations" element={<EmployeeVariationsPage />} />
 
             {/* ⭐ LOG & STORICO */}
             <Route path="/activity-log" element={<ActivityLogs />} />

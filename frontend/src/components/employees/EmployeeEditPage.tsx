@@ -10,14 +10,18 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import api from '../../services/api';
-import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import { useNavigate, useParams } from "react-router-dom";
 
 // ===============================
 // PAGINA VARIAZIONI DIPENDENTE
 // ===============================
 
-export default function EmployeeVariationsPage({ employeeId }: { employeeId: number }) {
+export default function EmployeeEditPage() {
+  // Prendo l'ID dalla URL
+  const { id } = useParams();
+  const employeeId = Number(id);
+
   // Sidebar sezioni
   const sections = [
     { id: "status", label: "Stato amministrativo" },

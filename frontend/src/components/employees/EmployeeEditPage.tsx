@@ -61,22 +61,12 @@ export default function EmployeeEditPage() {
   // ===============================
 
   const [newStatus, setNewStatus] = useState({ status_type_id: "", from_date: "", note: "" });
-  const [newSalary, setNewSalary] = useState({ amount: "", from_date: "", note: "" });
+  const [newSalary, setNewSalary] = useState({ ral_amount: "", from_date: "", note: "" });
 
   const [closingCostCenters, setClosingCostCenters] = useState<any>({});
-  const [newCostCenter, setNewCostCenter] = useState({
-    cost_center_id: "",
-    percentage: "",
-    from_date: "",
-    note: "",
-  });
+  const [newCostCenter, setNewCostCenter] = useState({ cost_center_id: "", weight_percent: "", from_date: "", note: "" });
 
-  const [newDepartment, setNewDepartment] = useState({
-    department_id: "",
-    manager_id: "",
-    from_date: "",
-    note: "",
-  });
+  const [newDepartment, setNewDepartment] = useState({ department_id: "", manager_employee_id: "", from_date: "", note: "" });
 
   const [newSite, setNewSite] = useState({ site_id: "", from_date: "", note: "" });
 
@@ -86,12 +76,7 @@ export default function EmployeeEditPage() {
     note: "",
   });
 
-  const [newCompanyCar, setNewCompanyCar] = useState({
-    model: "",
-    plate: "",
-    from_date: "",
-    note: "",
-  });
+  const [newCompanyCar, setNewCompanyCar] = useState({ car_model: "", plate: "", from_date: "", note: "" });
 
   const [newEnacCourse, setNewEnacCourse] = useState({
     course_id: "",
@@ -175,10 +160,10 @@ export default function EmployeeEditPage() {
         employerRes,
         unionRes,
       ] = await Promise.all([
-        api.get("/api/v1/status-types"),
+        api.get("/api/v1/employment-status-types"),
         api.get("/api/v1/cost-centers"),
         api.get("/api/v1/departments"),
-        api.get("/api/v1/managers"),
+        api.get(`/api/v1/preposti`, { params: { site_id: currentSiteId } }),
         api.get("/api/v1/sites"),
         api.get("/api/v1/benefit-types"),
         api.get("/api/v1/enac-courses"),
@@ -376,7 +361,7 @@ export default function EmployeeEditPage() {
               {currentSalary && (
                 <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography variant="subtitle1">RAL attuale</Typography>
-                  <Typography>Importo: {currentSalary.amount} €</Typography>
+                  <Typography>Importo: {currentSalary.ral_amount} €</Typography>
                   <Typography>Data inizio: {currentSalary.from_date}</Typography>
 
                   <TextField
@@ -420,9 +405,9 @@ export default function EmployeeEditPage() {
                   label="Importo"
                   type="number"
                   sx={{ mb: 2 }}
-                  value={newSalary.amount}
+                  value={newSalary.ral_amount}
                   onChange={(e) =>
-                    setNewSalary({ ...newSalary, amount: e.target.value })
+                    setNewSalary({ ...newSalary, ral_amount: e.target.value })
                   }
                 />
 
@@ -480,7 +465,7 @@ export default function EmployeeEditPage() {
               {currentCostCenters.map((cc) => (
                 <Box key={cc.id} mb={3} p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography>Centro: {cc.cost_center_name}</Typography>
-                  <Typography>Percentuale: {cc.percentage}%</Typography>
+                  <Typography>Percentuale: {cc.weight_percent}%</Typography>
                   <Typography>Data inizio: {cc.from_date}</Typography>
 
                   <TextField
@@ -548,9 +533,9 @@ export default function EmployeeEditPage() {
                   type="number"
                   label="Percentuale"
                   sx={{ mb: 2 }}
-                  value={newCostCenter.percentage}
+                  value={newCostCenter.weight_percent}
                   onChange={(e) =>
-                    setNewCostCenter({ ...newCostCenter, percentage: e.target.value })
+                    setNewCostCenter({ ...newCostCenter, weight_percent: e.target.value })
                   }
                 />
 
@@ -582,7 +567,7 @@ export default function EmployeeEditPage() {
                   onClick={async () => {
                     if (
                       !newCostCenter.cost_center_id ||
-                      !newCostCenter.percentage ||
+                      !newCostCenter.weight_percent ||
                       !newCostCenter.from_date
                     ) {
                       alert("Compila tutti i campi.");
@@ -597,7 +582,7 @@ export default function EmployeeEditPage() {
                     alert("Nuovo centro di costo aggiunto.");
                     setNewCostCenter({
                       cost_center_id: "",
-                      percentage: "",
+                      weight_percent: "",
                       from_date: "",
                       note: "",
                     });
@@ -621,8 +606,8 @@ export default function EmployeeEditPage() {
               {currentDepartment && (
                 <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography variant="subtitle1">Reparto attuale</Typography>
-                  <Typography>Reparto: {currentDepartment.department_name}</Typography>
-                  <Typography>Manager: {currentDepartment.manager_name}</Typography>
+                  <Typography>Reparto: {currentDepartment.name}</Typography>
+                  <Typography>Manager: {currentDepartment.manager_full_name}</Typography>
 
                   <TextField
                     fullWidth
@@ -685,10 +670,10 @@ export default function EmployeeEditPage() {
                   <InputLabel id="manager-label">Manager</InputLabel>
                   <Select
                     labelId="manager-label"
-                    value={newDepartment.manager_id}
+                    value={newDepartment.manager_employee_id}
                     label="Manager"
                     onChange={(e) =>
-                      setNewDepartment({ ...newDepartment, manager_id: e.target.value })
+                      setNewDepartment({ ...newDepartment, manager_employee_id: e.target.value })
                     }
                   >
                     {managerList.map((m) => (
@@ -731,7 +716,7 @@ export default function EmployeeEditPage() {
                     }
                     await api.post(`/api/v1/employees/${employeeId}/departments`, newDepartment);
                     alert("Nuovo reparto aggiunto.");
-                    setNewDepartment({ department_id: "", manager_id: "", from_date: "", note: "" });
+                    setNewDepartment({ department_id: "", manager_employee_id: "", from_date: "", note: "" });
                     loadCurrentData();
                   }}
                 >
@@ -972,8 +957,8 @@ export default function EmployeeEditPage() {
               {currentEnacCourses.map((c) => (
                 <Box key={c.id} mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography variant="subtitle1">Corso attuale</Typography>
-                  <Typography>Corso: {c.course_name}</Typography>
-                  <Typography>Data inizio: {c.from_date}</Typography>
+                  <Typography>Data corso: {c.course_date}</Typography>
+                  <Typography>Data scadenza: {c.expiry_date}</Typography>
 
                   <TextField
                     fullWidth
@@ -1015,33 +1000,41 @@ export default function EmployeeEditPage() {
               <Box p={2} border="1px solid #ddd" borderRadius="8px">
                 <Typography variant="subtitle1" mb={2}>Nuovo corso ENAC</Typography>
 
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel id="enac-course-label">Corso</InputLabel>
-                  <Select
-                    labelId="enac-course-label"
-                    value={newEnacCourse.course_id}
-                    label="Corso"
-                    onChange={(e) =>
-                      setNewEnacCourse({ ...newEnacCourse, course_id: e.target.value })
-                    }
-                  >
-                    {enacCoursesList.map((course) => (
-                      <MenuItem key={course.id} value={course.id}>
-                        {course.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data corso"
+                  sx={{ mb: 2 }}
+                  value={newEnacCourse.course_date}
+                  onChange={(e) =>
+                    setNewEnacCourse({ ...newEnacCourse, course_date: e.target.value })
+                  }
+                />
 
                 <TextField
                   fullWidth
                   type="date"
-                  label="Data inizio"
+                  label="Data scadenza"
                   sx={{ mb: 2 }}
-                  value={newEnacCourse.from_date}
+                  value={newEnacCourse.expiry_date}
                   onChange={(e) =>
-                    setNewEnacCourse({ ...newEnacCourse, from_date: e.target.value })
+                    setNewEnacCourse({ ...newEnacCourse, expiry_date: e.target.value })
                   }
+                />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={newEnacCourse.is_first_course}
+                      onChange={(e) =>
+                        setNewEnacCourse({
+                          ...newEnacCourse,
+                          is_first_course: e.target.checked,
+                        })
+                      }
+                    />
+                  }
+                  label="Primo corso"
                 />
 
                 <TextField
@@ -1059,13 +1052,13 @@ export default function EmployeeEditPage() {
                 <Button
                   variant="contained"
                   onClick={async () => {
-                    if (!newEnacCourse.course_id || !newEnacCourse.from_date) {
+                    if (!newEnacCourse.course_date || !newEnacCourse.expiry_date) {
                       alert("Compila tutti i campi.");
                       return;
                     }
                     await api.post(`/api/v1/employees/${employeeId}/enac-courses`, newEnacCourse);
                     alert("Nuovo corso ENAC aggiunto.");
-                    setNewEnacCourse({ course_id: "", from_date: "", note: "" });
+                    setNewEnacCourse({ course_date: "", expiry_date: "", is_first_course: false, note: "" });
                     loadCurrentData();
                   }}
                 >
@@ -1085,8 +1078,9 @@ export default function EmployeeEditPage() {
               {currentEnacApprovals.map((a) => (
                 <Box key={a.id} mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography variant="subtitle1">Approvazione attuale</Typography>
-                  <Typography>Tipo: {a.approval_type_name}</Typography>
-                  <Typography>Data inizio: {a.from_date}</Typography>
+                  <Typography>Data richiesta: {a.request_date}</Typography>
+                  <Typography>Data approvazione: {a.approval_date}</Typography>
+
 
                   <TextField
                     fullWidth
@@ -1128,35 +1122,47 @@ export default function EmployeeEditPage() {
               <Box p={2} border="1px solid #ddd" borderRadius="8px">
                 <Typography variant="subtitle1" mb={2}>Nuova approvazione ENAC</Typography>
 
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel id="enac-approval-label">Tipo approvazione</InputLabel>
-                  <Select
-                    labelId="enac-approval-label"
-                    value={newEnacApproval.approval_type_id}
-                    label="Tipo approvazione"
-                    onChange={(e) =>
-                      setNewEnacApproval({ ...newEnacApproval, approval_type_id: e.target.value })
-                    }
-                  >
-                    {enacApprovalsList.map((appr) => (
-                      <MenuItem key={appr.id} value={appr.id}>
-                        {appr.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
+                {/* DATA RICHIESTA */}
                 <TextField
                   fullWidth
                   type="date"
-                  label="Data inizio"
+                  label="Data richiesta"
                   sx={{ mb: 2 }}
-                  value={newEnacApproval.from_date}
+                  value={newEnacApproval.request_date}
                   onChange={(e) =>
-                    setNewEnacApproval({ ...newEnacApproval, from_date: e.target.value })
+                    setNewEnacApproval({ ...newEnacApproval, request_date: e.target.value })
                   }
                 />
 
+                {/* DATA APPROVAZIONE */}
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data approvazione"
+                  sx={{ mb: 2 }}
+                  value={newEnacApproval.approval_date}
+                  onChange={(e) =>
+                    setNewEnacApproval({ ...newEnacApproval, approval_date: e.target.value })
+                  }
+                />
+ 
+                {/* PRIMA APPROVAZIONE */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={newEnacApproval.is_first_approval}
+                      onChange={(e) =>
+                        setNewEnacApproval({
+                          ...newEnacApproval,
+                          is_first_approval: e.target.checked,
+                        })
+                      }
+                    />
+                  }
+                  label="Prima approvazione"
+                />
+
+                {/* NOTE */}
                 <TextField
                   fullWidth
                   label="Note"
@@ -1169,16 +1175,29 @@ export default function EmployeeEditPage() {
                   }
                 />
 
+                {/* SUBMIT */}
                 <Button
                   variant="contained"
                   onClick={async () => {
-                    if (!newEnacApproval.approval_type_id || !newEnacApproval.from_date) {
+                    if (!newEnacApproval.request_date || !newEnacApproval.approval_date) {
                       alert("Compila tutti i campi.");
                       return;
                     }
-                    await api.post(`/api/v1/employees/${employeeId}/enac-approvals`, newEnacApproval);
+
+                    await api.post(
+                      `/api/v1/employees/${employeeId}/enac-approvals`,
+                      newEnacApproval
+                    );
+
                     alert("Nuova approvazione ENAC aggiunta.");
-                    setNewEnacApproval({ approval_type_id: "", from_date: "", note: "" });
+
+                    setNewEnacApproval({
+                      request_date: "",
+                      approval_date: "",
+                      is_first_approval: false,
+                      note: "",
+                    });
+
                     loadCurrentData();
                   }}
                 >
@@ -1485,9 +1504,9 @@ export default function EmployeeEditPage() {
                   fullWidth
                   label="Modello"
                   sx={{ mb: 2 }}
-                  value={newCompanyCar.model}
+                  value={newCompanyCar.car_model}
                   onChange={(e) =>
-                    setNewCompanyCar({ ...newCompanyCar, model: e.target.value })
+                    setNewCompanyCar({ ...newCompanyCar, car_model: e.target.value })
                   }
                 />
 
@@ -1527,7 +1546,7 @@ export default function EmployeeEditPage() {
                 <Button
                   variant="contained"
                   onClick={async () => {
-                    if (!newCompanyCar.model || !newCompanyCar.from_date) {
+                    if (!newCompanyCar.car_model || !newCompanyCar.from_date) {
                       alert("Compila tutti i campi.");
                       return;
                     }
@@ -1538,7 +1557,7 @@ export default function EmployeeEditPage() {
                     );
 
                     alert("Nuova auto aziendale aggiunta.");
-                    setNewCompanyCar({ model: "", plate: "", from_date: "", note: "" });
+                    setNewCompanyCar({ car_model: "", plate: "", from_date: "", note: "" });
                     loadCurrentData();
                   }}
                 >

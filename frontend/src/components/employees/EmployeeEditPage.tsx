@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import api from "../../services/api";
 import { useNavigate, useParams } from "react-router-dom";
+import { FormControlLabel, Checkbox } from "@mui/material";
+
 
 // ===============================
 // PAGINA VARIAZIONI DIPENDENTE
@@ -79,16 +81,20 @@ export default function EmployeeEditPage() {
   const [newCompanyCar, setNewCompanyCar] = useState({ car_model: "", plate: "", from_date: "", note: "" });
 
   const [newEnacCourse, setNewEnacCourse] = useState({
-    course_id: "",
-    from_date: "",
+    course_date: "",
+    expiry_date: "",
+    is_first_course: false,
     note: "",
   });
 
+
   const [newEnacApproval, setNewEnacApproval] = useState({
-    approval_type_id: "",
-    from_date: "",
+    request_date: "",
+    approval_date: "",
+    is_first_approval: false,
     note: "",
   });
+
 
   const [newEmployer, setNewEmployer] = useState({
     employer_id: "",
@@ -163,7 +169,7 @@ export default function EmployeeEditPage() {
         api.get("/api/v1/employment-status-types"),
         api.get("/api/v1/cost-centers"),
         api.get("/api/v1/departments"),
-        api.get(`/api/v1/preposti`, { params: { site_id: currentSiteId } }),
+        api.get(`/api/v1/preposti`, { params: { site_id: currentSite.id } }),
         api.get("/api/v1/sites"),
         api.get("/api/v1/benefit-types"),
         api.get("/api/v1/enac-courses"),
@@ -437,13 +443,13 @@ export default function EmployeeEditPage() {
                 <Button
                   variant="contained"
                   onClick={async () => {
-                    if (!newSalary.amount || !newSalary.from_date) {
+                    if (newSalary.ral_amount || !newSalary.from_date) {
                       alert("Compila tutti i campi.");
                       return;
                     }
                     await api.post(`/api/v1/employees/${employeeId}/salaries`, newSalary);
                     alert("Nuova RAL aggiunta.");
-                    setNewSalary({ amount: "", from_date: "", note: "" });
+                    setNewSalary({ ...newSalary, ral_amount: e.target.value })
                     loadCurrentData();
                   }}
                 >

@@ -449,7 +449,9 @@ export default function EmployeeEditPage() {
                     }
                     await api.post(`/api/v1/employees/${employeeId}/salaries`, newSalary);
                     alert("Nuova RAL aggiunta.");
-                    setNewSalary({ ...newSalary, ral_amount: e.target.value })
+                    onChange={(e) =>
+                      setNewSalary({ ...newSalary, ral_amount: e.target.value })
+                    }
                     loadCurrentData();
                   }}
                 >

@@ -404,7 +404,7 @@ export default function EmployeeEditPage() {
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta dello stato.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta dello stato.");
                       }
                     }}
                   >

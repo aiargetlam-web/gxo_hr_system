@@ -227,7 +227,7 @@ export default function EmployeeEditPage() {
       const data = res.data;
 
       setEditedCostCenters(
-        data.cost_centers.map((cc) => ({
+        data.cost_centers.map((cc: any) => ({
           id: cc.id,
           cost_center_id: cc.cost_center_id,
           cost_center_name: cc.description,
@@ -238,6 +238,7 @@ export default function EmployeeEditPage() {
           note: cc.note || "",
         }))
       );
+
 
 
       setCurrentStatus(data.status_current);

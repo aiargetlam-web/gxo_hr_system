@@ -309,9 +309,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Stato attuale chiuso correttamente.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura dello stato.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura dello stato.");
                         }
                       }}
                     >
@@ -473,9 +473,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("RAL chiusa.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura della RAL.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura della RAL.");
                         }
                       }}
                     >
@@ -558,9 +558,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta della RAL.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta della RAL.");
                       }
                     }}
                   >
@@ -628,9 +628,9 @@ export default function EmployeeEditPage() {
 
                           alert("Centro di costo chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del centro di costo.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del centro di costo.");
                         }
                       }}
                     >
@@ -742,9 +742,9 @@ export default function EmployeeEditPage() {
                         });
 
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err:any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del centro di costo.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del centro di costo.");
                       }
                     }}
                   >
@@ -809,9 +809,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Reparto chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del reparto.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del reparto.");
                         }
                       }}
                     >
@@ -923,9 +923,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del reparto.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del reparto.");
                       }
                     }}
                   >
@@ -990,9 +990,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Sito chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del sito.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del sito.");
                         }
                       }}
                     >
@@ -1082,9 +1082,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del sito.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del sito.");
                       }
                     }}
                   >
@@ -1151,9 +1151,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Benefit chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del benefit.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del benefit.");
                         }
                       }}
                     >
@@ -1243,9 +1243,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del benefit.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del benefit.");
                       }
                     }}
                   >
@@ -1313,9 +1313,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Corso ENAC chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del corso ENAC.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del corso ENAC.");
                         }
                       }}
                     >
@@ -1415,9 +1415,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del corso ENAC.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del corso ENAC.");
                       }
                     }}
                   >
@@ -1485,9 +1485,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Approvazione ENAC chiusa.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura dell'approvazione ENAC.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura dell'approvazione ENAC.");
                         }
                       }}
                     >
@@ -1590,9 +1590,9 @@ export default function EmployeeEditPage() {
                         });
 
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta dell'approvazione ENAC.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta dell'approvazione ENAC.");
                       }
                     }}
                   >
@@ -1657,9 +1657,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Employer chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura dell'employer.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura dell'employer.");
                         }
                       }}
                     >
@@ -1749,9 +1749,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta dell'employer.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta dell'employer.");
                       }
                     }}
                   >
@@ -1817,9 +1817,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Sindacato chiuso.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura del sindacato.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura del sindacato.");
                         }
                       }}
                     >
@@ -1909,9 +1909,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta del sindacato.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del sindacato.");
                       }
                     }}
                   >
@@ -1978,9 +1978,9 @@ export default function EmployeeEditPage() {
                           );
                           alert("Auto aziendale chiusa.");
                           loadCurrentData();
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert("Errore durante la chiusura dell'auto aziendale.");
+                          alert(err.response?.data?.detail ||"Errore durante la chiusura dell'auto aziendale.");
                         }
                       }}
                     >
@@ -2077,9 +2077,9 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        alert("Errore durante l'aggiunta dell'auto aziendale.");
+                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta dell'auto aziendale.");
                       }
                     }}
                   >

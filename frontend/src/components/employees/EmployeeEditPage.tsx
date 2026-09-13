@@ -161,8 +161,7 @@ export default function EmployeeEditPage() {
   const [managerList, setManagerList] = useState<any[]>([]);
   const [siteList, setSiteList] = useState<any[]>([]);
   const [benefitTypes, setBenefitTypes] = useState<any[]>([]);
-  const [enacCoursesList, setEnacCoursesList] = useState<any[]>([]);
-  const [enacApprovalsList, setEnacApprovalsList] = useState<any[]>([]);
+ 	
   const [employerList, setEmployerList] = useState<any[]>([]);
   const [unionList, setUnionList] = useState<any[]>([]);
 
@@ -192,8 +191,8 @@ export default function EmployeeEditPage() {
           : Promise.resolve({ data: [] }),
         api.get("/api/v1/sites"),
         api.get("/api/v1/benefit-types"),
-        api.get("/api/v1/employers"),
-        api.get("/api/v1/unions"),
+        api.get("/api/v1/employees/employers/list")
+        api.get("/api/v1/employees/unions/list")
       ]);
 
       setStatusTypes(statusRes.data);

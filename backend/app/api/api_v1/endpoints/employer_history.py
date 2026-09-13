@@ -28,10 +28,19 @@ def add_employer(employee_id: int, payload: EmployerHistoryCreate, db: Session =
     # chiudi datore attuale
     current = (
         db.query(EmployeeEmployerHistory)
-        .filter(EmployeeEmployerHistory.employee_id == employee_id,
-                EmployeeEmployerHistory.to_date.is_(None))
+        .filter(
+            EmployeeEmployerHistory.employee_id == employee_id,
+            EmployeeEmployerHistory.to_date.is_(None)
+        )
         .first()
     )
+
+    if current and payload.from_date < current.from_date:
+        raise HTTPException(
+            status_code=400,
+            detail="La data di inizio del nuovo employer è precedente all'employer attuale. Devi prima modificare l'employer precedente."
+        )
+
 
     if current:
         current.to_date = payload.from_date - timedelta(days=1)

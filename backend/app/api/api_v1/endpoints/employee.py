@@ -220,6 +220,13 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
             .first()
         )
 
+        if current_contract and payload.from_date < current_contract.from_date:
+            raise HTTPException(
+                status_code=400,
+                detail="La data di inizio del nuovo contratto è precedente al contratto attuale. Devi prima modificare il contratto precedente."
+            )
+
+
         if current_contract:
             current_contract.to_date = payload.from_date - timedelta(days=1)
             db.add(current_contract)
@@ -325,6 +332,13 @@ def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Se
             .first()
         )
 
+        if current_dep and payload.from_date < current_dep.from_date:
+            raise HTTPException(
+                status_code=400,
+                detail="La data di inizio del nuovo reparto è precedente al reparto attuale. Devi prima modificare il reparto precedente."
+            )
+
+
         if current_dep:
             current_dep.to_date = payload.from_date - timedelta(days=1)
             db.add(current_dep)
@@ -371,6 +385,13 @@ def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(ge
             .first()
         )
 
+        if current_salary and payload.from_date < current_salary.from_date:
+            raise HTTPException(
+                status_code=400,
+                detail="La data di inizio della nuova RAL è precedente alla RAL attuale. Devi prima modificare la RAL precedente."
+            )
+
+
         if current_salary:
             current_salary.to_date = payload.from_date - timedelta(days=1)
             db.add(current_salary)
@@ -416,6 +437,13 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
             .first()
         )
 
+        if current_car and payload.from_date < current_car.from_date:
+            raise HTTPException(
+                status_code=400,
+                detail="La data di inizio della nuova auto aziendale è precedente all'auto attuale. Devi prima modificare la precedente."
+            )
+
+
         if current_car:
             current_car.to_date = payload.from_date - timedelta(days=1)
             db.add(current_car)
@@ -460,6 +488,13 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
             )
             .first()
         )
+
+        if current_site_hist and payload.from_date < current_site_hist.from_date:
+            raise HTTPException(
+                status_code=400,
+                detail="La data di inizio del nuovo sito è precedente al sito attuale. Devi prima modificare il sito precedente."
+            )
+
 
         if current_site_hist:
             current_site_hist.to_date = payload.from_date - timedelta(days=1)

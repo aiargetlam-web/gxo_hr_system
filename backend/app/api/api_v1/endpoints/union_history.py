@@ -27,10 +27,19 @@ def add_union(employee_id: int, payload: UnionHistoryCreate, db: Session = Depen
 
     current = (
         db.query(EmployeeUnionHistory)
-        .filter(EmployeeUnionHistory.employee_id == employee_id,
-                EmployeeUnionHistory.to_date.is_(None))
+        .filter(
+            EmployeeUnionHistory.employee_id == employee_id,
+            EmployeeUnionHistory.to_date.is_(None)
+        )
         .first()
     )
+
+    if current and payload.from_date < current.from_date:
+        raise HTTPException(
+            status_code=400,
+            detail="La data di inizio del nuovo sindacato è precedente al sindacato attuale. Devi prima modificare il sindacato precedente."
+        )
+
 
     if current:
         current.to_date = payload.from_date - timedelta(days=1)

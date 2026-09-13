@@ -179,8 +179,6 @@ export default function EmployeeEditPage() {
         managerRes,
         siteRes,
         benefitRes,
-        enacCourseRes,
-        enacApprovalRes,
         employerRes,
         unionRes,
       ] = await Promise.all([

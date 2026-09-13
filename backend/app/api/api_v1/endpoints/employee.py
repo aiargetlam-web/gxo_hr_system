@@ -192,7 +192,8 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
             "id_lul": employee.id_lul,
         }
 
-
+    except HTTPException:
+        raise
     except Exception as e:
         print("ERRORE CREAZIONE DIPENDENTE:", e)
         db.rollback()
@@ -271,6 +272,8 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
 
         return {"message": "Nuovo contratto aggiunto con successo", "contract": new_contract}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del contratto: {str(e)}")
@@ -304,6 +307,8 @@ def add_cost_center(employee_id: int, payload: CostCenterAssignmentCreate, db: S
 
         return {"message": "Nuovo cost center aggiunto con successo", "cost_center": new_cc}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del cost center: {str(e)}")
@@ -357,6 +362,8 @@ def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Se
 
         return {"message": "Nuovo reparto assegnato con successo", "department": new_dep}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del reparto: {str(e)}")
@@ -409,6 +416,8 @@ def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(ge
 
         return {"message": "Nuova RAL inserita con successo", "salary": new_salary}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento della RAL: {str(e)}")
@@ -463,6 +472,8 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
 
         return {"message": "Nuova auto aziendale assegnata con successo", "company_car": new_car}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'auto aziendale: {str(e)}")
@@ -517,6 +528,8 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
 
         return {"message": "Cambio sito registrato con successo", "site_history": new_site_hist}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante il cambio sito: {str(e)}")
@@ -1653,6 +1666,8 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Dep
             "id_lul": employee.id_lul,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento dipendente: {str(e)}")
@@ -1685,6 +1700,8 @@ def add_enac_course(employee_id: int, payload: EnacCourseCreate, db: Session = D
 
         return {"message": "Corso ENAC aggiunto con successo", "course": new_course}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del corso ENAC: {str(e)}")
@@ -1716,6 +1733,8 @@ def add_enac_approval(employee_id: int, payload: EnacApprovalCreate, db: Session
 
         return {"message": "Approvazione ENAC aggiunta con successo", "approval": new_approval}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'approvazione ENAC: {str(e)}")
@@ -1753,6 +1772,8 @@ def update_contract(employee_id: int, contract_id: int, payload: ContractUpdate,
         db.refresh(contract)
         return {"message": "Contratto aggiornato", "contract": contract}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento contratto: {str(e)}")
@@ -1787,6 +1808,8 @@ def update_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, 
         db.refresh(cc)
         return {"message": "Cost center aggiornato", "cost_center": cc}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento cost center: {str(e)}")
@@ -1821,6 +1844,8 @@ def update_department(employee_id: int, dep_id: int, payload: DepartmentUpdate, 
         db.refresh(dep)
         return {"message": "Reparto aggiornato", "department": dep}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento reparto: {str(e)}")
@@ -1855,6 +1880,8 @@ def update_salary(employee_id: int, salary_id: int, payload: SalaryUpdate, db: S
         db.refresh(sal)
         return {"message": "RAL aggiornata", "salary": sal}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento RAL: {str(e)}")
@@ -1889,6 +1916,8 @@ def update_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db
         db.refresh(ben)
         return {"message": "Benefit aggiornato", "benefit": ben}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento benefit: {str(e)}")
@@ -1924,6 +1953,8 @@ def update_company_car(employee_id: int, car_id: int, payload: CompanyCarUpdate,
         db.refresh(car)
         return {"message": "Auto aziendale aggiornata", "company_car": car}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento auto aziendale: {str(e)}")
@@ -1964,6 +1995,8 @@ def update_enac_course(employee_id: int, course_id: int, payload: EnacCourseUpda
         db.refresh(course)
         return {"message": "Corso ENAC aggiornato", "course": course}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento corso ENAC: {str(e)}")
@@ -2002,6 +2035,9 @@ def update_enac_approval(employee_id: int, approval_id: int, payload: EnacApprov
         db.commit()
         db.refresh(appr)
         return {"message": "Approvazione ENAC aggiornata", "approval": appr}
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         db.rollback()
@@ -2052,6 +2088,8 @@ def update_status(employee_id: int, status_id: int, payload: StatusUpdate, db: S
         db.refresh(st)
         return {"message": "Status aggiornato", "status": st}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento status: {str(e)}")
@@ -2097,6 +2135,8 @@ def update_site(employee_id: int, site_hist_id: int, payload: SiteUpdate, db: Se
         db.refresh(hist)
         return {"message": "Sito aggiornato", "site_history": hist}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento sito: {str(e)}")
@@ -2207,6 +2247,8 @@ def update_employer(employee_id: int, employer_hist_id: int, payload: EmployerUp
         db.refresh(hist)
         return {"message": "Employer aggiornato", "employer": hist}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore aggiornamento employer: {str(e)}")
@@ -2274,6 +2316,8 @@ def close_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, d
 
         return {"message": "Cost center chiuso con successo", "cost_center": cc}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore chiusura cost center: {str(e)}")
@@ -2304,6 +2348,8 @@ def close_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db:
 
         return {"message": "Benefit chiuso con successo", "benefit": benefit}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore chiusura benefit: {str(e)}")
@@ -2334,6 +2380,8 @@ def close_employer(employee_id: int, hist_id: int, payload: EmployerUpdate, db: 
 
         return {"message": "Employer chiuso con successo", "employer": hist}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore chiusura employer: {str(e)}")
@@ -2364,6 +2412,8 @@ def close_union(employee_id: int, hist_id: int, payload: UnionUpdate, db: Sessio
 
         return {"message": "Sindacato chiuso con successo", "union": hist}
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore chiusura sindacato: {str(e)}")

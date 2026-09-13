@@ -1457,10 +1457,19 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
 
     current_status = (
         db.query(EmployeeStatusHistory)
-        .filter(EmployeeStatusHistory.employee_id == employee_id)
-        .filter(EmployeeStatusHistory.to_date.is_(None))
+        .filter(
+            EmployeeStatusHistory.employee_id == employee_id,
+            EmployeeStatusHistory.to_date.is_(None)
+        )
         .first()
     )
+
+    # 🔥 BLOCCO SE LA NUOVA DATA È PRIMA DELL'ATTUALE
+    if current_status and payload.from_date < current_status.from_date:
+        raise HTTPException(
+            status_code=400,
+            detail="La data di inizio del nuovo stato è precedente allo stato attuale. Devi prima modificare lo stato precedente."
+        )
 
     if current_status:
         current_status.to_date = payload.from_date - timedelta(days=1)
@@ -1481,13 +1490,10 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     )
     db.add(new_status)
 
-    # 🔥 QUI AGGIUNGI QUESTA LOGICA
     employee.is_active = status_type.is_active
     if status_type.is_active is False:
-        # stato che “cessa” la persona → metti termination_date
         employee.termination_date = payload.from_date
     else:
-        # se torna ATTIVO o altro stato attivo → azzera la cessazione
         employee.termination_date = None
 
     db.add(employee)
@@ -1496,6 +1502,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     db.refresh(new_status)
 
     return {"message": "Cambio stato registrato con successo", "status": new_status}
+
 
 # ============================================================
 # CAMBIO RESPONSABILE (STORICIZZATO)

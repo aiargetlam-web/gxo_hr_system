@@ -280,38 +280,121 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
 
 
 # ============================================================
-# NUOVO COST CENTER
+# VARIAZIONE COMPLETA CENTRI DI COSTO
 # ============================================================
 
 @router.post("/{employee_id}/cost-centers")
-def add_cost_center(employee_id: int, payload: CostCenterAssignmentCreate, db: Session = Depends(get_db)):
+def update_cost_centers(employee_id: int, payload: CostCenterVariationPayload, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_cost_centers import EmployeeCostCenter
 
+    # 1) Verifica dipendente
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
 
-    try:
-        new_cc = EmployeeCostCenter(
-            employee_id=employee_id,
-            cost_center_id=payload.cost_center_id,
-            weight_percent=payload.weight_percent,
-            from_date=payload.from_date,
-            note=payload.note
+    # 2) Recupera centri attuali (to_date IS NULL)
+    current_centers = (
+        db.query(EmployeeCostCenter)
+        .filter(
+            EmployeeCostCenter.employee_id == employee_id,
+            EmployeeCostCenter.to_date.is_(None)
+        )
+        .all()
+    )
+
+    mod_date = payload.modification_date
+
+    # 3) Validazione totale percentuale = 100%
+    effective_centers = [c for c in payload.centers if c.action != "close"]
+    total = sum(c.new_percent for c in effective_centers)
+
+    if total != 100:
+        raise HTTPException(
+            status_code=422,
+            detail="Il totale delle percentuali deve essere 100%."
         )
 
-        db.add(new_cc)
+    # 4) Applica ogni variazione
+    for item in payload.centers:
+
+        # Trova la riga attuale (se esiste)
+        current = next(
+            (c for c in current_centers if c.cost_center_id == item.cost_center_id),
+            None
+        )
+
+        # -----------------------------
+        # ACTION: MODIFY
+        # -----------------------------
+        if item.action == "modify":
+            if not current:
+                raise HTTPException(404, f"Centro di costo {item.cost_center_id} non trovato")
+
+            # Validazione data retroattiva
+            if mod_date < current.from_date:
+                raise HTTPException(
+                    422,
+                    f"La data di modifica ({mod_date}) è precedente alla data attuale del centro {current.from_date}"
+                )
+
+            # Chiudi riga attuale
+            current.to_date = mod_date - timedelta(days=1)
+            db.add(current)
+
+            # Crea nuova riga
+            new_cc = EmployeeCostCenter(
+                employee_id=employee_id,
+                cost_center_id=item.cost_center_id,
+                weight_percent=item.new_percent,
+                from_date=mod_date,
+                note=item.note or current.note
+            )
+            db.add(new_cc)
+
+        # -----------------------------
+        # ACTION: CLOSE
+        # -----------------------------
+        elif item.action == "close":
+            if not current:
+                raise HTTPException(404, f"Centro di costo {item.cost_center_id} non trovato")
+
+            # Validazione data retroattiva
+            if mod_date < current.from_date:
+                raise HTTPException(
+                    422,
+                    f"La data di chiusura ({mod_date}) è precedente alla data attuale del centro {current.from_date}"
+                )
+
+            # Chiudi riga attuale
+            current.to_date = mod_date - timedelta(days=1)
+            db.add(current)
+
+        # -----------------------------
+        # ACTION: ADD
+        # -----------------------------
+        elif item.action == "add":
+            # Aggiunta → data retroattiva consentita
+            new_cc = EmployeeCostCenter(
+                employee_id=employee_id,
+                cost_center_id=item.cost_center_id,
+                weight_percent=item.new_percent,
+                from_date=mod_date,
+                note=item.note
+            )
+            db.add(new_cc)
+
+        else:
+            raise HTTPException(422, f"Azione non valida: {item.action}")
+
+    # 5) Commit finale
+    try:
         db.commit()
-        db.refresh(new_cc)
-
-        return {"message": "Nuovo cost center aggiunto con successo", "cost_center": new_cc}
-
-    except HTTPException as e:
-        raise e
+        return {"message": "Variazione centri di costo registrata correttamente"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del cost center: {str(e)}")
+        raise HTTPException(500, f"Errore durante la variazione dei centri di costo: {str(e)}")
+
 
 
 # ============================================================

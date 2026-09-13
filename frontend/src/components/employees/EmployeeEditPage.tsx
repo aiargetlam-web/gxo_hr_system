@@ -116,7 +116,6 @@ export default function EmployeeEditPage() {
 
   const [variationDate, setVariationDate] = useState("");
   const [editedCostCenters, setEditedCostCenters] = useState<any[]>([]);
-  const [newCenters, setNewCenters] = useState<any[]>([]);
 
   const [newCenter, setNewCenter] = useState({
     cost_center_id: "",
@@ -124,12 +123,15 @@ export default function EmployeeEditPage() {
     note: "",
   });
 
+  // totale = somma dei centri attuali (nuove percentuali) + eventuale nuovo centro
   const totalPercent =
-    editedCostCenters.reduce((sum, cc) => sum + Number(cc.new_weight_percent || 0), 0) +
-    newCenters.reduce((sum, nc) => sum + Number(nc.new_percent || 0), 0);
+    editedCostCenters.reduce(
+      (sum, cc) => sum + Number(cc.new_weight_percent || 0),
+      0
+    ) + Number(newCenter.weight_percent || 0);
 
   useEffect(() => {
-    if (currentCostCenters) {
+    if (currentCostCenters && currentCostCenters.length > 0) {
       setEditedCostCenters(
         currentCostCenters.map((cc) => ({
           ...cc,
@@ -139,6 +141,76 @@ export default function EmployeeEditPage() {
       );
     }
   }, [currentCostCenters]);
+
+  const handleApplyCostCenters = async () => {
+    if (!variationDate) {
+      alert("Inserisci la data di variazione.");
+    return;
+    }
+
+    const hasEdited =
+      editedCostCenters.some(
+        (cc) => cc.action === "modify" || cc.action === "close"
+      );
+
+    const hasNewCenter =
+      newCenter.cost_center_id && newCenter.weight_percent;
+
+    if (!hasEdited && !hasNewCenter) {
+      alert("Non ci sono variazioni da applicare.");
+      return;
+    }
+
+    const centersPayload = [
+      // centri attuali variati (modify/close)
+      ...editedCostCenters
+        .filter((cc) => cc.action === "modify" || cc.action === "close")
+        .map((cc) => ({
+          cost_center_id: cc.cost_center_id,
+          old_percent: cc.weight_percent,
+          new_percent: cc.new_weight_percent,
+          action: cc.action,
+          note: cc.note,
+        })),
+      // eventuale nuovo centro
+      ...(hasNewCenter
+        ? [
+            {
+              cost_center_id: newCenter.cost_center_id,
+              old_percent: 0,
+              new_percent: Number(newCenter.weight_percent),
+              action: "add",
+              note: newCenter.note,
+            },
+          ]
+        : []),
+    ];
+
+    const payload = {
+      modification_date: variationDate,
+      centers: centersPayload,
+    };
+
+    try {
+      await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
+      alert("Variazione centri di costo registrata.");
+      loadCurrentData();
+      // reset dopo applicazione
+      setVariationDate("");
+      setNewCenter({
+        cost_center_id: "",
+        weight_percent: "",
+        note: "",
+      });
+    } catch (err: any) {
+      alert(
+        err.response?.data?.detail ||
+          "Errore durante la variazione dei centri di costo."
+      );
+    }
+  };
+
+
 
   // ===============================
   // CARICAMENTO DATI ATTUALI
@@ -167,37 +239,6 @@ export default function EmployeeEditPage() {
       setCurrentEnacApprovals(data.enac_approvals_current || []);
     } catch (err) {
       console.error("Errore nel caricamento dati attuali:", err);
-    }
-  };
-
-  const handleApplyCostCenters = async () => {
-    if (!variationDate) {
-      alert("Inserisci la data di variazione.");
-      return;
-    }
-
-    const centersPayload = [
-      ...editedCostCenters.map((cc) => ({
-        cost_center_id: cc.cost_center_id,
-        old_percent: cc.weight_percent,
-        new_percent: cc.new_weight_percent,
-        action: cc.action,
-        note: cc.note,
-      })),
-      ...newCenters,
-    ];
-
-    const payload = {
-      modification_date: variationDate,
-      centers: centersPayload,
-    };
-
-    try {
-      await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
-      alert("Variazione centri di costo registrata.");
-      loadCurrentData();
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Errore durante la variazione dei centri di costo.");
     }
   };
 
@@ -630,7 +671,7 @@ export default function EmployeeEditPage() {
                 </Typography>
 
                 {/* ===============================
-                    DATA VARIAZIONE
+                    DATA VARIAZIONE (UNICA)
                    =============================== */}
                 <TextField
                   fullWidth
@@ -649,6 +690,12 @@ export default function EmployeeEditPage() {
                   Centri di costo attuali
                 </Typography>
 
+                {editedCostCenters.length === 0 && (
+                  <Typography color="error" mb={2}>
+                    Nessun centro di costo attivo trovato.
+                  </Typography>
+                )}
+
                 {editedCostCenters.map((cc) => (
                   <Box
                     key={cc.id}
@@ -658,6 +705,7 @@ export default function EmployeeEditPage() {
                     borderRadius="8px"
                   >
                     <Typography>Centro: {cc.cost_center_name}</Typography>
+                    <Typography>Percentuale attuale: {cc.weight_percent}%</Typography>
                     <Typography>Data inizio: {cc.from_date}</Typography>
 
                     <TextField
@@ -771,34 +819,7 @@ export default function EmployeeEditPage() {
                       })
                     }
                   />
-
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      if (!newCenter.cost_center_id || !newCenter.weight_percent) {
-                        alert("Compila tutti i campi.");
-                        return;
-                      }
-
-                      setNewCenters((prev) => [
-                        ...prev,
-                        {
-                          cost_center_id: newCenter.cost_center_id,
-                          new_percent: Number(newCenter.weight_percent),
-                          action: "add",
-                          note: newCenter.note,
-                        },
-                      ]);
-
-                      setNewCenter({
-                        cost_center_id: "",
-                        weight_percent: "",
-                        note: "",
-                      });
-                    }}
-                  >
-                    Aggiungi alla variazione
-                  </Button>
+                  {/* Nessun pulsante qui: il nuovo centro viene applicato insieme alle variazioni */}
                 </Box>
 
                 {/* ===============================
@@ -814,7 +835,7 @@ export default function EmployeeEditPage() {
                 </Box>
 
                 {/* ===============================
-                    APPLICA VARIAZIONE
+                    UNICO PULSANTE DI APPLICAZIONE
                    =============================== */}
                 <Button
                   variant="contained"
@@ -827,6 +848,7 @@ export default function EmployeeEditPage() {
                 </Button>
               </Box>
             )}
+
             {/* ===============================
                 SEZIONE: REPARTO
                =============================== */}

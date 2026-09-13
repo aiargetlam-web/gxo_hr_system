@@ -123,6 +123,11 @@ export default function EmployeeEditPage() {
     weight_percent: "",
     note: "",
   });
+
+  const totalPercent =
+    editedCostCenters.reduce((sum, cc) => sum + Number(cc.new_weight_percent || 0), 0) +
+    newCenters.reduce((sum, nc) => sum + Number(nc.new_percent || 0), 0);
+
   useEffect(() => {
     if (currentCostCenters) {
       setEditedCostCenters(
@@ -191,7 +196,7 @@ export default function EmployeeEditPage() {
       await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
       alert("Variazione centri di costo registrata.");
       loadCurrentData();
-    } catch (err) {
+    } catch (err: any) {
       alert(err.response?.data?.detail || "Errore durante la variazione dei centri di costo.");
     }
   };

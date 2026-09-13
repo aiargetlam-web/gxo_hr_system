@@ -80,7 +80,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
         ).first()
 
         if not cn:
-            raise HTTPException(status_code=400, detail="Natura contratto non valida")
+            raise HTTPException(status_code=422, detail="Natura contratto non valida")
 
         # Se NON è indeterminato → to_date obbligatorio
         if cn.code != "TI":
@@ -236,12 +236,12 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
         ).first()
 
         if not cn:
-            raise HTTPException(status_code=400, detail="Natura contratto non valida")
+            raise HTTPException(status_code=422, detail="Natura contratto non valida")
 
         if cn.code != "TI":
             if not payload.to_date:
                 raise HTTPException(
-                    status_code=400,
+                    status_code=422,
                     detail="I contratti non indeterminati devono avere una data di scadenza (to_date)."
                 )
             new_to_date = payload.to_date
@@ -334,7 +334,7 @@ def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Se
 
         if current_dep and payload.from_date < current_dep.from_date:
             raise HTTPException(
-                status_code=400,
+                status_code=422,
                 detail="La data di inizio del nuovo reparto è precedente al reparto attuale. Devi prima modificare il reparto precedente."
             )
 
@@ -387,7 +387,7 @@ def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(ge
 
         if current_salary and payload.from_date < current_salary.from_date:
             raise HTTPException(
-                status_code=400,
+                status_code=422,
                 detail="La data di inizio della nuova RAL è precedente alla RAL attuale. Devi prima modificare la RAL precedente."
             )
 
@@ -439,7 +439,7 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
 
         if current_car and payload.from_date < current_car.from_date:
             raise HTTPException(
-                status_code=400,
+                status_code=422,
                 detail="La data di inizio della nuova auto aziendale è precedente all'auto attuale. Devi prima modificare la precedente."
             )
 
@@ -491,7 +491,7 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
 
         if current_site_hist and payload.from_date < current_site_hist.from_date:
             raise HTTPException(
-                status_code=400,
+                status_code=422,
                 detail="La data di inizio del nuovo sito è precedente al sito attuale. Devi prima modificare il sito precedente."
             )
 
@@ -1467,7 +1467,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     # 🔥 BLOCCO SE LA NUOVA DATA È PRIMA DELL'ATTUALE
     if current_status and payload.from_date < current_status.from_date:
         raise HTTPException(
-            status_code=400,
+            status_code=422,
             detail="La data di inizio del nuovo stato è precedente allo stato attuale. Devi prima modificare lo stato precedente."
         )
 
@@ -1480,7 +1480,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     ).first()
 
     if not status_type:
-        raise HTTPException(status_code=400, detail="Stato lavorativo non valido")
+        raise HTTPException(status_code=422, detail="Stato lavorativo non valido")
 
     new_status = EmployeeStatusHistory(
         employee_id=employee_id,
@@ -1528,7 +1528,7 @@ def change_manager(employee_id: int, payload: dict, db: Session = Depends(get_db
     note = payload.get("note")
 
     if not manager_id or not from_date:
-        raise HTTPException(status_code=400, detail="manager_id e from_date sono obbligatori")
+        raise HTTPException(status_code=422, detail="manager_id e from_date sono obbligatori")
 
     # Chiudi il responsabile attuale
     current = (

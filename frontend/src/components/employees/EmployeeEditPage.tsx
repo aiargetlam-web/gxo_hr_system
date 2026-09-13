@@ -194,8 +194,6 @@ export default function EmployeeEditPage() {
           : Promise.resolve({ data: [] }),
         api.get("/api/v1/sites"),
         api.get("/api/v1/benefit-types"),
-        api.get("/api/v1/enac-courses"),
-        api.get("/api/v1/enac-approvals"),
         api.get("/api/v1/employers"),
         api.get("/api/v1/unions"),
       ]);
@@ -206,8 +204,6 @@ export default function EmployeeEditPage() {
       setManagerList(managerRes.data);
       setSiteList(siteRes.data);
       setBenefitTypes(benefitRes.data);
-      setEnacCoursesList(enacCourseRes.data);
-      setEnacApprovalsList(enacApprovalRes.data);
       setEmployerList(employerRes.data);
       setUnionList(unionRes.data);
     } catch (err) {

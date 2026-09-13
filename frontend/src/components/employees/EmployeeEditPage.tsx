@@ -191,7 +191,7 @@ export default function EmployeeEditPage() {
           : Promise.resolve({ data: [] }),
         api.get("/api/v1/sites"),
         api.get("/api/v1/benefit-types"),
-        api.get("/api/v1/employees/employers/list")
+        api.get("/api/v1/employees/employers/list"),
         api.get("/api/v1/employees/unions/list")
       ]);
 

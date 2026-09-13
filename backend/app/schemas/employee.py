@@ -236,6 +236,16 @@ class CostCenterAssignmentCreate(BaseModel):
     from_date: date
     note: Optional[str] = None
 
+class CostCenterVariationItem(BaseModel):
+    cost_center_id: int
+    old_percent: Optional[float] = None
+    new_percent: float
+    action: str  # "modify", "add", "close"
+    note: Optional[str] = None
+
+class CostCenterVariationPayload(BaseModel):
+    modification_date: date
+    centers: List[CostCenterVariationItem]
 
 class DepartmentAssignmentCreate(BaseModel):
     department_id: int

@@ -402,7 +402,7 @@ export default function EmployeeEditPage() {
                           note: "",
                         });
                         loadCurrentData();
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
                         alert(err.response?.data?.detail ||"Errore durante l'aggiunta dello stato.");
                       }

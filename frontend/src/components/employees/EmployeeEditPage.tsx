@@ -237,7 +237,7 @@ export default function EmployeeEditPage() {
       setCurrentUnion(data.union_current);
       setCurrentEnacCourses(data.enac_courses_current || []);
       setCurrentEnacApprovals(data.enac_approvals_current || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);
     }
   };
@@ -698,13 +698,13 @@ export default function EmployeeEditPage() {
 
                 {editedCostCenters.map((cc) => (
                   <Box
-                    key={cc.id}
+                    key={cc.cost_center_id}
                     mb={3}
                     p={2}
                     border="1px solid #ddd"
                     borderRadius="8px"
                   >
-                    <Typography>Centro: {cc.cost_center_name}</Typography>
+                    <Typography>Centro: {costCenterList.find(c => c.id === cc.cost_center_id)?.description}</Typography>
                     <Typography>Percentuale attuale: {cc.weight_percent}%</Typography>
                     <Typography>Data inizio: {cc.from_date}</Typography>
 
@@ -785,7 +785,7 @@ export default function EmployeeEditPage() {
                     >
                       {costCenterList.map((cc) => (
                         <MenuItem key={cc.id} value={cc.id}>
-                          {cc.name}
+                          {cc.description}
                         </MenuItem>
                       ))}
                     </Select>

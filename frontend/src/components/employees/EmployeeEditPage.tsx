@@ -221,17 +221,6 @@ export default function EmployeeEditPage() {
       <DialogTitle>Variazioni dipendente</DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
-        {/* Pulsante torna indietro */}
-        <Box mb={2} p={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => navigate("/employees")}
-          >
-            Torna alla lista dipendenti
-          </Button>
-        </Box>
-
         {/* Layout principale */}
         <Box display="flex" height="80vh">
           

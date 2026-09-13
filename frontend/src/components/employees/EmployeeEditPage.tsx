@@ -17,18 +17,11 @@ import {
 import api from "../../services/api";
 import { useNavigate, useParams } from "react-router-dom";
 
-// ===============================
-// PAGINA VARIAZIONI DIPENDENTE (MODAL XL)
-// ===============================
-
 export default function EmployeeEditPage() {
-  // Prendo l'ID dalla URL
   const { id } = useParams();
   const employeeId = Number(id);
-
   const navigate = useNavigate();
 
-  // Sidebar sezioni
   const sections = [
     { id: "status", label: "Stato amministrativo" },
     { id: "salary", label: "RAL" },
@@ -45,10 +38,6 @@ export default function EmployeeEditPage() {
 
   const [selectedSection, setSelectedSection] = useState("status");
 
-  // ===============================
-  // DATI ATTUALI (per chiusure)
-  // ===============================
-
   const [currentStatus, setCurrentStatus] = useState<any | null>(null);
   const [currentSalary, setCurrentSalary] = useState<any | null>(null);
   const [currentCostCenters, setCurrentCostCenters] = useState<any[]>([]);
@@ -60,10 +49,6 @@ export default function EmployeeEditPage() {
   const [currentUnion, setCurrentUnion] = useState<any | null>(null);
   const [currentEnacCourses, setCurrentEnacCourses] = useState<any[]>([]);
   const [currentEnacApprovals, setCurrentEnacApprovals] = useState<any[]>([]);
-
-  // ===============================
-  // FORM NUOVE VARIAZIONI
-  // ===============================
 
   const [newStatus, setNewStatus] = useState({
     status_type_id: "",
@@ -136,7 +121,6 @@ export default function EmployeeEditPage() {
     from_date: "",
     note: "",
   });
-
   // ===============================
   // CARICAMENTO DATI ATTUALI
   // ===============================
@@ -230,7 +214,6 @@ export default function EmployeeEditPage() {
       console.error("Errore nel caricamento delle options:", err);
     }
   };
-
   // ===============================
   // LAYOUT GENERALE (MODAL XL)
   // ===============================
@@ -245,6 +228,7 @@ export default function EmployeeEditPage() {
       <DialogTitle>Variazioni dipendente</DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
+        {/* Pulsante torna indietro */}
         <Box mb={2} p={2}>
           <Button
             variant="outlined"
@@ -255,10 +239,19 @@ export default function EmployeeEditPage() {
           </Button>
         </Box>
 
+        {/* Layout principale */}
         <Box display="flex" height="80vh">
+          
           {/* SIDEBAR */}
-          <Box width="260px" bgcolor="#f5f5f5" borderRight="1px solid #ddd" p={2}>
-            <Typography variant="h6" mb={2}>Variazioni</Typography>
+          <Box
+            width="260px"
+            bgcolor="#f5f5f5"
+            borderRight="1px solid #ddd"
+            p={2}
+          >
+            <Typography variant="h6" mb={2}>
+              Variazioni
+            </Typography>
 
             {sections.map((s) => (
               <Button
@@ -273,20 +266,32 @@ export default function EmployeeEditPage() {
             ))}
           </Box>
 
-          {/* CONTENUTO */}
+          {/* CONTENUTO — qui dentro andranno i blocchi 4–9 */}
           <Box flex={1} p={3} overflow="auto">
             {/* ===============================
                 SEZIONE: STATO AMMINISTRATIVO
                =============================== */}
             {selectedSection === "status" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Stato Amministrativo</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Stato Amministrativo
+                </Typography>
 
+                {/* STATO ATTUALE */}
                 {currentStatus && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1" mb={1}>Stato attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1" mb={1}>
+                      Stato attuale
+                    </Typography>
 
-                    <Typography>Tipo stato: {currentStatus.status_type_description}</Typography>
+                    <Typography>
+                      Tipo stato: {currentStatus.status_type_description}
+                    </Typography>
                     <Typography>Data inizio: {currentStatus.from_date}</Typography>
                     <Typography>Note: {currentStatus.note}</Typography>
 
@@ -333,9 +338,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                {/* NUOVA VARIAZIONE */}
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo stato amministrativo</Typography>
+                {/* NUOVO STATO */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo stato amministrativo
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="status-type-label">Tipo stato</InputLabel>
@@ -344,7 +355,10 @@ export default function EmployeeEditPage() {
                       value={newStatus.status_type_id}
                       label="Tipo stato"
                       onChange={(e) =>
-                        setNewStatus({ ...newStatus, status_type_id: e.target.value })
+                        setNewStatus({
+                          ...newStatus,
+                          status_type_id: e.target.value,
+                        })
                       }
                     >
                       {statusTypes.map((st) => (
@@ -363,7 +377,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newStatus.from_date}
                     onChange={(e) =>
-                      setNewStatus({ ...newStatus, from_date: e.target.value })
+                      setNewStatus({
+                        ...newStatus,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -375,7 +392,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newStatus.note}
                     onChange={(e) =>
-                      setNewStatus({ ...newStatus, note: e.target.value })
+                      setNewStatus({
+                        ...newStatus,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -389,9 +409,16 @@ export default function EmployeeEditPage() {
                       }
 
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/status`, newStatus);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/status`,
+                          newStatus
+                        );
                         alert("Nuovo stato amministrativo aggiunto.");
-                        setNewStatus({ status_type_id: "", from_date: "", note: "" });
+                        setNewStatus({
+                          status_type_id: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -404,19 +431,33 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-
             {/* ===============================
                 SEZIONE: RAL
                =============================== */}
             {selectedSection === "salary" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione RAL</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione RAL
+                </Typography>
 
+                {/* RAL ATTUALE */}
                 {currentSalary && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">RAL attuale</Typography>
-                    <Typography>Importo: {currentSalary.ral_amount} €</Typography>
-                    <Typography>Data inizio: {currentSalary.from_date}</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      RAL attuale
+                    </Typography>
+
+                    <Typography>
+                      Importo: {currentSalary.ral_amount} €
+                    </Typography>
+                    <Typography>
+                      Data inizio: {currentSalary.from_date}
+                    </Typography>
 
                     <TextField
                       fullWidth
@@ -426,7 +467,10 @@ export default function EmployeeEditPage() {
                       sx={{ mt: 2 }}
                       value={currentSalary.to_date || ""}
                       onChange={(e) =>
-                        setCurrentSalary({ ...currentSalary, to_date: e.target.value })
+                        setCurrentSalary({
+                          ...currentSalary,
+                          to_date: e.target.value,
+                        })
                       }
                     />
 
@@ -439,6 +483,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/salaries/${currentSalary.id}`,
@@ -457,8 +502,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuova RAL</Typography>
+                {/* NUOVA RAL */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuova RAL
+                  </Typography>
 
                   <TextField
                     fullWidth
@@ -467,7 +519,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newSalary.ral_amount}
                     onChange={(e) =>
-                      setNewSalary({ ...newSalary, ral_amount: e.target.value })
+                      setNewSalary({
+                        ...newSalary,
+                        ral_amount: e.target.value,
+                      })
                     }
                   />
 
@@ -479,7 +534,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newSalary.from_date}
                     onChange={(e) =>
-                      setNewSalary({ ...newSalary, from_date: e.target.value })
+                      setNewSalary({
+                        ...newSalary,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -491,7 +549,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newSalary.note}
                     onChange={(e) =>
-                      setNewSalary({ ...newSalary, note: e.target.value })
+                      setNewSalary({
+                        ...newSalary,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -502,10 +563,18 @@ export default function EmployeeEditPage() {
                         alert("Compila tutti i campi.");
                         return;
                       }
+
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/salaries`, newSalary);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/salaries`,
+                          newSalary
+                        );
                         alert("Nuova RAL aggiunta.");
-                        setNewSalary({ ral_amount: "", from_date: "", note: "" });
+                        setNewSalary({
+                          ral_amount: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -518,18 +587,27 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-
             {/* ===============================
                 SEZIONE: CENTRI DI COSTO
                =============================== */}
             {selectedSection === "costCenters" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Centri di Costo</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Centri di Costo
+                </Typography>
 
-                <Typography variant="subtitle1" mb={1}>Centri di costo attuali</Typography>
+                <Typography variant="subtitle1" mb={1}>
+                  Centri di costo attuali
+                </Typography>
 
                 {currentCostCenters.map((cc) => (
-                  <Box key={cc.id} mb={3} p={2} border="1px solid #ddd" borderRadius="8px">
+                  <Box
+                    key={cc.id}
+                    mb={3}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
                     <Typography>Centro: {cc.cost_center_name}</Typography>
                     <Typography>Percentuale: {cc.weight_percent}%</Typography>
                     <Typography>Data inizio: {cc.from_date}</Typography>
@@ -579,8 +657,16 @@ export default function EmployeeEditPage() {
                   </Box>
                 ))}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px" mt={4}>
-                  <Typography variant="subtitle1" mb={2}>Nuova assegnazione centro di costo</Typography>
+                {/* NUOVO CENTRO DI COSTO */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                  mt={4}
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuova assegnazione centro di costo
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="cost-center-label">Centro di costo</InputLabel>
@@ -589,7 +675,10 @@ export default function EmployeeEditPage() {
                       value={newCostCenter.cost_center_id}
                       label="Centro di costo"
                       onChange={(e) =>
-                        setNewCostCenter({ ...newCostCenter, cost_center_id: e.target.value })
+                        setNewCostCenter({
+                          ...newCostCenter,
+                          cost_center_id: e.target.value,
+                        })
                       }
                     >
                       {costCenterList.map((cc) => (
@@ -607,7 +696,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCostCenter.weight_percent}
                     onChange={(e) =>
-                      setNewCostCenter({ ...newCostCenter, weight_percent: e.target.value })
+                      setNewCostCenter({
+                        ...newCostCenter,
+                        weight_percent: e.target.value,
+                      })
                     }
                   />
 
@@ -619,7 +711,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCostCenter.from_date}
                     onChange={(e) =>
-                      setNewCostCenter({ ...newCostCenter, from_date: e.target.value })
+                      setNewCostCenter({
+                        ...newCostCenter,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -631,7 +726,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCostCenter.note}
                     onChange={(e) =>
-                      setNewCostCenter({ ...newCostCenter, note: e.target.value })
+                      setNewCostCenter({
+                        ...newCostCenter,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -673,17 +771,27 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-
             {/* ===============================
                 SEZIONE: REPARTO
                =============================== */}
             {selectedSection === "department" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Reparto</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Reparto
+                </Typography>
 
+                {/* REPARTO ATTUALE */}
                 {currentDepartment && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Reparto attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Reparto attuale
+                    </Typography>
+
                     <Typography>Reparto: {currentDepartment.name}</Typography>
                     <Typography>Manager: {currentDepartment.manager_full_name}</Typography>
 
@@ -711,6 +819,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/departments/${currentDepartment.id}`,
@@ -729,8 +838,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo reparto</Typography>
+                {/* NUOVO REPARTO */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo reparto
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="department-label">Reparto</InputLabel>
@@ -739,7 +855,10 @@ export default function EmployeeEditPage() {
                       value={newDepartment.department_id}
                       label="Reparto"
                       onChange={(e) =>
-                        setNewDepartment({ ...newDepartment, department_id: e.target.value })
+                        setNewDepartment({
+                          ...newDepartment,
+                          department_id: e.target.value,
+                        })
                       }
                     >
                       {departmentList.map((d) => (
@@ -757,7 +876,10 @@ export default function EmployeeEditPage() {
                       value={newDepartment.manager_employee_id}
                       label="Manager"
                       onChange={(e) =>
-                        setNewDepartment({ ...newDepartment, manager_employee_id: e.target.value })
+                        setNewDepartment({
+                          ...newDepartment,
+                          manager_employee_id: e.target.value,
+                        })
                       }
                     >
                       {managerList.map((m) => (
@@ -776,7 +898,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newDepartment.from_date}
                     onChange={(e) =>
-                      setNewDepartment({ ...newDepartment, from_date: e.target.value })
+                      setNewDepartment({
+                        ...newDepartment,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -788,7 +913,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newDepartment.note}
                     onChange={(e) =>
-                      setNewDepartment({ ...newDepartment, note: e.target.value })
+                      setNewDepartment({
+                        ...newDepartment,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -799,8 +927,12 @@ export default function EmployeeEditPage() {
                         alert("Compila tutti i campi.");
                         return;
                       }
+
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/departments`, newDepartment);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/departments`,
+                          newDepartment
+                        );
                         alert("Nuovo reparto aggiunto.");
                         setNewDepartment({
                           department_id: "",
@@ -826,11 +958,22 @@ export default function EmployeeEditPage() {
                =============================== */}
             {selectedSection === "site" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Sito</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Sito
+                </Typography>
 
+                {/* SITO ATTUALE */}
                 {currentSite && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Sito attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Sito attuale
+                    </Typography>
+
                     <Typography>Sito: {currentSite.site_name}</Typography>
 
                     <TextField
@@ -841,7 +984,10 @@ export default function EmployeeEditPage() {
                       sx={{ mt: 2 }}
                       value={currentSite.to_date || ""}
                       onChange={(e) =>
-                        setCurrentSite({ ...currentSite, to_date: e.target.value })
+                        setCurrentSite({
+                          ...currentSite,
+                          to_date: e.target.value,
+                        })
                       }
                     />
 
@@ -854,6 +1000,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/sites/${currentSite.id}`,
@@ -872,8 +1019,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo sito</Typography>
+                {/* NUOVO SITO */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo sito
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="site-label">Sito</InputLabel>
@@ -882,7 +1036,10 @@ export default function EmployeeEditPage() {
                       value={newSite.site_id}
                       label="Sito"
                       onChange={(e) =>
-                        setNewSite({ ...newSite, site_id: e.target.value })
+                        setNewSite({
+                          ...newSite,
+                          site_id: e.target.value,
+                        })
                       }
                     >
                       {siteList.map((s) => (
@@ -901,7 +1058,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newSite.from_date}
                     onChange={(e) =>
-                      setNewSite({ ...newSite, from_date: e.target.value })
+                      setNewSite({
+                        ...newSite,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -913,7 +1073,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newSite.note}
                     onChange={(e) =>
-                      setNewSite({ ...newSite, note: e.target.value })
+                      setNewSite({
+                        ...newSite,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -924,10 +1087,18 @@ export default function EmployeeEditPage() {
                         alert("Compila tutti i campi.");
                         return;
                       }
+
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/sites`, newSite);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/sites`,
+                          newSite
+                        );
                         alert("Nuovo sito aggiunto.");
-                        setNewSite({ site_id: "", from_date: "", note: "" });
+                        setNewSite({
+                          site_id: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -940,17 +1111,28 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-
             {/* ===============================
                 SEZIONE: BENEFIT
                =============================== */}
             {selectedSection === "benefits" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Benefit</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Benefit
+                </Typography>
 
+                {/* BENEFIT ATTUALI */}
                 {currentBenefits.map((b) => (
-                  <Box key={b.id} mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Benefit attuale</Typography>
+                  <Box
+                    key={b.id}
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Benefit attuale
+                    </Typography>
+
                     <Typography>Tipo: {b.benefit_type_description}</Typography>
                     <Typography>Data inizio: {b.from_date}</Typography>
 
@@ -979,6 +1161,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/benefits/${b.id}`,
@@ -997,8 +1180,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 ))}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo benefit</Typography>
+                {/* NUOVO BENEFIT */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo benefit
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="benefit-type-label">Tipo benefit</InputLabel>
@@ -1007,7 +1197,10 @@ export default function EmployeeEditPage() {
                       value={newBenefit.benefit_type_id}
                       label="Tipo benefit"
                       onChange={(e) =>
-                        setNewBenefit({ ...newBenefit, benefit_type_id: e.target.value })
+                        setNewBenefit({
+                          ...newBenefit,
+                          benefit_type_id: e.target.value,
+                        })
                       }
                     >
                       {benefitTypes.map((bt) => (
@@ -1026,7 +1219,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newBenefit.from_date}
                     onChange={(e) =>
-                      setNewBenefit({ ...newBenefit, from_date: e.target.value })
+                      setNewBenefit({
+                        ...newBenefit,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1038,7 +1234,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newBenefit.note}
                     onChange={(e) =>
-                      setNewBenefit({ ...newBenefit, note: e.target.value })
+                      setNewBenefit({
+                        ...newBenefit,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1049,10 +1248,18 @@ export default function EmployeeEditPage() {
                         alert("Compila tutti i campi.");
                         return;
                       }
+
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/benefits`, newBenefit);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/benefits`,
+                          newBenefit
+                        );
                         alert("Nuovo benefit aggiunto.");
-                        setNewBenefit({ benefit_type_id: "", from_date: "", note: "" });
+                        setNewBenefit({
+                          benefit_type_id: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -1071,11 +1278,23 @@ export default function EmployeeEditPage() {
                =============================== */}
             {selectedSection === "enacCourses" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione ENAC – Corsi</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione ENAC – Corsi
+                </Typography>
 
+                {/* CORSI ATTUALI */}
                 {currentEnacCourses.map((c) => (
-                  <Box key={c.id} mb={4} p={2} border="1px solid "#ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Corso attuale</Typography>
+                  <Box
+                    key={c.id}
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Corso attuale
+                    </Typography>
+
                     <Typography>Data corso: {c.course_date}</Typography>
                     <Typography>Data scadenza: {c.expiry_date}</Typography>
 
@@ -1104,6 +1323,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/enac-courses/${c.id}`,
@@ -1122,8 +1342,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 ))}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo corso ENAC</Typography>
+                {/* NUOVO CORSO ENAC */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo corso ENAC
+                  </Typography>
 
                   <TextField
                     fullWidth
@@ -1133,7 +1360,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacCourse.course_date}
                     onChange={(e) =>
-                      setNewEnacCourse({ ...newEnacCourse, course_date: e.target.value })
+                      setNewEnacCourse({
+                        ...newEnacCourse,
+                        course_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1145,7 +1375,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacCourse.expiry_date}
                     onChange={(e) =>
-                      setNewEnacCourse({ ...newEnacCourse, expiry_date: e.target.value })
+                      setNewEnacCourse({
+                        ...newEnacCourse,
+                        expiry_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1172,7 +1405,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacCourse.note}
                     onChange={(e) =>
-                      setNewEnacCourse({ ...newEnacCourse, note: e.target.value })
+                      setNewEnacCourse({
+                        ...newEnacCourse,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1183,8 +1419,12 @@ export default function EmployeeEditPage() {
                         alert("Compila tutti i campi.");
                         return;
                       }
+
                       try {
-                        await api.post(`/api/v1/employees/${employeeId}/enac-courses`, newEnacCourse);
+                        await api.post(
+                          `/api/v1/employees/${employeeId}/enac-courses`,
+                          newEnacCourse
+                        );
                         alert("Nuovo corso ENAC aggiunto.");
                         setNewEnacCourse({
                           course_date: "",
@@ -1210,11 +1450,23 @@ export default function EmployeeEditPage() {
                =============================== */}
             {selectedSection === "enacApprovals" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione ENAC – Approvazioni</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione ENAC – Approvazioni
+                </Typography>
 
+                {/* APPROVAZIONI ATTUALI */}
                 {currentEnacApprovals.map((a) => (
-                  <Box key={a.id} mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Approvazione attuale</Typography>
+                  <Box
+                    key={a.id}
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Approvazione attuale
+                    </Typography>
+
                     <Typography>Data richiesta: {a.request_date}</Typography>
                     <Typography>Data approvazione: {a.approval_date}</Typography>
 
@@ -1243,6 +1495,7 @@ export default function EmployeeEditPage() {
                           alert("Inserisci una data di fine.");
                           return;
                         }
+
                         try {
                           await api.patch(
                             `/api/v1/employees/${employeeId}/enac-approvals/${a.id}`,
@@ -1261,8 +1514,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 ))}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuova approvazione ENAC</Typography>
+                {/* NUOVA APPROVAZIONE ENAC */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuova approvazione ENAC
+                  </Typography>
 
                   <TextField
                     fullWidth
@@ -1272,7 +1532,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacApproval.request_date}
                     onChange={(e) =>
-                      setNewEnacApproval({ ...newEnacApproval, request_date: e.target.value })
+                      setNewEnacApproval({
+                        ...newEnacApproval,
+                        request_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1284,7 +1547,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacApproval.approval_date}
                     onChange={(e) =>
-                      setNewEnacApproval({ ...newEnacApproval, approval_date: e.target.value })
+                      setNewEnacApproval({
+                        ...newEnacApproval,
+                        approval_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1311,7 +1577,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEnacApproval.note}
                     onChange={(e) =>
-                      setNewEnacApproval({ ...newEnacApproval, note: e.target.value })
+                      setNewEnacApproval({
+                        ...newEnacApproval,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1350,17 +1619,27 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-
             {/* ===============================
                 SEZIONE: EMPLOYER
                =============================== */}
             {selectedSection === "employer" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Employer</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Employer
+                </Typography>
 
+                {/* EMPLOYER ATTUALE */}
                 {currentEmployer && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Employer attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Employer attuale
+                    </Typography>
+
                     <Typography>Employer: {currentEmployer.employer_name}</Typography>
                     <Typography>Data inizio: {currentEmployer.from_date}</Typography>
 
@@ -1394,7 +1673,6 @@ export default function EmployeeEditPage() {
                             `/api/v1/employees/${employeeId}/employers/${currentEmployer.id}`,
                             { to_date: currentEmployer.to_date }
                           );
-
                           alert("Employer chiuso.");
                           loadCurrentData();
                         } catch (err) {
@@ -1408,8 +1686,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo employer</Typography>
+                {/* NUOVO EMPLOYER */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo employer
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="employer-label">Employer</InputLabel>
@@ -1418,7 +1703,10 @@ export default function EmployeeEditPage() {
                       value={newEmployer.employer_id}
                       label="Employer"
                       onChange={(e) =>
-                        setNewEmployer({ ...newEmployer, employer_id: e.target.value })
+                        setNewEmployer({
+                          ...newEmployer,
+                          employer_id: e.target.value,
+                        })
                       }
                     >
                       {employerList.map((emp) => (
@@ -1437,7 +1725,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEmployer.from_date}
                     onChange={(e) =>
-                      setNewEmployer({ ...newEmployer, from_date: e.target.value })
+                      setNewEmployer({
+                        ...newEmployer,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1449,7 +1740,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newEmployer.note}
                     onChange={(e) =>
-                      setNewEmployer({ ...newEmployer, note: e.target.value })
+                      setNewEmployer({
+                        ...newEmployer,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1466,9 +1760,12 @@ export default function EmployeeEditPage() {
                           `/api/v1/employees/${employeeId}/employers`,
                           newEmployer
                         );
-
                         alert("Nuovo employer aggiunto.");
-                        setNewEmployer({ employer_id: "", from_date: "", note: "" });
+                        setNewEmployer({
+                          employer_id: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -1487,11 +1784,22 @@ export default function EmployeeEditPage() {
                =============================== */}
             {selectedSection === "union" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Sindacato</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Sindacato
+                </Typography>
 
+                {/* SINDACATO ATTUALE */}
                 {currentUnion && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Sindacato attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Sindacato attuale
+                    </Typography>
+
                     <Typography>Sindacato: {currentUnion.union_name}</Typography>
                     <Typography>Data inizio: {currentUnion.from_date}</Typography>
 
@@ -1525,7 +1833,6 @@ export default function EmployeeEditPage() {
                             `/api/v1/employees/${employeeId}/unions/${currentUnion.id}`,
                             { to_date: currentUnion.to_date }
                           );
-
                           alert("Sindacato chiuso.");
                           loadCurrentData();
                         } catch (err) {
@@ -1539,8 +1846,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuovo sindacato</Typography>
+                {/* NUOVO SINDACATO */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuovo sindacato
+                  </Typography>
 
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="union-label">Sindacato</InputLabel>
@@ -1549,7 +1863,10 @@ export default function EmployeeEditPage() {
                       value={newUnion.union_id}
                       label="Sindacato"
                       onChange={(e) =>
-                        setNewUnion({ ...newUnion, union_id: e.target.value })
+                        setNewUnion({
+                          ...newUnion,
+                          union_id: e.target.value,
+                        })
                       }
                     >
                       {unionList.map((u) => (
@@ -1568,7 +1885,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newUnion.from_date}
                     onChange={(e) =>
-                      setNewUnion({ ...newUnion, from_date: e.target.value })
+                      setNewUnion({
+                        ...newUnion,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1580,7 +1900,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newUnion.note}
                     onChange={(e) =>
-                      setNewUnion({ ...newUnion, note: e.target.value })
+                      setNewUnion({
+                        ...newUnion,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1597,9 +1920,12 @@ export default function EmployeeEditPage() {
                           `/api/v1/employees/${employeeId}/unions`,
                           newUnion
                         );
-
                         alert("Nuovo sindacato aggiunto.");
-                        setNewUnion({ union_id: "", from_date: "", note: "" });
+                        setNewUnion({
+                          union_id: "",
+                          from_date: "",
+                          note: "",
+                        });
                         loadCurrentData();
                       } catch (err) {
                         console.error(err);
@@ -1618,11 +1944,22 @@ export default function EmployeeEditPage() {
                =============================== */}
             {selectedSection === "companyCar" && (
               <Box>
-                <Typography variant="h5" mb={2}>Variazione Auto Aziendale</Typography>
+                <Typography variant="h5" mb={2}>
+                  Variazione Auto Aziendale
+                </Typography>
 
+                {/* AUTO ATTUALE */}
                 {currentCompanyCar && (
-                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px">
-                    <Typography variant="subtitle1">Auto attuale</Typography>
+                  <Box
+                    mb={4}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                  >
+                    <Typography variant="subtitle1">
+                      Auto attuale
+                    </Typography>
+
                     <Typography>Modello: {currentCompanyCar.car_model}</Typography>
                     <Typography>Targa: {currentCompanyCar.plate}</Typography>
                     <Typography>Data inizio: {currentCompanyCar.from_date}</Typography>
@@ -1657,7 +1994,6 @@ export default function EmployeeEditPage() {
                             `/api/v1/employees/${employeeId}/company-cars/${currentCompanyCar.id}`,
                             { to_date: currentCompanyCar.to_date }
                           );
-
                           alert("Auto aziendale chiusa.");
                           loadCurrentData();
                         } catch (err) {
@@ -1671,8 +2007,15 @@ export default function EmployeeEditPage() {
                   </Box>
                 )}
 
-                <Box p={2} border="1px solid #ddd" borderRadius="8px">
-                  <Typography variant="subtitle1" mb={2}>Nuova auto aziendale</Typography>
+                {/* NUOVA AUTO AZIENDALE */}
+                <Box
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                >
+                  <Typography variant="subtitle1" mb={2}>
+                    Nuova auto aziendale
+                  </Typography>
 
                   <TextField
                     fullWidth
@@ -1680,7 +2023,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCompanyCar.car_model}
                     onChange={(e) =>
-                      setNewCompanyCar({ ...newCompanyCar, car_model: e.target.value })
+                      setNewCompanyCar({
+                        ...newCompanyCar,
+                        car_model: e.target.value,
+                      })
                     }
                   />
 
@@ -1690,7 +2036,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCompanyCar.plate}
                     onChange={(e) =>
-                      setNewCompanyCar({ ...newCompanyCar, plate: e.target.value })
+                      setNewCompanyCar({
+                        ...newCompanyCar,
+                        plate: e.target.value,
+                      })
                     }
                   />
 
@@ -1702,7 +2051,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCompanyCar.from_date}
                     onChange={(e) =>
-                      setNewCompanyCar({ ...newCompanyCar, from_date: e.target.value })
+                      setNewCompanyCar({
+                        ...newCompanyCar,
+                        from_date: e.target.value,
+                      })
                     }
                   />
 
@@ -1714,7 +2066,10 @@ export default function EmployeeEditPage() {
                     sx={{ mb: 2 }}
                     value={newCompanyCar.note}
                     onChange={(e) =>
-                      setNewCompanyCar({ ...newCompanyCar, note: e.target.value })
+                      setNewCompanyCar({
+                        ...newCompanyCar,
+                        note: e.target.value,
+                      })
                     }
                   />
 
@@ -1751,8 +2106,9 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-          </Box>
-        </Box>
+
+          </Box> {/* CHIUSURA CONTENUTO */}
+        </Box> {/* CHIUSURA LAYOUT */}
       </DialogContent>
     </Dialog>
   );

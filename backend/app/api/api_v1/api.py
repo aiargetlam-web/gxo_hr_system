@@ -32,6 +32,9 @@ from app.api.api_v1.endpoints import status_types
 from app.api.api_v1.endpoints import law_104
 from app.api.api_v1.endpoints import employer_history
 from app.api.api_v1.endpoints import union_history
+from app.api.api_v1.endpoints.employers import router as employers_router
+from app.api.api_v1.endpoints.unions import router as unions_router
+
 
 
 
@@ -78,6 +81,9 @@ api_router.include_router(status_types.router)
 api_router.include_router(law_104.router, prefix="/law-104", tags=["law-104"])
 api_router.include_router(employer_history.router, prefix="/employees", tags=["employer-history"])
 api_router.include_router(union_history.router, prefix="/employees", tags=["union-history"])
+api_router.include_router(employers_router, prefix="/employers", tags=["employers"])
+api_router.include_router(unions_router, prefix="/unions", tags=["unions"])
+
 
 
 

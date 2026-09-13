@@ -223,12 +223,26 @@ export default function EmployeeEditPage() {
 
   const loadCurrentData = async () => {
     try {
-      const res = await api.get(`/api/v1/employee-table-views/${employeeId}`);
+      const res = await api.get(`/api/v1/employees/${employeeId}`);
       const data = res.data;
+
+      setEditedCostCenters(
+        data.cost_centers.map((cc) => ({
+          id: cc.id,
+          cost_center_id: cc.cost_center_id,
+          cost_center_name: cc.description,
+          weight_percent: cc.weight_percent,
+          new_weight_percent: cc.weight_percent,
+          from_date: cc.from_date,
+          action: "modify",
+          note: cc.note || "",
+        }))
+      );
+
 
       setCurrentStatus(data.status_current);
       setCurrentSalary(data.salary_current);
-      setCurrentCostCenters(data.cost_centers_current || []);
+      setCurrentCostCenters(data.cost_centers || []);
       setCurrentDepartment(data.department_current);
       setCurrentSite(data.site_current);
       setCurrentBenefits(data.benefits_current || []);

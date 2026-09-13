@@ -2326,5 +2326,13 @@ def close_union(employee_id: int, hist_id: int, payload: UnionUpdate, db: Sessio
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore chiusura sindacato: {str(e)}")
 
+# ============================================================
+# get unions (catalogo sindacati)
+# ============================================================
+@router.get("/unions/list")
+def get_unions(db: Session = Depends(get_db)):
+    from app.models.union import Union
+    unions = db.query(Union).all()
+    return [{"id": u.id, "name": u.name} for u in unions]
 
 

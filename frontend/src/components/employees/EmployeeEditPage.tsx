@@ -62,14 +62,6 @@ export default function EmployeeEditPage() {
     note: "",
   });
 
-  const [closingCostCenters, setClosingCostCenters] = useState<any>({});
-  const [newCostCenter, setNewCostCenter] = useState({
-    cost_center_id: "",
-    weight_percent: "",
-    from_date: "",
-    note: "",
-  });
-
   const [newDepartment, setNewDepartment] = useState({
     department_id: "",
     manager_employee_id: "",
@@ -121,6 +113,28 @@ export default function EmployeeEditPage() {
     from_date: "",
     note: "",
   });
+
+  const [variationDate, setVariationDate] = useState("");
+  const [editedCostCenters, setEditedCostCenters] = useState<any[]>([]);
+  const [newCenters, setNewCenters] = useState<any[]>([]);
+
+  const [newCenter, setNewCenter] = useState({
+    cost_center_id: "",
+    weight_percent: "",
+    note: "",
+  });
+  useEffect(() => {
+    if (currentCostCenters) {
+      setEditedCostCenters(
+        currentCostCenters.map((cc) => ({
+          ...cc,
+          new_weight_percent: cc.weight_percent,
+          action: "modify",
+        }))
+      );
+    }
+  }, [currentCostCenters]);
+
   // ===============================
   // CARICAMENTO DATI ATTUALI
   // ===============================
@@ -150,6 +164,38 @@ export default function EmployeeEditPage() {
       console.error("Errore nel caricamento dati attuali:", err);
     }
   };
+
+  const handleApplyCostCenters = async () => {
+    if (!variationDate) {
+      alert("Inserisci la data di variazione.");
+      return;
+    }
+
+    const centersPayload = [
+      ...editedCostCenters.map((cc) => ({
+        cost_center_id: cc.cost_center_id,
+        old_percent: cc.weight_percent,
+        new_percent: cc.new_weight_percent,
+        action: cc.action,
+        note: cc.note,
+      })),
+      ...newCenters,
+    ];
+
+    const payload = {
+      modification_date: variationDate,
+      centers: centersPayload,
+    };
+
+    try {
+      await api.post(`/api/v1/employees/${employeeId}/cost-centers`, payload);
+      alert("Variazione centri di costo registrata.");
+      loadCurrentData();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Errore durante la variazione dei centri di costo.");
+    }
+  };
+
 
   // ===============================
   // OPTIONS PER I MENU A TENDINA
@@ -569,7 +615,7 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-            {/* ===============================
+{/* ===============================
                 SEZIONE: CENTRI DI COSTO
                =============================== */}
             {selectedSection === "costCenters" && (
@@ -578,11 +624,27 @@ export default function EmployeeEditPage() {
                   Variazione Centri di Costo
                 </Typography>
 
+                {/* ===============================
+                    DATA VARIAZIONE
+                   =============================== */}
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data variazione"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3 }}
+                  value={variationDate}
+                  onChange={(e) => setVariationDate(e.target.value)}
+                />
+
+                {/* ===============================
+                    CENTRI DI COSTO ATTUALI
+                   =============================== */}
                 <Typography variant="subtitle1" mb={1}>
                   Centri di costo attuali
                 </Typography>
 
-                {currentCostCenters.map((cc) => (
+                {editedCostCenters.map((cc) => (
                   <Box
                     key={cc.id}
                     mb={3}
@@ -591,55 +653,60 @@ export default function EmployeeEditPage() {
                     borderRadius="8px"
                   >
                     <Typography>Centro: {cc.cost_center_name}</Typography>
-                    <Typography>Percentuale: {cc.weight_percent}%</Typography>
                     <Typography>Data inizio: {cc.from_date}</Typography>
 
                     <TextField
                       fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
+                      type="number"
+                      label="Nuova percentuale"
                       sx={{ mt: 2 }}
-                      value={closingCostCenters[cc.id] || ""}
-                      onChange={(e) =>
-                        setClosingCostCenters({
-                          ...closingCostCenters,
-                          [cc.id]: e.target.value,
-                        })
-                      }
+                      value={cc.new_weight_percent}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setEditedCostCenters((prev) =>
+                          prev.map((x) =>
+                            x.id === cc.id
+                              ? {
+                                  ...x,
+                                  new_weight_percent: value,
+                                  action: value === 0 ? "close" : "modify",
+                                }
+                              : x
+                          )
+                        );
+                      }}
                     />
 
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        const toDate = closingCostCenters[cc.id];
-                        if (!toDate) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/cost-centers/${cc.id}`,
-                            { to_date: toDate }
-                          );
-
-                          alert("Centro di costo chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura del centro di costo.");
-                        }
-                      }}
-                    >
-                      Chiudi centro di costo
-                    </Button>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={cc.action === "close"}
+                          onChange={(e) =>
+                            setEditedCostCenters((prev) =>
+                              prev.map((x) =>
+                                x.id === cc.id
+                                  ? {
+                                      ...x,
+                                      action: e.target.checked ? "close" : "modify",
+                                      new_weight_percent: e.target.checked
+                                        ? 0
+                                        : x.new_weight_percent,
+                                    }
+                                  : x
+                              )
+                            )
+                          }
+                        />
+                      }
+                      label="Chiudi centro di costo"
+                      sx={{ mt: 1 }}
+                    />
                   </Box>
                 ))}
 
-                {/* NUOVO CENTRO DI COSTO */}
+                {/* ===============================
+                    NUOVO CENTRO DI COSTO
+                   =============================== */}
                 <Box
                   p={2}
                   border="1px solid #ddd"
@@ -654,11 +721,11 @@ export default function EmployeeEditPage() {
                     <InputLabel id="cost-center-label">Centro di costo</InputLabel>
                     <Select
                       labelId="cost-center-label"
-                      value={newCostCenter.cost_center_id}
+                      value={newCenter.cost_center_id}
                       label="Centro di costo"
                       onChange={(e) =>
-                        setNewCostCenter({
-                          ...newCostCenter,
+                        setNewCenter({
+                          ...newCenter,
                           cost_center_id: e.target.value,
                         })
                       }
@@ -676,26 +743,11 @@ export default function EmployeeEditPage() {
                     type="number"
                     label="Percentuale"
                     sx={{ mb: 2 }}
-                    value={newCostCenter.weight_percent}
+                    value={newCenter.weight_percent}
                     onChange={(e) =>
-                      setNewCostCenter({
-                        ...newCostCenter,
+                      setNewCenter({
+                        ...newCenter,
                         weight_percent: e.target.value,
-                      })
-                    }
-                  />
-
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={newCostCenter.from_date}
-                    onChange={(e) =>
-                      setNewCostCenter({
-                        ...newCostCenter,
-                        from_date: e.target.value,
                       })
                     }
                   />
@@ -706,10 +758,10 @@ export default function EmployeeEditPage() {
                     multiline
                     rows={3}
                     sx={{ mb: 2 }}
-                    value={newCostCenter.note}
+                    value={newCenter.note}
                     onChange={(e) =>
-                      setNewCostCenter({
-                        ...newCostCenter,
+                      setNewCenter({
+                        ...newCenter,
                         note: e.target.value,
                       })
                     }
@@ -717,40 +769,57 @@ export default function EmployeeEditPage() {
 
                   <Button
                     variant="contained"
-                    onClick={async () => {
-                      if (
-                        !newCostCenter.cost_center_id ||
-                        !newCostCenter.weight_percent ||
-                        !newCostCenter.from_date
-                      ) {
+                    onClick={() => {
+                      if (!newCenter.cost_center_id || !newCenter.weight_percent) {
                         alert("Compila tutti i campi.");
                         return;
                       }
 
-                      try {
-                        await api.post(
-                          `/api/v1/employees/${employeeId}/cost-centers`,
-                          newCostCenter
-                        );
+                      setNewCenters((prev) => [
+                        ...prev,
+                        {
+                          cost_center_id: newCenter.cost_center_id,
+                          new_percent: Number(newCenter.weight_percent),
+                          action: "add",
+                          note: newCenter.note,
+                        },
+                      ]);
 
-                        alert("Nuovo centro di costo aggiunto.");
-                        setNewCostCenter({
-                          cost_center_id: "",
-                          weight_percent: "",
-                          from_date: "",
-                          note: "",
-                        });
-
-                        loadCurrentData();
-                      } catch (err:any) {
-                        console.error(err);
-                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del centro di costo.");
-                      }
+                      setNewCenter({
+                        cost_center_id: "",
+                        weight_percent: "",
+                        note: "",
+                      });
                     }}
                   >
-                    Aggiungi nuovo centro di costo
+                    Aggiungi alla variazione
                   </Button>
                 </Box>
+
+                {/* ===============================
+                    TOTALE PERCENTUALE
+                   =============================== */}
+                <Box mt={4}>
+                  <Typography
+                    variant="h6"
+                    color={totalPercent === 100 ? "green" : "red"}
+                  >
+                    Totale: {totalPercent}%
+                  </Typography>
+                </Box>
+
+                {/* ===============================
+                    APPLICA VARIAZIONE
+                   =============================== */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 3 }}
+                  disabled={totalPercent !== 100 || !variationDate}
+                  onClick={handleApplyCostCenters}
+                >
+                  Applica variazione centri di costo
+                </Button>
               </Box>
             )}
             {/* ===============================

@@ -49,6 +49,9 @@ export default function EmployeeEditPage() {
   const [currentUnion, setCurrentUnion] = useState<any | null>(null);
   const [currentEnacCourses, setCurrentEnacCourses] = useState<any[]>([]);
   const [currentEnacApprovals, setCurrentEnacApprovals] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [managers, setManagers] = useState<any[]>([]);
+
 
   const [newStatus, setNewStatus] = useState({
     status_type_id: "",
@@ -212,6 +215,29 @@ export default function EmployeeEditPage() {
     );
   };
 
+  const loadDepartments = async (siteId: number) => {
+    try {
+      const res = await api.get(`/api/v1/sites/${siteId}/departments`);
+      setDepartments(res.data);
+    } catch (err) {
+      console.error("Errore caricamento reparti:", err);
+    }
+  };
+
+  const loadManagers = async (siteId: number) => {
+    try {
+      const res = await api.get(`/api/v1/sites/${siteId}/managers`);
+      setManagers(res.data);
+    } catch (err) {
+      console.error("Errore caricamento preposti:", err);
+    }
+  };
+  useEffect(() => {
+    if (employee?.site_id) {
+      loadDepartments(employee.site_id);
+      loadManagers(employee.site_id);
+    }
+  }, [employee]);
 
 
   // ===============================
@@ -1146,7 +1172,18 @@ export default function EmployeeEditPage() {
                         setNewSite({
                           ...newSite,
                           site_id: e.target.value,
-                        })
+                        });
+                        // 🔥 AGGIUNGERE QUI
+                        loadDepartments(siteId);
+                        loadManagers(siteId);
+
+                        // 🔥 Reset reparto + preposto
+                        setDepartment({
+                          department_id: "",
+                          manager_employee_id: "",
+                          from_date: newSite.from_date,
+                          note: "",
+                        });
                       }
                     >
                       {siteList.map((s) => (
@@ -1189,6 +1226,12 @@ export default function EmployeeEditPage() {
 
                   <Button
                     variant="contained"
+                    disabled={
+                      !newSite.site_id ||
+                      !newSite.from_date ||
+                      !department.department_id ||
+                      !department.manager_employee_id
+                    }
                     onClick={async () => {
                       if (!newSite.site_id || !newSite.from_date) {
                         alert("Compila tutti i campi.");
@@ -1200,7 +1243,14 @@ export default function EmployeeEditPage() {
                           `/api/v1/employees/${employeeId}/sites`,
                           newSite
                         );
-                        alert("Nuovo sito aggiunto.");
+                        await api.post(`/api/v1/employees/${employeeId}/departments`, {
+                          department_id: department.department_id,
+                          manager_employee_id: department.manager_employee_id,
+                          from_date: newSite.from_date,
+                          note: department.note || "",
+                        });
+                        alert("Cambio sito + reparto + preposto registrati.");
+
                         setNewSite({
                           site_id: "",
                           from_date: "",

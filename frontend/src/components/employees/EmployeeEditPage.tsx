@@ -155,7 +155,7 @@ export default function EmployeeEditPage() {
 
     const hasNewCenters = newCenters.length > 0;
 
-    if (!hasEdited && !hasNewCenter) {
+    if (!hasEdited && !hasNewCenters) {
       alert("Non ci sono variazioni da applicare.");
       return;
     }

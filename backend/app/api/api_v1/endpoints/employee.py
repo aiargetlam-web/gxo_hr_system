@@ -629,7 +629,7 @@ def get_employees_full(db: Session = Depends(get_db)):
 # GET LISTA DIPENDENTI (VERSIONE COMPLETA E CORRETTA)
 # ============================================================
 
-@router.get("/employees")
+@router.get("/")
 def list_employees(db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.site import Site

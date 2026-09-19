@@ -1168,7 +1168,7 @@ export default function EmployeeEditPage() {
                       labelId="site-label"
                       value={newSite.site_id}
                       label="Sito"
-                      onChange={(e) =>
+                      onChange={(e) => {
                         const siteId = e.target.value;
                         setNewSite({
                           ...newSite,

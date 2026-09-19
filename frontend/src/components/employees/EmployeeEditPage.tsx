@@ -52,6 +52,14 @@ export default function EmployeeEditPage() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [managers, setManagers] = useState<any[]>([]);
 
+  const [department, setDepartment] = useState({
+    department_id: "",
+    manager_employee_id: "",
+    from_date: "",
+    note: "",
+  });
+
+
 
   const [newStatus, setNewStatus] = useState({
     status_type_id: "",
@@ -237,7 +245,7 @@ export default function EmployeeEditPage() {
       loadDepartments(employee.site_id);
       loadManagers(employee.site_id);
     }
-  }, [employee]);
+  }, [employeeId]);
 
 
   // ===============================
@@ -1169,7 +1177,7 @@ export default function EmployeeEditPage() {
                       value={newSite.site_id}
                       label="Sito"
                       onChange={(e) => {
-                        const siteId = e.target.value;
+                        const siteId = Number(e.target.value);
                         setNewSite({
                           ...newSite,
                           site_id: e.target.value,

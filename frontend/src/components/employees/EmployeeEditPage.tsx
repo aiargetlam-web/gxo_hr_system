@@ -117,18 +117,18 @@ export default function EmployeeEditPage() {
   const [variationDate, setVariationDate] = useState("");
   const [editedCostCenters, setEditedCostCenters] = useState<any[]>([]);
 
-  const [newCenter, setNewCenter] = useState({
-    cost_center_id: "",
-    weight_percent: "",
-    note: "",
-  });
+  const [newCenters, setNewCenters] = useState<any[]>([]);
 
   // totale = somma dei centri attuali (nuove percentuali) + eventuale nuovo centro
   const totalPercent =
     editedCostCenters.reduce(
       (sum, cc) => sum + Number(cc.new_weight_percent || 0),
       0
-    ) + Number(newCenter.weight_percent || 0);
+    ) + newCenters.reduce(
+          (sum, nc) => sum + Number(nc.weight_percent || 0),
+          0
+        );
+
 
   useEffect(() => {
     if (currentCostCenters && currentCostCenters.length > 0) {
@@ -153,8 +153,7 @@ export default function EmployeeEditPage() {
         (cc) => cc.action === "modify" || cc.action === "close"
       );
 
-    const hasNewCenter =
-      newCenter.cost_center_id && newCenter.weight_percent;
+    const hasNewCenters = newCenters.length > 0;
 
     if (!hasEdited && !hasNewCenter) {
       alert("Non ci sono variazioni da applicare.");
@@ -173,17 +172,14 @@ export default function EmployeeEditPage() {
           note: cc.note,
         })),
       // eventuale nuovo centro
-      ...(hasNewCenter
-        ? [
-            {
-              cost_center_id: newCenter.cost_center_id,
-              old_percent: 0,
-              new_percent: Number(newCenter.weight_percent),
-              action: "add",
-              note: newCenter.note,
-            },
-          ]
-        : []),
+      ...newCenters.map((nc) => ({
+        cost_center_id: nc.cost_center_id,
+        old_percent: 0,
+        new_percent: Number(nc.weight_percent),
+        action: "add",
+        note: nc.note,
+      })),
+
     ];
 
     const payload = {
@@ -197,17 +193,23 @@ export default function EmployeeEditPage() {
       loadCurrentData();
       // reset dopo applicazione
       setVariationDate("");
-      setNewCenter({
-        cost_center_id: "",
-        weight_percent: "",
-        note: "",
-      });
+      setNewCenters([]);
+
     } catch (err: any) {
       alert(
+        err.response?.data?.detail?.msg ||
+        err.response?.data?.detail?.[0]?.msg ||
         err.response?.data?.detail ||
-          "Errore durante la variazione dei centri di costo."
+        "Errore durante la variazione dei centri di costo."
       );
+
     }
+  };
+
+  const updateNewCenter = (index: number, changes: any) => {
+    setNewCenters((prev) =>
+      prev.map((nc, i) => (i === index ? { ...nc, ...changes } : nc))
+    );
   };
 
 
@@ -773,69 +775,81 @@ export default function EmployeeEditPage() {
                 ))}
 
                 {/* ===============================
-                    NUOVO CENTRO DI COSTO
-                   =============================== */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                  mt={4}
+                    NUOVI CENTRI DI COSTO (MULTIPLI)
+                    =============================== */}
+
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 2, mb: 2 }}
+                  onClick={() =>
+                    setNewCenters([
+                      ...newCenters,
+                      { cost_center_id: "", weight_percent: "", note: "" }
+                    ])
+                  }
                 >
-                  <Typography variant="subtitle1" mb={2}>
-                    Nuova assegnazione centro di costo
-                  </Typography>
+                  + Aggiungi nuovo centro di costo
+                </Button>
 
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="cost-center-label">Centro di costo</InputLabel>
-                    <Select
-                      labelId="cost-center-label"
-                      value={newCenter.cost_center_id}
-                      label="Centro di costo"
+
+                {/* ===============================
+                    NUOVI CENTRI DI COSTO
+                    =============================== */}
+                {newCenters.map((nc, index) => (
+                  <Box
+                    key={index}
+                    p={2}
+                    border="1px solid #ddd"
+                    borderRadius="8px"
+                    mt={4}
+                  >
+                    <Typography variant="subtitle1" mb={2}>
+                      Nuova assegnazione centro di costo #{index + 1}
+                    </Typography>
+
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                      <InputLabel id={`cost-center-label-${index}`}>Centro di costo</InputLabel>
+                      <Select
+                        labelId={`cost-center-label-${index}`}
+                        value={nc.cost_center_id}
+                        label="Centro di costo"
+                        onChange={(e) =>
+                          updateNewCenter(index, { cost_center_id: e.target.value })
+                        }
+                      >
+                        {costCenterList.map((cc) => (
+                          <MenuItem key={cc.id} value={cc.id}>
+                            {cc.description}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Percentuale"
+                      sx={{ mb: 2 }}
+                      value={nc.weight_percent}
                       onChange={(e) =>
-                        setNewCenter({
-                          ...newCenter,
-                          cost_center_id: e.target.value,
-                        })
+                        updateNewCenter(index, { weight_percent: e.target.value })
                       }
-                    >
-                      {costCenterList.map((cc) => (
-                        <MenuItem key={cc.id} value={cc.id}>
-                          {cc.description}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                    />
 
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label="Percentuale"
-                    sx={{ mb: 2 }}
-                    value={newCenter.weight_percent}
-                    onChange={(e) =>
-                      setNewCenter({
-                        ...newCenter,
-                        weight_percent: e.target.value,
-                      })
-                    }
-                  />
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      multiline
+                      rows={3}
+                      sx={{ mb: 2 }}
+                      value={nc.note}
+                      onChange={(e) =>
+                        updateNewCenter(index, { note: e.target.value })
+                      }
+                    />
+                  </Box>
+                ))}
 
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={newCenter.note}
-                    onChange={(e) =>
-                      setNewCenter({
-                        ...newCenter,
-                        note: e.target.value,
-                      })
-                    }
-                  />
-                  {/* Nessun pulsante qui: il nuovo centro viene applicato insieme alle variazioni */}
-                </Box>
 
                 {/* ===============================
                     TOTALE PERCENTUALE

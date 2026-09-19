@@ -1169,6 +1169,7 @@ export default function EmployeeEditPage() {
                       value={newSite.site_id}
                       label="Sito"
                       onChange={(e) =>
+                        const siteId = e.target.value;
                         setNewSite({
                           ...newSite,
                           site_id: e.target.value,
@@ -1184,7 +1185,7 @@ export default function EmployeeEditPage() {
                           from_date: newSite.from_date,
                           note: "",
                         });
-                      }
+                      }}
                     >
                       {siteList.map((s) => (
                         <MenuItem key={s.id} value={s.id}>

@@ -241,11 +241,12 @@ export default function EmployeeEditPage() {
     }
   };
   useEffect(() => {
-    if (currentEmployee?.site_id) {
-      loadDepartments(currentEmployee.site_id);
-      loadManagers(currentEmployee.site_id);
+    if (currentEmployer?.site_id) {
+      loadDepartments(currentEmployer.site_id);
+      loadManagers(currentEmployer.site_id);
     }
-  }, [currentEmployee]);
+  }, [currentEmployer]);
+
 
 
 

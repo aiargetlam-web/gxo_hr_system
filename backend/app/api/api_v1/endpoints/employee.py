@@ -1616,7 +1616,7 @@ def change_manager(employee_id: int, payload: dict, db: Session = Depends(get_db
     }
     """
     from app.models.employee import Employee as EmployeeModel
-
+    from app.models.employee_manager import EmployeeManager
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Dipendente non trovato")
@@ -1954,11 +1954,11 @@ def update_salary(employee_id: int, salary_id: int, payload: SalaryUpdate, db: S
         data = payload.dict(exclude_unset=True)
 
         if "from_date" in data:
-            salary.from_date = data["from_date"]
+            sal.from_date = data["from_date"]
 
         for field, value in data.items():
             if field != "from_date":
-                setattr(salary, field, value)
+                setattr(sal, field, value)
 
         db.add(sal)
         db.commit()
@@ -1990,11 +1990,11 @@ def update_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db
         data = payload.dict(exclude_unset=True)
 
         if "from_date" in data:
-            benefit.from_date = data["from_date"]
+            ben.from_date = data["from_date"]
 
         for field, value in data.items():
             if field != "from_date":
-                setattr(benefit, field, value)
+                setattr(ben, field, value)
 
         db.add(ben)
         db.commit()

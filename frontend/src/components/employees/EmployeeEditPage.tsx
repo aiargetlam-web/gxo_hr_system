@@ -53,8 +53,8 @@ export default function EmployeeEditPage() {
   const [managers, setManagers] = useState<any[]>([]);
 
   const [department, setDepartment] = useState({
-    department_id: "",
-    manager_employee_id: "",
+    department_id: 0,
+    manager_employee_id: 0,
     from_date: "",
     note: "",
   });
@@ -1190,8 +1190,8 @@ export default function EmployeeEditPage() {
 
                         // 🔥 Reset reparto + preposto
                         setDepartment({
-                          department_id: "",
-                          manager_employee_id: "",
+                          department_id: 0,
+                          manager_employee_id: 0,
                           from_date: newSite.from_date,
                           note: "",
                         });
@@ -1249,7 +1249,7 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={0}>Seleziona</MenuItem>
                       {departments.map((d) => (
                         <MenuItem key={d.id} value={d.id}>
                           {d.name}

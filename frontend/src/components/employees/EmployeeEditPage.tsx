@@ -1198,7 +1198,7 @@ export default function EmployeeEditPage() {
                       }}
                     >
                       {siteList.map((s) => (
-                        <MenuItem key={s.id} {String(s.id)}>
+                        <MenuItem key={s.id} value={String(s.id)}>
                           {s.name}
                         </MenuItem>
                       ))}

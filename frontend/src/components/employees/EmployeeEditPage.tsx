@@ -1337,7 +1337,7 @@ export default function EmployeeEditPage() {
 
                         // C. Salvataggio Responsabile nella tabella employee_managers (se selezionato)
                         if (department.manager_employee_id > 0) {
-                          await api.post(`/api/v1/employees/${employeeId}/managers`, {
+                          await api.post(`/api/v1/employees/${employeeId}/manager`, {
                             manager_id: department.manager_employee_id,
                             from_date: newSite.from_date,
                             note: newSite.note || "",

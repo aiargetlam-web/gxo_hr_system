@@ -1026,7 +1026,7 @@ export default function EmployeeEditPage() {
                       }
                     >
                       {managerList.map((m) => (
-                        <MenuItem key={m.id} value={m.id}>
+                        <MenuItem key={m.id} value={String(m.id)}>
                           {m.full_name}
                         </MenuItem>
                       ))}
@@ -1198,7 +1198,7 @@ export default function EmployeeEditPage() {
                       }}
                     >
                       {siteList.map((s) => (
-                        <MenuItem key={s.id} value={s.id}>
+                        <MenuItem key={s.id} {String(s.id)}>
                           {s.name}
                         </MenuItem>
                       ))}
@@ -1272,9 +1272,9 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      <MenuItem value="">Seleziona</MenuItem>
+                      <MenuItem value={"0"}>Seleziona</MenuItem>
                       {managers.map((m) => (
-                        <MenuItem key={m.id} value={m.id}>
+                        <MenuItem key={m.id} value={String(m.id)}>
                           {m.name}
                         </MenuItem>
                       ))}

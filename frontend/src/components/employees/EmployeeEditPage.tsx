@@ -1176,7 +1176,7 @@ export default function EmployeeEditPage() {
                     <InputLabel id="site-label">Sito</InputLabel>
                     <Select
                       labelId="site-label"
-                      value={newSite.site_id}
+                      value={String(newSite.site_id)}
                       label="Sito"
                       onChange={(e) => {
                         const siteId = Number(e.target.value);

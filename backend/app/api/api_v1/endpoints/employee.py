@@ -2343,7 +2343,7 @@ def update_employer(employee_id: int, employer_hist_id: int, payload: EmployerUp
 # ============================================================
 @router.put("/{employee_id}/managers/{manager_id}")
 def update_manager(employee_id: int, manager_id: int, payload: ManagerUpdate, db: Session = Depends(get_db)):
-    from app.models.employee_managers import EmployeeManager
+    from app.models.employee_manager import EmployeeManager
 
     manager = db.query(EmployeeManager).filter(
         EmployeeManager.id == manager_id,

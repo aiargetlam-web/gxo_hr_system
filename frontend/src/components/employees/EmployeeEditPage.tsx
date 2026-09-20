@@ -1211,7 +1211,7 @@ export default function EmployeeEditPage() {
                     label="Data inizio"
                     InputLabelProps={{ shrink: true }}
                     sx={{ mb: 2 }}
-                    value={newSite.from_date}
+                    value={String(newSite.from_date)}
                     onChange={(e) =>
                       setNewSite({
                         ...newSite,
@@ -1288,7 +1288,7 @@ export default function EmployeeEditPage() {
                     label="Data inizio reparto/preposto"
                     InputLabelProps={{ shrink: true }}
                     sx={{ mb: 2 }}
-                    value={department.from_date}
+                    value={String(department.from_date)}
                     onChange={(e) =>
                       setDepartment({
                         ...department,

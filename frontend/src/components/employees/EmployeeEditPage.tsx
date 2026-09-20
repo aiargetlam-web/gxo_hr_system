@@ -264,22 +264,6 @@ export default function EmployeeEditPage() {
     }
   };
 
-  useEffect(() => {
-    // 1. Individuiamo l'ID del sito corrente del dipendente
-    const activeSiteId = currentSite?.id || currentSite?.site_id;
-
-    // 2. Se abbiamo un ID valido E l'utente si trova nella sezione "site" OPPURE "department"
-    if (activeSiteId && (selectedSection === "site" || selectedSection === "department")) {
-      const numericSiteId = Number(activeSiteId);
-    
-      // Carichiamo reparti e manager filtrati PER QUEL SITO SPECIFICO
-      loadDepartments(numericSiteId);
-      loadManagers(numericSiteId);
-    }
-  }, [currentSite, selectedSection]);
-
-
-
 
   // ===============================
   // CARICAMENTO DATI ATTUALI
@@ -316,10 +300,18 @@ export default function EmployeeEditPage() {
       setCurrentDepartment(data.department_current);
       if (data.site_current) {
         const s = data.site_current;
-        setCurrentSite({
+        const normalizedSite = {
           ...s,
           id: s.id ?? s.site_id,
-        });
+        };
+        setCurrentSite(normalizedSite);
+
+        // 👉 Caricamento immediato all'apertura della pagina basato sul sito attuale
+        const activeSiteId = normalizedSite.id;
+        if (activeSiteId) {
+          loadDepartments(activeSiteId);
+          loadManagers(activeSiteId);
+        }
       } else {
         setCurrentSite(null);
       }

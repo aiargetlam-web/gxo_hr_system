@@ -249,8 +249,14 @@ export default function EmployeeEditPage() {
           m.full_name ||
           m.name ||
           `${m.first_name || ""} ${m.last_name || ""}`.trim() ||
-          `Preposto #${m.id ?? m.employee_id}`,
-      }));
+          `Preposto #${idVal}`;
+
+        return {
+          ...m,
+          id: idVal,
+          full_name: nameVal,
+        };
+      }); // ✅ Chiusura corretta della .map()
 
       setManagers(formatted);
     } catch (err) {

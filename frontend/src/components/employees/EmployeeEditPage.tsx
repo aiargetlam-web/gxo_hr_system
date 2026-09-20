@@ -1182,7 +1182,7 @@ export default function EmployeeEditPage() {
                         const siteId = Number(e.target.value);
                         setNewSite({
                           ...newSite,
-                          site_id: e.target.value,
+                          site_id: siteId,
                         });
                         // 🔥 AGGIUNGERE QUI
                         loadDepartments(siteId);

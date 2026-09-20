@@ -248,16 +248,14 @@ export default function EmployeeEditPage() {
   };
 
   useEffect(() => {
-    // Se usi l'oggetto employee (come definito negli schemi Pydantic site_id è int in EmployeeBase)
-    const siteId = employee?.site_id || currentEmployer?.site_id;
+    const activeSiteId = currentSite?.id || currentSite?.site_id;
 
-    if (siteId) {
-      // 🔥 Effettuiamo la conversione esplicita a Number() per soddisfare TypeScript
-      const numericSiteId = Number(siteId);
+    if (activeSiteId) {
+      const numericSiteId = Number(activeSiteId);
       loadDepartments(numericSiteId);
       loadManagers(numericSiteId);
     }
-  }, [employee?.site_id, currentEmployer?.site_id]);
+  }, [currentSite]);
 
 
 

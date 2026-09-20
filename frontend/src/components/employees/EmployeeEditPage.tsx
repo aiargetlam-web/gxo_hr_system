@@ -1132,87 +1132,22 @@ export default function EmployeeEditPage() {
                   Variazione Sito
                 </Typography>
 
-                {/* SITO ATTUALE */}
-                {currentSite && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Sito attuale
-                    </Typography>
-
-                    <Typography>Sito: {currentSite.site_name}</Typography>
-
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentSite.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentSite({
-                          ...currentSite,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentSite.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/sites/${currentSite.id}`,
-                            { to_date: currentSite.to_date }
-                          );
-                          alert("Sito chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura del sito.");
-                        }
-                      }}
-                    >
-                      Chiudi sito attuale
-                    </Button>
-                  </Box>
-                )}
-
-                {/* NUOVO SITO */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                >
+                <Box p={2} border="1px solid #ddd" borderRadius="8px">
                   <Typography variant="subtitle1" mb={2}>
                     Nuovo sito
                   </Typography>
 
+                  {/* 1. SELEZIONE SITO */}
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="site-label">Sito</InputLabel>
                     <Select
                       labelId="site-label"
-                      value={String(newSite.site_id)}
+                      value={String(newSite.site_id || "")}
                       label="Sito"
                       onChange={(e) => {
-                        const siteId = e.target.value as string;
-                        setNewSite({
-                          ...newSite,
-                          site_id: siteId,
-                        });
-                        
-                        // Carica i reparti/preposti del NUOVO sito selezionato
+                        const siteId = e.target.value;
+                        setNewSite({ ...newSite, site_id: siteId });
+
                         if (siteId) {
                           const numericId = Number(siteId);
                           loadDepartments(numericId);
@@ -1222,16 +1157,17 @@ export default function EmployeeEditPage() {
                           setManagers([]);
                         }
 
-                        // Reset selezioni di reparto e preposto
+                        // Reset selezioni reparto e responsabile al cambio sito
                         setDepartment({
                           department_id: 0,
                           manager_employee_id: 0,
-                          from_date: String(newSite.from_date),
+                          from_date: "",
                           note: "",
                         });
                       }}
                     >
-                      {siteList.map((s) => (
+                      <MenuItem value="">Seleziona Sito</MenuItem>
+                      {sites.map((s: any) => (
                         <MenuItem key={s.id} value={String(s.id)}>
                           {s.name}
                         </MenuItem>
@@ -1239,42 +1175,38 @@ export default function EmployeeEditPage() {
                     </Select>
                   </FormControl>
 
+                  {/* 2. UNICA DATA DI INIZIO */}
                   <TextField
                     fullWidth
                     type="date"
                     label="Data inizio"
                     InputLabelProps={{ shrink: true }}
                     sx={{ mb: 2 }}
-                    value={String(newSite.from_date)}
+                    value={newSite.from_date || ""}
                     onChange={(e) =>
-                      setNewSite({
-                        ...newSite,
-                        from_date: e.target.value,
-                      })
+                      setNewSite({ ...newSite, from_date: e.target.value })
                     }
                   />
 
+                  {/* 3. UNICO CAMPO NOTE */}
                   <TextField
                     fullWidth
                     label="Note"
                     multiline
                     rows={3}
                     sx={{ mb: 2 }}
-                    value={newSite.note}
+                    value={newSite.note || ""}
                     onChange={(e) =>
-                      setNewSite({
-                        ...newSite,
-                        note: e.target.value,
-                      })
+                      setNewSite({ ...newSite, note: e.target.value })
                     }
                   />
 
-                  {/* 🔥 REPARTO */}
+                  {/* 4. SELEZIONE REPARTO */}
                   <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="department-label">Reparto</InputLabel>
+                    <InputLabel id="site-dept-label">Reparto</InputLabel>
                     <Select
-                      labelId="department-label"
-                      value={String(department.department_id)}
+                      labelId="site-dept-label"
+                      value={String(department.department_id || "0")}
                       label="Reparto"
                       onChange={(e) =>
                         setDepartment({
@@ -1283,8 +1215,8 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      <MenuItem value={"0"}>Seleziona</MenuItem>
-                      {departments.map((d) => (
+                      <MenuItem value="0">Seleziona Reparto</MenuItem>
+                      {departments.map((d: any) => (
                         <MenuItem key={d.id} value={String(d.id)}>
                           {d.name}
                         </MenuItem>
@@ -1292,13 +1224,13 @@ export default function EmployeeEditPage() {
                     </Select>
                   </FormControl>
 
-                  {/* 🔥 PREPOSTO */}
+                  {/* 5. SELEZIONE PREPOSTO / RESPONSABILE */}
                   <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="manager-label">Preposto / Responsabile</InputLabel>
+                    <InputLabel id="site-manager-label">Preposto / Responsabile</InputLabel>
                     <Select
-                      labelId="manager-label"
-                      value={String(department.manager_employee_id)}
-                      label="Preposto"
+                      labelId="site-manager-label"
+                      value={String(department.manager_employee_id || "0")}
+                      label="Preposto / Responsabile"
                       onChange={(e) =>
                         setDepartment({
                           ...department,
@@ -1306,83 +1238,74 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      <MenuItem value={"0"}>Seleziona</MenuItem>
+                      <MenuItem value="0">Seleziona Responsabile</MenuItem>
                       {managers.map((m: any) => (
                         <MenuItem key={m.id} value={String(m.id)}>
-                          {m.full_name} {/* <-- Usiamo full_name generato da loadManagers */}
+                          {m.full_name}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
 
-                  {/* 🔥 DATA INIZIO REPARTO/PREPOSTO */}
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio reparto/preposto"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={String(department.from_date)}
-                    onChange={(e) =>
-                      setDepartment({
-                        ...department,
-                        from_date: e.target.value,
-                      })
-                    }
-                  />
-
-                  {/* 🔥 NOTE */}
-                  <TextField
-                    fullWidth
-                    label="Note reparto/preposto"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={department.note}
-                    onChange={(e) =>
-                      setDepartment({
-                        ...department,
-                        note: e.target.value,
-                      })
-                    }
-                  />
-
+                  {/* 6. PULSANTE DI SALVATAGGIO */}
                   <Button
                     variant="contained"
-                    disabled={
-                      !newSite.site_id ||
-                      !newSite.from_date ||
-                      !department.department_id ||
-                      !department.manager_employee_id
-                    }
                     onClick={async () => {
                       if (!newSite.site_id || !newSite.from_date) {
-                        alert("Compila tutti i campi.");
+                        alert("Seleziona un sito e una data di inizio.");
                         return;
                       }
 
                       try {
-                        await api.post(
-                          `/api/v1/employees/${employeeId}/sites`,
-                          newSite
-                        );
-                        await api.post(`/api/v1/employees/${employeeId}/departments`, {
-                          department_id: department.department_id,
-                          manager_employee_id: department.manager_employee_id,
-                          from_date: String(newSite.from_date),
-                          note: department.note || "",
+                        // A. Salvataggio Variazione Sito
+                        await api.post(`/api/v1/employees/${employeeId}/sites`, {
+                          site_id: Number(newSite.site_id),
+                          from_date: newSite.from_date,
+                          note: newSite.note,
                         });
-                        alert("Cambio sito + reparto + preposto registrati.");
 
+                        // B. Salvataggio Reparto (se selezionato)
+                        if (department.department_id > 0) {
+                          await api.post(`/api/v1/employees/${employeeId}/departments`, {
+                            department_id: department.department_id,
+                            manager_employee_id: department.manager_employee_id || null,
+                            from_date: newSite.from_date,
+                            note: newSite.note,
+                          });
+                        }
+
+                        // C. Salvataggio Responsabile nella tabella employee_managers (se selezionato)
+                        if (department.manager_employee_id > 0) {
+                          await api.post(`/api/v1/employees/${employeeId}/managers`, {
+                            manager_id: department.manager_employee_id,
+                            from_date: newSite.from_date,
+                            note: newSite.note,
+                          });
+                        }
+
+                        alert("Variazione salvata con successo!");
+
+                        // D. RESET COMPLETO DEI CAMPI
                         setNewSite({
                           site_id: "",
                           from_date: "",
                           note: "",
                         });
+                        setDepartment({
+                          department_id: 0,
+                          manager_employee_id: 0,
+                          from_date: "",
+                          note: "",
+                        });
+
+                        // E. Ricarica dati
                         loadCurrentData();
                       } catch (err: any) {
                         console.error(err);
-                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del sito.");
+                        alert(
+                          err.response?.data?.detail ||
+                            "Errore durante il salvataggio della variazione."
+                        );
                       }
                     }}
                   >

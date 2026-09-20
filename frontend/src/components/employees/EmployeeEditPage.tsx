@@ -225,7 +225,7 @@ export default function EmployeeEditPage() {
 
   const loadDepartments = async (siteId: number) => {
     try {
-      const res = await api.get(`/api/v1/sites/${siteId}/departments`);
+      const res = await api.get(`/api/v1/departments?site_id=${siteId}`);
       setDepartments(res.data);
     } catch (err) {
       console.error("Errore caricamento reparti:", err);
@@ -234,7 +234,7 @@ export default function EmployeeEditPage() {
 
   const loadManagers = async (siteId: number) => {
     try {
-      const res = await api.get(`/api/v1/sites/${siteId}/managers`);
+      const res = await api.get(`/api/v1/preposti?site_id=${siteId}`);
       setManagers(res.data);
     } catch (err) {
       console.error("Errore caricamento preposti:", err);

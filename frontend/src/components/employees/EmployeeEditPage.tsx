@@ -249,14 +249,8 @@ export default function EmployeeEditPage() {
           m.full_name ||
           m.name ||
           `${m.first_name || ""} ${m.last_name || ""}`.trim() ||
-          `Preposto #${idVal}`;
-
-        return {
-          ...m,
-          id: idVal,
-          full_name: nameVal,
-        };
-      });
+          `Preposto #${m.id ?? m.employee_id}`,
+      }));
 
       setManagers(formatted);
     } catch (err) {
@@ -314,7 +308,15 @@ export default function EmployeeEditPage() {
       setCurrentSalary(data.salary_current);
       setCurrentCostCenters(data.cost_centers || []);
       setCurrentDepartment(data.department_current);
-      setCurrentSite(data.site_current);
+      if (data.site_current) {
+        const s = data.site_current;
+        setCurrentSite({
+          ...s,
+          id: s.id ?? s.site_id,
+        });
+      } else {
+        setCurrentSite(null);
+      }
       setCurrentBenefits(data.benefits_current || []);
       setCurrentCompanyCar(data.company_car_current);
       setCurrentEmployer(data.employer_current);

@@ -223,29 +223,41 @@ export default function EmployeeEditPage() {
     );
   };
 
-  const loadDepartments = async (siteId: number) => {
+  const loadDepartments = async (siteId: number | string) => {
+    const numericSiteId = Number(siteId);
+    if (!numericSiteId || isNaN(numericSiteId)) return;
+
     try {
-      const res = await api.get(`/api/v1/departments?site_id=${siteId}`);
+      const res = await api.get(`/api/v1/departments?site_id=${numericSiteId}`);
       setDepartments(res.data);
     } catch (err) {
       console.error("Errore caricamento reparti:", err);
     }
   };
 
-  const loadManagers = async (siteId: number) => {
+  const loadManagers = async (siteId: number | string) => {
+    const numericSiteId = Number(siteId);
+    if (!numericSiteId || isNaN(numericSiteId)) return;
+
     try {
-      const res = await api.get(`/api/v1/preposti?site_id=${siteId}`);
+      const res = await api.get(`/api/v1/preposti?site_id=${numericSiteId}`);
       setManagers(res.data);
     } catch (err) {
       console.error("Errore caricamento preposti:", err);
     }
   };
+
   useEffect(() => {
-    if (currentEmployer?.site_id) {
-      loadDepartments(currentEmployer.site_id);
-      loadManagers(currentEmployer.site_id);
+    // Se usi l'oggetto employee (come definito negli schemi Pydantic site_id è int in EmployeeBase)
+    const siteId = employee?.site_id || currentEmployer?.site_id;
+
+    if (siteId) {
+      // 🔥 Effettuiamo la conversione esplicita a Number() per soddisfare TypeScript
+      const numericSiteId = Number(siteId);
+      loadDepartments(numericSiteId);
+      loadManagers(numericSiteId);
     }
-  }, [currentEmployer]);
+  }, [employee?.site_id, currentEmployer?.site_id]);
 
 
 
@@ -714,7 +726,7 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-{/* ===============================
+            {/* ===============================
                 SEZIONE: CENTRI DI COSTO
                =============================== */}
             {selectedSection === "costCenters" && (
@@ -1184,11 +1196,18 @@ export default function EmployeeEditPage() {
                           ...newSite,
                           site_id: siteId,
                         });
-                        // 🔥 AGGIUNGERE QUI
-                        loadDepartments(siteId);
-                        loadManagers(siteId);
+                        
+                        // Carica i reparti/preposti del NUOVO sito selezionato
+                        if (siteId) {
+                          const numericId = Number(siteId);
+                          loadDepartments(numericId);
+                          loadManagers(numericId);
+                        } else {
+                          setDepartments([]);
+                          setManagers([]);
+                        }
 
-                        // 🔥 Reset reparto + preposto
+                        // Reset selezioni di reparto e preposto
                         setDepartment({
                           department_id: 0,
                           manager_employee_id: 0,

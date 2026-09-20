@@ -265,10 +265,14 @@ export default function EmployeeEditPage() {
   };
 
   useEffect(() => {
+    // 1. Individuiamo l'ID del sito corrente del dipendente
     const activeSiteId = currentSite?.id || currentSite?.site_id;
 
-    if (activeSiteId) {
+    // 2. Se abbiamo un ID valido E l'utente si trova nella sezione "site" OPPURE "department"
+    if (activeSiteId && (selectedSection === "site" || selectedSection === "department")) {
       const numericSiteId = Number(activeSiteId);
+    
+      // Carichiamo reparti e manager filtrati PER QUEL SITO SPECIFICO
       loadDepartments(numericSiteId);
       loadManagers(numericSiteId);
     }
@@ -999,7 +1003,7 @@ export default function EmployeeEditPage() {
                           loadCurrentData();
                         } catch (err: any) {
                           console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura del reparto.");
+                          alert(err.response?.data?.detail || "Errore durante la chiusura del reparto.");
                         }
                       }}
                     >
@@ -1022,7 +1026,7 @@ export default function EmployeeEditPage() {
                     <InputLabel id="department-label">Reparto</InputLabel>
                     <Select
                       labelId="department-label"
-                      value={newDepartment.department_id}
+                      value={String(newDepartment.department_id || "")}
                       label="Reparto"
                       onChange={(e) =>
                         setNewDepartment({
@@ -1043,7 +1047,7 @@ export default function EmployeeEditPage() {
                     <InputLabel id="manager-label">Manager</InputLabel>
                     <Select
                       labelId="manager-label"
-                      value={newDepartment.manager_employee_id}
+                      value={String(newDepartment.manager_employee_id || "")}
                       label="Manager"
                       onChange={(e) =>
                         setNewDepartment({
@@ -1113,7 +1117,7 @@ export default function EmployeeEditPage() {
                         loadCurrentData();
                       } catch (err: any) {
                         console.error(err);
-                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del reparto.");
+                        alert(err.response?.data?.detail || "Errore durante l'aggiunta del reparto.");
                       }
                     }}
                   >

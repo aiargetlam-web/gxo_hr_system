@@ -1192,7 +1192,7 @@ export default function EmployeeEditPage() {
                         setDepartment({
                           department_id: 0,
                           manager_employee_id: 0,
-                          from_date: newSite.from_date,
+                          from_date: String(newSite.from_date),
                           note: "",
                         });
                       }}
@@ -1335,7 +1335,7 @@ export default function EmployeeEditPage() {
                         await api.post(`/api/v1/employees/${employeeId}/departments`, {
                           department_id: department.department_id,
                           manager_employee_id: department.manager_employee_id,
-                          from_date: newSite.from_date,
+                          from_date: String(newSite.from_date),
                           note: department.note || "",
                         });
                         alert("Cambio sito + reparto + preposto registrati.");

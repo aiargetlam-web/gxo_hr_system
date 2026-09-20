@@ -241,7 +241,24 @@ export default function EmployeeEditPage() {
 
     try {
       const res = await api.get(`/api/v1/preposti?site_id=${numericSiteId}`);
-      setManagers(res.data);
+      
+      // Mappiamo i dati normalizzando ID e Nome per la Select
+      const formatted = res.data.map((m: any) => {
+        const idVal = m.id ?? m.employee_id ?? m.manager_id;
+        const nameVal =
+          m.full_name ||
+          m.name ||
+          `${m.first_name || ""} ${m.last_name || ""}`.trim() ||
+          `Preposto #${idVal}`;
+
+        return {
+          ...m,
+          id: idVal,
+          full_name: nameVal,
+        };
+      });
+
+      setManagers(formatted);
     } catch (err) {
       console.error("Errore caricamento preposti:", err);
     }
@@ -255,7 +272,7 @@ export default function EmployeeEditPage() {
       loadDepartments(numericSiteId);
       loadManagers(numericSiteId);
     }
-  }, [currentSite]);
+  }, [currentSite, selectedSection]);
 
 
 
@@ -1014,7 +1031,7 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      {departmentList.map((d) => (
+                      {departments.map((d) => (
                         <MenuItem key={d.id} value={String(d.id)}>
                           {d.name}
                         </MenuItem>
@@ -1035,7 +1052,7 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      {managerList.map((m) => (
+                      {managers.map((m) => (
                         <MenuItem key={m.id} value={String(m.id)}>
                           {m.full_name}
                         </MenuItem>
@@ -1290,9 +1307,9 @@ export default function EmployeeEditPage() {
                       }
                     >
                       <MenuItem value={"0"}>Seleziona</MenuItem>
-                      {managers.map((m) => (
+                      {managers.map((m: any) => (
                         <MenuItem key={m.id} value={String(m.id)}>
-                          {m.name}
+                          {m.full_name} {/* <-- Usiamo full_name generato da loadManagers */}
                         </MenuItem>
                       ))}
                     </Select>

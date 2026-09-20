@@ -1235,6 +1235,84 @@ export default function EmployeeEditPage() {
                     }
                   />
 
+                                    {/* 🔥 REPARTO */}
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id="department-label">Reparto</InputLabel>
+                    <Select
+                      labelId="department-label"
+                      value={department.department_id}
+                      label="Reparto"
+                      onChange={(e) =>
+                        setDepartment({
+                          ...department,
+                          department_id: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {departments.map((d) => (
+                        <MenuItem key={d.id} value={d.id}>
+                          {d.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {/* 🔥 PREPOSTO */}
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id="manager-label">Preposto / Responsabile</InputLabel>
+                    <Select
+                      labelId="manager-label"
+                      value={department.manager_employee_id}
+                      label="Preposto"
+                      onChange={(e) =>
+                        setDepartment({
+                          ...department,
+                          manager_employee_id: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <MenuItem value="">Seleziona</MenuItem>
+                      {managers.map((m) => (
+                        <MenuItem key={m.id} value={m.id}>
+                          {m.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {/* 🔥 DATA INIZIO REPARTO/PREPOSTO */}
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Data inizio reparto/preposto"
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ mb: 2 }}
+                    value={department.from_date}
+                    onChange={(e) =>
+                      setDepartment({
+                        ...department,
+                        from_date: e.target.value,
+                      })
+                    }
+                  />
+
+                  {/* 🔥 NOTE */}
+                  <TextField
+                    fullWidth
+                    label="Note reparto/preposto"
+                    multiline
+                    rows={3}
+                    sx={{ mb: 2 }}
+                    value={department.note}
+                    onChange={(e) =>
+                      setDepartment({
+                        ...department,
+                        note: e.target.value,
+                      })
+                    }
+                  />
+
                   <Button
                     variant="contained"
                     disabled={

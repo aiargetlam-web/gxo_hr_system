@@ -298,22 +298,25 @@ export default function EmployeeEditPage() {
       setCurrentSalary(data.salary_current);
       setCurrentCostCenters(data.cost_centers || []);
       setCurrentDepartment(data.department_current);
-      if (data.site_current) {
-        const s = data.site_current;
+      // Controllo esteso per trovare l'ID del sito in qualsiasi formato arrivi
+      const siteData = data.site_current || data.site || data.current_site;
+      
+      if (siteData) {
         const normalizedSite = {
-          ...s,
-          id: s.id ?? s.site_id,
+          ...siteData,
+          id: siteData.id ?? siteData.site_id ?? siteData.siteId ?? siteData.ID,
         };
         setCurrentSite(normalizedSite);
 
-        // 👉 Caricamento immediato all'apertura della pagina basato sul sito attuale
         const activeSiteId = normalizedSite.id;
         if (activeSiteId) {
+          console.log("🚀 Avvio caricamento iniziale per sito ID:", activeSiteId);
           loadDepartments(activeSiteId);
           loadManagers(activeSiteId);
         }
       } else {
         setCurrentSite(null);
+        console.warn("⚠️ Nessun sito corrente trovato nei dati del dipendente.");
       }
       setCurrentBenefits(data.benefits_current || []);
       setCurrentCompanyCar(data.company_car_current);

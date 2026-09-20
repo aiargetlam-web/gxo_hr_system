@@ -1005,7 +1005,7 @@ export default function EmployeeEditPage() {
                       }
                     >
                       {departmentList.map((d) => (
-                        <MenuItem key={d.id} value={d.id}>
+                        <MenuItem key={d.id} value={String(d.id)}>
                           {d.name}
                         </MenuItem>
                       ))}
@@ -1240,7 +1240,7 @@ export default function EmployeeEditPage() {
                     <InputLabel id="department-label">Reparto</InputLabel>
                     <Select
                       labelId="department-label"
-                      value={department.department_id}
+                      value={String(department.department_id)}
                       label="Reparto"
                       onChange={(e) =>
                         setDepartment({
@@ -1249,9 +1249,9 @@ export default function EmployeeEditPage() {
                         })
                       }
                     >
-                      <MenuItem value={0}>Seleziona</MenuItem>
+                      <MenuItem value={"0"}>Seleziona</MenuItem>
                       {departments.map((d) => (
-                        <MenuItem key={d.id} value={d.id}>
+                        <MenuItem key={d.id} value={String(d.id)}>
                           {d.name}
                         </MenuItem>
                       ))}
@@ -1263,7 +1263,7 @@ export default function EmployeeEditPage() {
                     <InputLabel id="manager-label">Preposto / Responsabile</InputLabel>
                     <Select
                       labelId="manager-label"
-                      value={department.manager_employee_id}
+                      value={String(department.manager_employee_id)}
                       label="Preposto"
                       onChange={(e) =>
                         setDepartment({

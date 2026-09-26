@@ -75,7 +75,7 @@ api_router.include_router(employee_table_views.router, prefix="/employee-table-v
 api_router.include_router(status_types.router)
 api_router.include_router(law_104.router, prefix="/law-104", tags=["law-104"])
 api_router.include_router(employer_history.router, prefix="/employer-history", tags=["employer-history"])
-api_router.include_router(union_history.router, prefix="/union-history", tags=["union-history"])
+api_router.include_router(union_history.router, prefix="/employees", tags=["union-history"])
 
 
 

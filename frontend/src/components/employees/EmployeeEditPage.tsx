@@ -349,11 +349,21 @@ export default function EmployeeEditPage() {
       // 7. Auto Aziendale (Nel JSON è data.company_car)
       setCurrentCompanyCar(data.company_car || null);
 
-      // 8. Employer (Se presente nel JSON, altrimenti gestito in sicurezza)
-      setCurrentEmployer(data.employer || null);
+      // 8. Employer (Gestione sicura sia se è un oggetto che un array)
+      const empData = data.employer || data.employers;
+      if (Array.isArray(empData)) {
+        setCurrentEmployer(empData[0] || null);
+      } else {
+        setCurrentEmployer(empData || null);
+      }
 
-      // 9. Sindacato (Se presente nel JSON, altrimenti gestito in sicurezza)
-      setCurrentUnion(data.union || null);
+      // 9. Sindacato (Gestione sicura sia se è un oggetto che un array)
+      const unionData = data.union || data.unions;
+      if (Array.isArray(unionData)) {
+        setCurrentUnion(unionData[0] || null);
+      } else {
+        setCurrentUnion(unionData || null);
+      }
 
       // 10. Corsi e Approvazioni ENAC (Nel JSON sono data.enac_courses e data.enac_approvals)
       const coursesRaw = data.enac_courses || [];

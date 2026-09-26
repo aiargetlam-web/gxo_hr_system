@@ -47,8 +47,8 @@ export default function EmployeeEditPage() {
   const [currentCompanyCar, setCurrentCompanyCar] = useState<any | null>(null);
   const [currentEmployer, setCurrentEmployer] = useState<any | null>(null);
   const [currentUnion, setCurrentUnion] = useState<any | null>(null);
-  const [currentEnacCourses, setCurrentEnacCourses] = useState<any[]>([]);
-  const [currentEnacApprovals, setCurrentEnacApprovals] = useState<any[]>([]);
+  const [currentEnacCourse, setCurrentEnacCourse] = useState<any[]>([]);
+  const [currentEnacApproval, setCurrentEnacApproval] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [managers, setManagers] = useState<any[]>([]);
 

@@ -279,11 +279,13 @@ export default function EmployeeEditPage() {
       const res = await api.get(`/api/v1/employees/${employeeId}`);
       const data = res.data;
 
+      // 1. Centri di costo
+      const costCentersList = data.cost_centers || data.cost_centers_current || [];
       setEditedCostCenters(
-        data.cost_centers.map((cc: any) => ({
+        costCentersList.map((cc: any) => ({
           id: cc.id,
           cost_center_id: cc.cost_center_id,
-          cost_center_name: cc.description,
+          cost_center_name: cc.description || cc.name,
           weight_percent: cc.weight_percent,
           new_weight_percent: cc.weight_percent,
           from_date: cc.from_date,
@@ -291,16 +293,19 @@ export default function EmployeeEditPage() {
           note: cc.note || "",
         }))
       );
+      setCurrentCostCenters(costCentersList);
 
+      // 2. Stato Amministrativo (con fallback multipli)
+      setCurrentStatus(data.status_current || data.current_status || data.status);
 
+      // 3. RAL / Stipendio
+      setCurrentSalary(data.salary_current || data.current_salary || data.salary);
 
-      setCurrentStatus(data.status_current);
-      setCurrentSalary(data.salary_current);
-      setCurrentCostCenters(data.cost_centers || []);
-      setCurrentDepartment(data.department_current);
-      // Controllo esteso per trovare l'ID del sito in qualsiasi formato arrivi
+      // 4. Reparto
+      setCurrentDepartment(data.department_current || data.current_department || data.department);
+
+      // 5. Sito (già gestito correttamente in modo sicuro)
       const siteData = data.site_current || data.site || data.current_site;
-      
       if (siteData) {
         const normalizedSite = {
           ...siteData,
@@ -318,17 +323,27 @@ export default function EmployeeEditPage() {
         setCurrentSite(null);
         console.warn("⚠️ Nessun sito corrente trovato nei dati del dipendente.");
       }
-      setCurrentBenefits(data.benefits_current || []);
-      setCurrentCompanyCar(data.company_car_current);
-      setCurrentEmployer(data.employer_current);
-      setCurrentUnion(data.union_current);
-      setCurrentEnacCourses(data.enac_courses_current || []);
-      setCurrentEnacApprovals(data.enac_approvals_current || []);
+
+      // 6. Benefit
+      setCurrentBenefits(data.benefits_current || data.current_benefits || data.benefits || []);
+
+      // 7. Auto Aziendale
+      setCurrentCompanyCar(data.company_car_current || data.current_company_car || data.company_car);
+
+      // 8. Employer
+      setCurrentEmployer(data.employer_current || data.current_employer || data.employer);
+
+      // 9. Sindacato
+      setCurrentUnion(data.union_current || data.current_union || data.union);
+
+      // 10. Corsi e Approvazioni ENAC
+      setCurrentEnacCourses(data.enac_courses_current || data.current_enac_courses || data.enac_courses || []);
+      setCurrentEnacApprovals(data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || []);
+
     } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);
     }
   };
-
 
   // ===============================
   // OPTIONS PER I MENU A TENDINA
@@ -438,64 +453,17 @@ export default function EmployeeEditPage() {
                   Variazione Stato Amministrativo
                 </Typography>
 
-                {/* STATO ATTUALE */}
+                {/* STATO ATTUALE (SOLO INFORMAZIONE) */}
                 {currentStatus && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1" mb={1}>
+                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                    <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                       Stato attuale
                     </Typography>
-
-                    <Typography>
-                      Tipo stato: {currentStatus.status_type_description}
-                    </Typography>
+                    <Typography>Stato: {currentStatus.status_name || currentStatus.name}</Typography>
                     <Typography>Data inizio: {currentStatus.from_date}</Typography>
-                    <Typography>Note: {currentStatus.note}</Typography>
-
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentStatus.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentStatus({
-                          ...currentStatus,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentStatus.to_date) {
-                          alert("Inserisci una data di fine per chiudere lo stato attuale.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/status/${currentStatus.id}`,
-                            { to_date: currentStatus.to_date }
-                          );
-                          alert("Stato attuale chiuso correttamente.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura dello stato.");
-                        }
-                      }}
-                    >
-                      Chiudi stato attuale
-                    </Button>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Nota: La modifica dello stato avviene inserendo un nuovo stato sottostante con la relativa data di decorrenza.
+                    </Typography>
                   </Box>
                 )}
 
@@ -600,68 +568,17 @@ export default function EmployeeEditPage() {
                 <Typography variant="h5" mb={2}>
                   Variazione RAL
                 </Typography>
-
-                {/* RAL ATTUALE */}
-                {currentSalary && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      RAL attuale
-                    </Typography>
-
-                    <Typography>
-                      Importo: {currentSalary.ral_amount} €
-                    </Typography>
-                    <Typography>
-                      Data inizio: {currentSalary.from_date}
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentSalary.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentSalary({
-                          ...currentSalary,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentSalary.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/salaries/${currentSalary.id}`,
-                            { to_date: currentSalary.to_date }
-                          );
-                          alert("RAL chiusa.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura della RAL.");
-                        }
-                      }}
-                    >
-                      Chiudi RAL attuale
-                    </Button>
-                  </Box>
-                )}
+                {/* RAL ATTUALE (SOLO INFORMAZIONE) */}
+                        {currentSalary && (
+                          <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                            <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                              RAL attuale
+                            </Typography>
+                            <Typography>Importo: € {currentSalary.amount || currentSalary.ral || "N/D"}</Typography>
+                            <Typography>Decorrenza: {currentSalary.from_date || "N/D"}</Typography>
+                          </Box>
+                        )}
+                
 
                 {/* NUOVA RAL */}
                 <Box
@@ -963,8 +880,8 @@ export default function EmployeeEditPage() {
                             <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                               Reparto attuale
                             </Typography>
-                            <Typography>Reparto: {currentDepartment.name}</Typography>
-                            <Typography>Manager: {currentDepartment.manager_full_name}</Typography>
+                            <Typography>Reparto: {currentDepartment.name || currentDepartment.department_name || "N/D"}</Typography>
+                            <Typography>Manager: {currentDepartment.manager_full_name || currentDepartment.manager_name || "N/D"}</Typography>
                           </Box>
                         )}
 
@@ -1094,7 +1011,9 @@ export default function EmployeeEditPage() {
                             <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                               Sito attuale
                             </Typography>
-                            <Typography>Sito: {currentSite.site_name}</Typography>
+                            <Typography>
+                              Sito: {currentSite.site_name || currentSite.name || currentSite.title || "Dato non disponibile"}
+                            </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                               Nota: Il cambio di sito avviene inserendo un nuovo sito sottostante con la relativa data di decorrenza.
                             </Typography>
@@ -1436,65 +1355,19 @@ export default function EmployeeEditPage() {
                   Variazione ENAC – Corsi
                 </Typography>
 
-                {/* CORSI ATTUALI */}
-                {currentEnacCourses.map((c) => (
-                  <Box
-                    key={c.id}
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Corso attuale
+                {/* CORSO ENAC ATTUALE (SOLO INFORMAZIONE) */}
+                {currentEnacCourse && (
+                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                    <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                      Corso ENAC attuale
                     </Typography>
-
-                    <Typography>Data corso: {c.course_date}</Typography>
-                    <Typography>Data scadenza: {c.expiry_date}</Typography>
-
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={c.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentEnacCourses((prev) =>
-                          prev.map((x) =>
-                            x.id === c.id ? { ...x, to_date: e.target.value } : x
-                          )
-                        )
-                      }
-                    />
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!c.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/enac-courses/${c.id}`,
-                            { to_date: c.to_date }
-                          );
-                          alert("Corso ENAC chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura del corso ENAC.");
-                        }
-                      }}
-                    >
-                      Chiudi corso
-                    </Button>
+                    <Typography>Corso: {currentEnacCourse.course_name || currentEnacCourse.name}</Typography>
+                    <Typography>Data conseguimento / Inizio: {currentEnacCourse.from_date}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Nota: Il rinnovo o l'inserimento di un nuovo corso ENAC viene registrato tramite il modulo sottostante.
+                    </Typography>
                   </Box>
-                ))}
+                )}
 
                 {/* NUOVO CORSO ENAC */}
                 <Box
@@ -1608,65 +1481,19 @@ export default function EmployeeEditPage() {
                   Variazione ENAC – Approvazioni
                 </Typography>
 
-                {/* APPROVAZIONI ATTUALI */}
-                {currentEnacApprovals.map((a) => (
-                  <Box
-                    key={a.id}
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Approvazione attuale
+                {/* APPROVAZIONE ENAC ATTUALE (SOLO INFORMAZIONE) */}
+                {currentEnacApproval && (
+                  <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                    <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                      Approvazione ENAC attuale
                     </Typography>
-
-                    <Typography>Data richiesta: {a.request_date}</Typography>
-                    <Typography>Data approvazione: {a.approval_date}</Typography>
-
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={a.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentEnacApprovals((prev) =>
-                          prev.map((x) =>
-                            x.id === a.id ? { ...x, to_date: e.target.value } : x
-                          )
-                        )
-                      }
-                    />
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!a.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
-
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/enac-approvals/${a.id}`,
-                            { to_date: a.to_date }
-                          );
-                          alert("Approvazione ENAC chiusa.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura dell'approvazione ENAC.");
-                        }
-                      }}
-                    >
-                      Chiudi approvazione
-                    </Button>
+                    <Typography>Approvazione: {currentEnacApproval.approval_name || currentEnacApproval.name}</Typography>
+                    <Typography>Data inizio: {currentEnacApproval.from_date}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Nota: L'aggiornamento dell'approvazione ENAC si effettua inserendo una nuova voce sottostante.
+                    </Typography>
                   </Box>
-                ))}
+                )}
 
                 {/* NUOVA APPROVAZIONE ENAC */}
                 <Box
@@ -1788,8 +1615,8 @@ export default function EmployeeEditPage() {
                             <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                               Employer attuale
                             </Typography>
-                            <Typography>Employer: {currentEmployer.employer_name}</Typography>
-                            <Typography>Data inizio: {currentEmployer.from_date}</Typography>
+                            <Typography>Employer: {currentEmployer.employer_name || currentEmployer.name || "N/D"}</Typography>
+                            <Typography>Data inizio: {currentEmployer.from_date || "N/D"}</Typography>
                           </Box>
                         )}
 

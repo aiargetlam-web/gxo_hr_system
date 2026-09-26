@@ -948,440 +948,323 @@ export default function EmployeeEditPage() {
               </Box>
             )}
 
-            {/* ===============================
-                SEZIONE: REPARTO
-               =============================== */}
-            {selectedSection === "department" && (
-              <Box>
-                <Typography variant="h5" mb={2}>
-                  Variazione Reparto
-                </Typography>
+{/* ===============================
+                        SEZIONE: REPARTO
+                       =============================== */}
+                    {selectedSection === "department" && (
+                      <Box>
+                        <Typography variant="h5" mb={2}>
+                          Variazione Reparto
+                        </Typography>
 
-                {/* REPARTO ATTUALE */}
-                {currentDepartment && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Reparto attuale
-                    </Typography>
+                        {/* REPARTO ATTUALE (SOLO INFORMAZIONE) */}
+                        {currentDepartment && (
+                          <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                            <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                              Reparto attuale
+                            </Typography>
+                            <Typography>Reparto: {currentDepartment.name}</Typography>
+                            <Typography>Manager: {currentDepartment.manager_full_name}</Typography>
+                          </Box>
+                        )}
 
-                    <Typography>Reparto: {currentDepartment.name}</Typography>
-                    <Typography>Manager: {currentDepartment.manager_full_name}</Typography>
+                        {/* NUOVO REPARTO */}
+                        <Box p={2} border="1px solid #ddd" borderRadius="8px">
+                          <Typography variant="subtitle1" mb={2}>
+                            Nuovo reparto
+                          </Typography>
 
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentDepartment.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentDepartment({
-                          ...currentDepartment,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="department-label">Reparto</InputLabel>
+                            <Select
+                              labelId="department-label"
+                              value={String(newDepartment.department_id || "")}
+                              label="Reparto"
+                              onChange={(e) =>
+                                setNewDepartment({
+                                  ...newDepartment,
+                                  department_id: e.target.value,
+                                })
+                              }
+                            >
+                              {departments.map((d) => (
+                                <MenuItem key={d.id} value={String(d.id)}>
+                                  {d.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentDepartment.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="manager-label">Manager</InputLabel>
+                            <Select
+                              labelId="manager-label"
+                              value={String(newDepartment.manager_employee_id || "")}
+                              label="Manager"
+                              onChange={(e) =>
+                                setNewDepartment({
+                                  ...newDepartment,
+                                  manager_employee_id: e.target.value,
+                                })
+                              }
+                            >
+                              {managers.map((m) => (
+                                <MenuItem key={m.id} value={String(m.id)}>
+                                  {m.full_name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/departments/${currentDepartment.id}`,
-                            { to_date: currentDepartment.to_date }
-                          );
-                          alert("Reparto chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail || "Errore durante la chiusura del reparto.");
-                        }
-                      }}
-                    >
-                      Chiudi reparto attuale
-                    </Button>
-                  </Box>
-                )}
+                          <TextField
+                            fullWidth
+                            type="date"
+                            label="Data inizio"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ mb: 2 }}
+                            value={newDepartment.from_date}
+                            onChange={(e) =>
+                              setNewDepartment({
+                                ...newDepartment,
+                                from_date: e.target.value,
+                              })
+                            }
+                          />
 
-                {/* NUOVO REPARTO */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                >
-                  <Typography variant="subtitle1" mb={2}>
-                    Nuovo reparto
-                  </Typography>
+                          <TextField
+                            fullWidth
+                            label="Note"
+                            multiline
+                            rows={3}
+                            sx={{ mb: 2 }}
+                            value={newDepartment.note}
+                            onChange={(e) =>
+                              setNewDepartment({
+                                ...newDepartment,
+                                note: e.target.value,
+                              })
+                            }
+                          />
 
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="department-label">Reparto</InputLabel>
-                    <Select
-                      labelId="department-label"
-                      value={String(newDepartment.department_id || "")}
-                      label="Reparto"
-                      onChange={(e) =>
-                        setNewDepartment({
-                          ...newDepartment,
-                          department_id: e.target.value,
-                        })
-                      }
-                    >
-                      {departments.map((d) => (
-                        <MenuItem key={d.id} value={String(d.id)}>
-                          {d.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              if (!newDepartment.department_id || !newDepartment.from_date) {
+                                alert("Compila tutti i campi.");
+                                return;
+                              }
 
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="manager-label">Manager</InputLabel>
-                    <Select
-                      labelId="manager-label"
-                      value={String(newDepartment.manager_employee_id || "")}
-                      label="Manager"
-                      onChange={(e) =>
-                        setNewDepartment({
-                          ...newDepartment,
-                          manager_employee_id: e.target.value,
-                        })
-                      }
-                    >
-                      {managers.map((m) => (
-                        <MenuItem key={m.id} value={String(m.id)}>
-                          {m.full_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                              try {
+                                await api.post(
+                                  `/api/v1/employees/${employeeId}/departments`,
+                                  newDepartment
+                                );
+                                alert("Nuovo reparto aggiunto.");
+                                setNewDepartment({
+                                  department_id: "",
+                                  manager_employee_id: "",
+                                  from_date: "",
+                                  note: "",
+                                });
+                                loadCurrentData();
+                              } catch (err: any) {
+                                console.error(err);
+                                alert(err.response?.data?.detail || "Errore durante l'aggiunta del reparto.");
+                              }
+                            }}
+                          >
+                            Aggiungi nuovo reparto
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
 
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={newDepartment.from_date}
-                    onChange={(e) =>
-                      setNewDepartment({
-                        ...newDepartment,
-                        from_date: e.target.value,
-                      })
-                    }
-                  />
+                    {/* ===============================
+                        SEZIONE: SITO
+                       =============================== */}
+                    {selectedSection === "site" && (
+                      <Box>
+                        <Typography variant="h5" mb={2}>
+                          Variazione Sito
+                        </Typography>
 
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={newDepartment.note}
-                    onChange={(e) =>
-                      setNewDepartment({
-                        ...newDepartment,
-                        note: e.target.value,
-                      })
-                    }
-                  />
+                        {/* SITO ATTUALE (SOLO INFORMAZIONE) */}
+                        {currentSite && (
+                          <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                            <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                              Sito attuale
+                            </Typography>
+                            <Typography>Sito: {currentSite.site_name}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              Nota: Il cambio di sito avviene inserendo un nuovo sito sottostante con la relativa data di decorrenza.
+                            </Typography>
+                          </Box>
+                        )}
 
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      if (!newDepartment.department_id || !newDepartment.from_date) {
-                        alert("Compila tutti i campi.");
-                        return;
-                      }
+                        {/* NUOVO SITO */}
+                        <Box p={2} border="1px solid #ddd" borderRadius="8px">
+                          <Typography variant="subtitle1" mb={2}>
+                            Nuovo sito e organizzazione
+                          </Typography>
 
-                      try {
-                        await api.post(
-                          `/api/v1/employees/${employeeId}/departments`,
-                          newDepartment
-                        );
-                        alert("Nuovo reparto aggiunto.");
-                        setNewDepartment({
-                          department_id: "",
-                          manager_employee_id: "",
-                          from_date: "",
-                          note: "",
-                        });
-                        loadCurrentData();
-                      } catch (err: any) {
-                        console.error(err);
-                        alert(err.response?.data?.detail || "Errore durante l'aggiunta del reparto.");
-                      }
-                    }}
-                  >
-                    Aggiungi nuovo reparto
-                  </Button>
-                </Box>
-              </Box>
-            )}
+                          {/* 1. SELEZIONE SITO */}
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="site-label">Sito</InputLabel>
+                            <Select
+                              labelId="site-label"
+                              value={String(newSite.site_id || "")}
+                              label="Sito"
+                              onChange={(e) => {
+                                const siteId = e.target.value as string;
+                                setNewSite({ ...newSite, site_id: siteId });
 
-            {/* ===============================
-                SEZIONE: SITO
-               =============================== */}
-            {selectedSection === "site" && (
-              <Box>
-                <Typography variant="h5" mb={2}>
-                  Variazione Sito
-                </Typography>
+                                if (siteId) {
+                                  const numericId = Number(siteId);
+                                  loadDepartments(numericId);
+                                  loadManagers(numericId);
+                                } else {
+                                  setDepartments([]);
+                                  setManagers([]);
+                                }
 
-                {/* SITO ATTUALE */}
-                {currentSite && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Sito attuale
-                    </Typography>
+                                setDepartment({
+                                  department_id: 0,
+                                  manager_employee_id: 0,
+                                  from_date: "",
+                                  note: "",
+                                });
+                              }}
+                            >
+                              <MenuItem value="">Seleziona Sito</MenuItem>
+                              {siteList.map((s: any) => (
+                                <MenuItem key={s.id} value={String(s.id)}>
+                                  {s.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                    <Typography>Sito: {currentSite.site_name}</Typography>
+                          {/* 2. DATA DI INIZIO */}
+                          <TextField
+                            fullWidth
+                            type="date"
+                            label="Data inizio"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ mb: 2 }}
+                            value={String(newSite.from_date || "")}
+                            onChange={(e) =>
+                              setNewSite({ ...newSite, from_date: e.target.value })
+                            }
+                          />
 
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine (chiusura)"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentSite.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentSite({
-                          ...currentSite,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
+                          {/* 3. NOTE */}
+                          <TextField
+                            fullWidth
+                            label="Note"
+                            multiline
+                            rows={3}
+                            sx={{ mb: 2 }}
+                            value={newSite.note || ""}
+                            onChange={(e) =>
+                              setNewSite({ ...newSite, note: e.target.value })
+                            }
+                          />
 
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentSite.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
+                          {/* 4. REPARTO */}
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="department-label">Reparto</InputLabel>
+                            <Select
+                              labelId="department-label"
+                              value={String(department.department_id || "0")}
+                              label="Reparto"
+                              onChange={(e) =>
+                                setDepartment({
+                                  ...department,
+                                  department_id: Number(e.target.value),
+                                })
+                              }
+                            >
+                              <MenuItem value="0">Seleziona</MenuItem>
+                              {departments.map((d: any) => (
+                                <MenuItem key={d.id} value={String(d.id)}>
+                                  {d.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/sites/${currentSite.id}`,
-                            { to_date: currentSite.to_date }
-                          );
-                          alert("Sito chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail || "Errore durante la chiusura del sito.");
-                        }
-                      }}
-                    >
-                      Chiudi sito attuale
-                    </Button>
-                  </Box>
-                )}
+                          {/* 5. PREPOSTO / RESPONSABILE */}
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="manager-label">Preposto / Responsabile</InputLabel>
+                            <Select
+                              labelId="manager-label"
+                              value={String(department.manager_employee_id || "0")}
+                              label="Preposto"
+                              onChange={(e) =>
+                                setDepartment({
+                                  ...department,
+                                  manager_employee_id: Number(e.target.value),
+                                })
+                              }
+                            >
+                              <MenuItem value="0">Seleziona</MenuItem>
+                              {managers.map((m: any) => (
+                                <MenuItem key={m.id} value={String(m.id)}>
+                                  {m.full_name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                {/* NUOVO SITO */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                >
-                  <Typography variant="subtitle1" mb={2}>
-                    Nuovo sito
-                  </Typography>
+                          {/* 6. PULSANTE DI SALVATAGGIO */}
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              if (!newSite.site_id || !newSite.from_date) {
+                                alert("Seleziona un sito e una data di inizio.");
+                                return;
+                              }
 
-                  {/* 1. SELEZIONE SITO (ripristinato siteList) */}
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="site-label">Sito</InputLabel>
-                    <Select
-                      labelId="site-label"
-                      value={String(newSite.site_id || "")}
-                      label="Sito"
-                      onChange={(e) => {
-                        const siteId = e.target.value as string;
-                        setNewSite({ ...newSite, site_id: siteId });
+                              try {
+                                await api.post(`/api/v1/employees/${employeeId}/sites`, {
+                                  site_id: Number(newSite.site_id),
+                                  from_date: newSite.from_date,
+                                  note: newSite.note || "",
+                                });
 
-                        if (siteId) {
-                          const numericId = Number(siteId);
-                          loadDepartments(numericId);
-                          loadManagers(numericId);
-                        } else {
-                          setDepartments([]);
-                          setManagers([]);
-                        }
+                                if (department.department_id > 0) {
+                                  await api.post(`/api/v1/employees/${employeeId}/departments`, {
+                                    department_id: department.department_id,
+                                    manager_employee_id: department.manager_employee_id || null,
+                                    from_date: newSite.from_date,
+                                    note: newSite.note || "",
+                                  });
+                                }
 
-                        setDepartment({
-                          department_id: 0,
-                          manager_employee_id: 0,
-                          from_date: "",
-                          note: "",
-                        });
-                      }}
-                    >
-                      <MenuItem value="">Seleziona Sito</MenuItem>
-                      {siteList.map((s: any) => (
-                        <MenuItem key={s.id} value={String(s.id)}>
-                          {s.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                                if (department.manager_employee_id > 0) {
+                                  await api.post(`/api/v1/employees/${employeeId}/manager`, {
+                                    manager_id: department.manager_employee_id,
+                                    from_date: newSite.from_date,
+                                    note: newSite.note || "",
+                                  });
+                                }
 
-                  {/* 2. UNICA DATA DI INIZIO */}
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={String(newSite.from_date || "")}
-                    onChange={(e) =>
-                      setNewSite({ ...newSite, from_date: e.target.value })
-                    }
-                  />
+                                alert("Cambio sito registrato con successo!");
 
-                  {/* 3. UNICO CAMPO NOTE */}
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={newSite.note || ""}
-                    onChange={(e) =>
-                      setNewSite({ ...newSite, note: e.target.value })
-                    }
-                  />
-
-                  {/* 4. REPARTO */}
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="department-label">Reparto</InputLabel>
-                    <Select
-                      labelId="department-label"
-                      value={String(department.department_id || "0")}
-                      label="Reparto"
-                      onChange={(e) =>
-                        setDepartment({
-                          ...department,
-                          department_id: Number(e.target.value),
-                        })
-                      }
-                    >
-                      <MenuItem value="0">Seleziona</MenuItem>
-                      {departments.map((d: any) => (
-                        <MenuItem key={d.id} value={String(d.id)}>
-                          {d.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {/* 5. PREPOSTO / RESPONSABILE */}
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="manager-label">Preposto / Responsabile</InputLabel>
-                    <Select
-                      labelId="manager-label"
-                      value={String(department.manager_employee_id || "0")}
-                      label="Preposto"
-                      onChange={(e) =>
-                        setDepartment({
-                          ...department,
-                          manager_employee_id: Number(e.target.value),
-                        })
-                      }
-                    >
-                      <MenuItem value="0">Seleziona</MenuItem>
-                      {managers.map((m: any) => (
-                        <MenuItem key={m.id} value={String(m.id)}>
-                          {m.full_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {/* 6. PULSANTE DI SALVATAGGIO */}
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      if (!newSite.site_id || !newSite.from_date) {
-                        alert("Seleziona un sito e una data di inizio.");
-                        return;
-                      }
-
-                      try {
-                        // A. Salvataggio Variazione Sito
-                        await api.post(`/api/v1/employees/${employeeId}/sites`, {
-                          site_id: Number(newSite.site_id),
-                          from_date: newSite.from_date,
-                          note: newSite.note || "",
-                        });
-
-                        // B. Salvataggio Reparto (se selezionato)
-                        if (department.department_id > 0) {
-                          await api.post(`/api/v1/employees/${employeeId}/departments`, {
-                            department_id: department.department_id,
-                            manager_employee_id: department.manager_employee_id || null,
-                            from_date: newSite.from_date,
-                            note: newSite.note || "",
-                          });
-                        }
-
-                        // C. Salvataggio Responsabile nella tabella employee_managers (se selezionato)
-                        if (department.manager_employee_id > 0) {
-                          await api.post(`/api/v1/employees/${employeeId}/manager`, {
-                            manager_id: department.manager_employee_id,
-                            from_date: newSite.from_date,
-                            note: newSite.note || "",
-                          });
-                        }
-
-                        alert("Cambio sito registrato con successo!");
-
-                        // D. RESET COMPLETO DI TUTTI I CAMPI
-                        setNewSite({
-                          site_id: "",
-                          from_date: "",
-                          note: "",
-                        });
-                        setDepartment({
-                          department_id: 0,
-                          manager_employee_id: 0,
-                          from_date: "",
-                          note: "",
-                        });
-
-                        // E. Ricarica i dati aggiornati
-                        loadCurrentData();
-                      } catch (err: any) {
-                        console.error(err);
-                        alert(
-                          err.response?.data?.detail ||
-                            "Errore durante il salvataggio della variazione."
-                        );
-                      }
-                    }}
-                  >
-                    Aggiungi nuovo sito
-                  </Button>
-                </Box>
-              </Box>
-            )}
+                                setNewSite({ site_id: "", from_date: "", note: "" });
+                                setDepartment({ department_id: 0, manager_employee_id: 0, from_date: "", note: "" });
+                                loadCurrentData();
+                              } catch (err: any) {
+                                console.error(err);
+                                alert(err.response?.data?.detail || "Errore durante il salvataggio della variazione.");
+                              }
+                            }}
+                          >
+                            Aggiungi nuovo sito
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
             {/* ===============================
                 SEZIONE: BENEFIT
                =============================== */}
@@ -1890,165 +1773,114 @@ export default function EmployeeEditPage() {
                 </Box>
               </Box>
             )}
-            {/* ===============================
-                SEZIONE: EMPLOYER
-               =============================== */}
-            {selectedSection === "employer" && (
-              <Box>
-                <Typography variant="h5" mb={2}>
-                  Variazione Employer
-                </Typography>
+{/* ===============================
+                        SEZIONE: EMPLOYER
+                       =============================== */}
+                    {selectedSection === "employer" && (
+                      <Box>
+                        <Typography variant="h5" mb={2}>
+                          Variazione Employer
+                        </Typography>
 
-                {/* EMPLOYER ATTUALE */}
-                {currentEmployer && (
-                  <Box
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Employer attuale
-                    </Typography>
+                        {/* EMPLOYER ATTUALE (SOLO INFORMAZIONE) */}
+                        {currentEmployer && (
+                          <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
+                            <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                              Employer attuale
+                            </Typography>
+                            <Typography>Employer: {currentEmployer.employer_name}</Typography>
+                            <Typography>Data inizio: {currentEmployer.from_date}</Typography>
+                          </Box>
+                        )}
 
-                    <Typography>Employer: {currentEmployer.employer_name}</Typography>
-                    <Typography>Data inizio: {currentEmployer.from_date}</Typography>
+                        {/* NUOVO EMPLOYER */}
+                        <Box p={2} border="1px solid #ddd" borderRadius="8px">
+                          <Typography variant="subtitle1" mb={2}>
+                            Nuovo employer
+                          </Typography>
 
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Data fine"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={currentEmployer.to_date || ""}
-                      onChange={(e) =>
-                        setCurrentEmployer({
-                          ...currentEmployer,
-                          to_date: e.target.value,
-                        })
-                      }
-                    />
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="employer-label">Employer</InputLabel>
+                            <Select
+                              labelId="employer-label"
+                              value={newEmployer.employer_id}
+                              label="Employer"
+                              onChange={(e) =>
+                                setNewEmployer({
+                                  ...newEmployer,
+                                  employer_id: e.target.value,
+                                })
+                              }
+                            >
+                              {employerList.map((emp) => (
+                                <MenuItem key={emp.id} value={emp.id}>
+                                  {emp.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
 
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={async () => {
-                        if (!currentEmployer.to_date) {
-                          alert("Inserisci una data di fine.");
-                          return;
-                        }
+                          <TextField
+                            fullWidth
+                            type="date"
+                            label="Data inizio"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ mb: 2 }}
+                            value={newEmployer.from_date}
+                            onChange={(e) =>
+                              setNewEmployer({
+                                ...newEmployer,
+                                from_date: e.target.value,
+                              })
+                            }
+                          />
 
-                        try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/employers/${currentEmployer.id}`,
-                            { to_date: currentEmployer.to_date }
-                          );
-                          alert("Employer chiuso.");
-                          loadCurrentData();
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura dell'employer.");
-                        }
-                      }}
-                    >
-                      Chiudi employer attuale
-                    </Button>
-                  </Box>
-                )}
+                          <TextField
+                            fullWidth
+                            label="Note"
+                            multiline
+                            rows={3}
+                            sx={{ mb: 2 }}
+                            value={newEmployer.note}
+                            onChange={(e) =>
+                              setNewEmployer({
+                                ...newEmployer,
+                                note: e.target.value,
+                              })
+                            }
+                          />
 
-                {/* NUOVO EMPLOYER */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                >
-                  <Typography variant="subtitle1" mb={2}>
-                    Nuovo employer
-                  </Typography>
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              if (!newEmployer.employer_id || !newEmployer.from_date) {
+                                alert("Compila tutti i campi.");
+                                return;
+                              }
 
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="employer-label">Employer</InputLabel>
-                    <Select
-                      labelId="employer-label"
-                      value={newEmployer.employer_id}
-                      label="Employer"
-                      onChange={(e) =>
-                        setNewEmployer({
-                          ...newEmployer,
-                          employer_id: e.target.value,
-                        })
-                      }
-                    >
-                      {employerList.map((emp) => (
-                        <MenuItem key={emp.id} value={emp.id}>
-                          {emp.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={newEmployer.from_date}
-                    onChange={(e) =>
-                      setNewEmployer({
-                        ...newEmployer,
-                        from_date: e.target.value,
-                      })
-                    }
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={newEmployer.note}
-                    onChange={(e) =>
-                      setNewEmployer({
-                        ...newEmployer,
-                        note: e.target.value,
-                      })
-                    }
-                  />
-
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      if (!newEmployer.employer_id || !newEmployer.from_date) {
-                        alert("Compila tutti i campi.");
-                        return;
-                      }
-
-                      try {
-                        await api.post(
-                          `/api/v1/employees/${employeeId}/employers`,
-                          newEmployer
-                        );
-                        alert("Nuovo employer aggiunto.");
-                        setNewEmployer({
-                          employer_id: "",
-                          from_date: "",
-                          note: "",
-                        });
-                        loadCurrentData();
-                      } catch (err: any) {
-                        console.error(err);
-                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta dell'employer.");
-                      }
-                    }}
-                  >
-                    Aggiungi nuovo employer
-                  </Button>
-                </Box>
-              </Box>
-            )}
+                              try {
+                                await api.post(
+                                  `/api/v1/employees/${employeeId}/employers`,
+                                  newEmployer
+                                );
+                                alert("Nuovo employer aggiunto.");
+                                setNewEmployer({
+                                  employer_id: "",
+                                  from_date: "",
+                                  note: "",
+                                });
+                                loadCurrentData();
+                              } catch (err: any) {
+                                console.error(err);
+                                alert(err.response?.data?.detail || "Errore durante l'aggiunta dell'employer.");
+                              }
+                            }}
+                          >
+                            Aggiungi nuovo employer
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
 
             {/* ===============================
                 SEZIONE: SINDACATO

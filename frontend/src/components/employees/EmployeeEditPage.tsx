@@ -336,12 +336,12 @@ export default function EmployeeEditPage() {
       // 9. Sindacato
       setCurrentUnion(data.union_current || data.current_union || data.union);
 
-      // 10. Corsi e Approvazioni ENAC (Gestiti sia come array plurali che come singolari se richiesti dal template)
+      // 10. Corsi e Approvazioni ENAC
       const courses = data.enac_courses_current || data.current_enac_courses || data.enac_courses || [];
-      setCurrentEnacCourses(courses);
+      setCurrentEnacCourse(courses);
 
       const approvals = data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || [];
-      setCurrentEnacApprovals(approvals);
+      setCurrentEnacApproval(approvals);
 
     } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);

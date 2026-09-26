@@ -295,7 +295,7 @@ export default function EmployeeEditPage() {
       );
       setCurrentCostCenters(costCentersList);
 
-      // 2. Stato Amministrativo (con fallback multipli)
+      // 2. Stato Amministrativo
       setCurrentStatus(data.status_current || data.current_status || data.status);
 
       // 3. RAL / Stipendio
@@ -304,7 +304,7 @@ export default function EmployeeEditPage() {
       // 4. Reparto
       setCurrentDepartment(data.department_current || data.current_department || data.department);
 
-      // 5. Sito (già gestito correttamente in modo sicuro)
+      // 5. Sito
       const siteData = data.site_current || data.site || data.current_site;
       if (siteData) {
         const normalizedSite = {
@@ -336,9 +336,12 @@ export default function EmployeeEditPage() {
       // 9. Sindacato
       setCurrentUnion(data.union_current || data.current_union || data.union);
 
-      // 10. Corsi e Approvazioni ENAC
-      setCurrentEnacCourses(data.enac_courses_current || data.current_enac_courses || data.enac_courses || []);
-      setCurrentEnacApprovals(data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || []);
+      // 10. Corsi e Approvazioni ENAC (Gestiti sia come array plurali che come singolari se richiesti dal template)
+      const courses = data.enac_courses_current || data.current_enac_courses || data.enac_courses || [];
+      setCurrentEnacCourses(courses);
+
+      const approvals = data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || [];
+      setCurrentEnacApprovals(approvals);
 
     } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);

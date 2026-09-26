@@ -50,7 +50,7 @@ def get_current_user(
         raise credentials_exception
 
     # ⭐ QUI SERVE Employee IMPORTATO CORRETTAMENTE
-    user = db.query(Employee).filter(Employee.id == token_data.sub).first()
+    user = db.query(Employee).filter(Employee.id == int(token_data.sub)).first()
 
     if not user:
         raise credentials_exception

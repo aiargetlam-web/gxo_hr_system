@@ -47,8 +47,10 @@ export default function EmployeeEditPage() {
   const [currentCompanyCar, setCurrentCompanyCar] = useState<any | null>(null);
   const [currentEmployer, setCurrentEmployer] = useState<any | null>(null);
   const [currentUnion, setCurrentUnion] = useState<any | null>(null);
-  const [currentEnacCourse, setCurrentEnacCourse] = useState<any[]>([]);
-  const [currentEnacApproval, setCurrentEnacApproval] = useState<any[]>([]);
+  const [currentEnacCourse, setCurrentEnacCourse] = useState<any | null>(null);
+  const [currentEnacCourses, setCurrentEnacCourses] = useState<any[]>([]);
+  const [currentEnacApproval, setCurrentEnacApproval] = useState<any | null>(null);
+  const [currentEnacApprovals, setCurrentEnacApprovals] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [managers, setManagers] = useState<any[]>([]);
 
@@ -315,13 +317,11 @@ export default function EmployeeEditPage() {
 
         const activeSiteId = normalizedSite.id;
         if (activeSiteId) {
-          console.log("🚀 Avvio caricamento iniziale per sito ID:", activeSiteId);
           loadDepartments(activeSiteId);
           loadManagers(activeSiteId);
         }
       } else {
         setCurrentSite(null);
-        console.warn("⚠️ Nessun sito corrente trovato nei dati del dipendente.");
       }
 
       // 6. Benefit
@@ -336,12 +336,17 @@ export default function EmployeeEditPage() {
       // 9. Sindacato
       setCurrentUnion(data.union_current || data.current_union || data.union);
 
-      // 10. Corsi e Approvazioni ENAC
-      const courses = data.enac_courses_current || data.current_enac_courses || data.enac_courses || [];
-      setCurrentEnacCourse(courses);
+      // 10. Corsi ENAC (Gestito come singolo oggetto o estratto dal primo elemento se array)
+      const coursesRaw = data.enac_courses_current || data.current_enac_courses || data.enac_courses || [];
+      const singleCourse = Array.isArray(coursesRaw) ? coursesRaw[0] || null : coursesRaw;
+      setCurrentEnacCourse(singleCourse);
+      setCurrentEnacCourses(Array.isArray(coursesRaw) ? coursesRaw : [coursesRaw]);
 
-      const approvals = data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || [];
-      setCurrentEnacApproval(approvals);
+      // 11. Approvazioni ENAC (Gestito come singolo oggetto o estratto dal primo elemento se array)
+      const approvalsRaw = data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || [];
+      const singleApproval = Array.isArray(approvalsRaw) ? approvalsRaw[0] || null : approvalsRaw;
+      setCurrentEnacApproval(singleApproval);
+      setCurrentEnacApprovals(Array.isArray(approvalsRaw) ? approvalsRaw : [approvalsRaw]);
 
     } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);

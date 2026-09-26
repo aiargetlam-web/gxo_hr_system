@@ -282,12 +282,12 @@ export default function EmployeeEditPage() {
       const data = res.data;
 
       // 1. Centri di costo
-      const costCentersList = data.cost_centers || data.cost_centers_current || [];
+      const costCentersList = data.cost_centers || [];
       setEditedCostCenters(
         costCentersList.map((cc: any) => ({
           id: cc.id,
           cost_center_id: cc.cost_center_id,
-          cost_center_name: cc.description || cc.name,
+          cost_center_name: cc.name || cc.description,
           weight_percent: cc.weight_percent,
           new_weight_percent: cc.weight_percent,
           from_date: cc.from_date,
@@ -297,21 +297,40 @@ export default function EmployeeEditPage() {
       );
       setCurrentCostCenters(costCentersList);
 
-      // 2. Stato Amministrativo
-      setCurrentStatus(data.status_current || data.current_status || data.status);
+      // 2. Stato Amministrativo (Nel JSON è data.status con dentro 'name')
+      const rawStatus = data.status;
+      setCurrentStatus(rawStatus ? {
+        ...rawStatus,
+        status_name: rawStatus.name, // Il frontend cerca spesso status_name o name
+      } : null);
 
-      // 3. RAL / Stipendio
-      setCurrentSalary(data.salary_current || data.current_salary || data.salary);
+      // 3. RAL / Stipendio (Nel JSON è data.salary con ral_amount)
+      const rawSalary = data.salary;
+      setCurrentSalary(rawSalary ? {
+        ...rawSalary,
+        ral: rawSalary.ral_amount, // Mappa ral_amount sul campo ral che il form si aspetta
+        ral_amount: rawSalary.ral_amount,
+      } : null);
 
-      // 4. Reparto
-      setCurrentDepartment(data.department_current || data.current_department || data.department);
+      // 4. Reparto e Manager (Nel JSON data.department ha i dati del reparto, e data.manager è a parte)
+      const rawDep = data.department;
+      const rawManager = data.manager; // Il manager nel JSON è a livello radice!
+      
+      setCurrentDepartment(rawDep ? {
+        ...rawDep,
+        department_name: rawDep.name,
+        // Associamo il nome del manager preso dall'oggetto 'manager' principale
+        manager_name: rawManager ? rawManager.name : "",
+        manager_employee_id: rawDep.manager_employee_id || (rawManager ? rawManager.id : 0),
+      } : null);
 
-      // 5. Sito
-      const siteData = data.site_current || data.site || data.current_site;
+      // 5. Sito (Nel JSON è data.site)
+      const siteData = data.site;
       if (siteData) {
         const normalizedSite = {
           ...siteData,
-          id: siteData.id ?? siteData.site_id ?? siteData.siteId ?? siteData.ID,
+          id: siteData.id,
+          site_name: siteData.name,
         };
         setCurrentSite(normalizedSite);
 
@@ -324,29 +343,26 @@ export default function EmployeeEditPage() {
         setCurrentSite(null);
       }
 
-      // 6. Benefit
-      setCurrentBenefits(data.benefits_current || data.current_benefits || data.benefits || []);
+      // 6. Benefit (Nel JSON è data.benefits)
+      setCurrentBenefits(data.benefits || []);
 
-      // 7. Auto Aziendale
-      setCurrentCompanyCar(data.company_car_current || data.current_company_car || data.company_car);
+      // 7. Auto Aziendale (Nel JSON è data.company_car)
+      setCurrentCompanyCar(data.company_car || null);
 
-      // 8. Employer
-      setCurrentEmployer(data.employer_current || data.current_employer || data.employer);
+      // 8. Employer (Se presente nel JSON, altrimenti gestito in sicurezza)
+      setCurrentEmployer(data.employer || null);
 
-      // 9. Sindacato
-      setCurrentUnion(data.union_current || data.current_union || data.union);
+      // 9. Sindacato (Se presente nel JSON, altrimenti gestito in sicurezza)
+      setCurrentUnion(data.union || null);
 
-      // 10. Corsi ENAC (Gestito come singolo oggetto o estratto dal primo elemento se array)
-      const coursesRaw = data.enac_courses_current || data.current_enac_courses || data.enac_courses || [];
-      const singleCourse = Array.isArray(coursesRaw) ? coursesRaw[0] || null : coursesRaw;
-      setCurrentEnacCourse(singleCourse);
-      setCurrentEnacCourses(Array.isArray(coursesRaw) ? coursesRaw : [coursesRaw]);
+      // 10. Corsi e Approvazioni ENAC (Nel JSON sono data.enac_courses e data.enac_approvals)
+      const coursesRaw = data.enac_courses || [];
+      setCurrentEnacCourse(coursesRaw[0] || null);
+      setCurrentEnacCourses(coursesRaw);
 
-      // 11. Approvazioni ENAC (Gestito come singolo oggetto o estratto dal primo elemento se array)
-      const approvalsRaw = data.enac_approvals_current || data.current_enac_approvals || data.enac_approvals || [];
-      const singleApproval = Array.isArray(approvalsRaw) ? approvalsRaw[0] || null : approvalsRaw;
-      setCurrentEnacApproval(singleApproval);
-      setCurrentEnacApprovals(Array.isArray(approvalsRaw) ? approvalsRaw : [approvalsRaw]);
+      const approvalsRaw = data.enac_approvals || [];
+      setCurrentEnacApproval(approvalsRaw[0] || null);
+      setCurrentEnacApprovals(approvalsRaw);
 
     } catch (err: any) {
       console.error("Errore nel caricamento dati attuali:", err);

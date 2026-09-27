@@ -53,6 +53,7 @@ export default function EmployeeEditPage() {
   const [currentEnacApprovals, setCurrentEnacApprovals] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [managers, setManagers] = useState<any[]>([]);
+  const [closeDates, setCloseDates] = useState<{ [key: number]: string }>({});
 
   const [department, setDepartment] = useState({
     department_id: 0,
@@ -1285,13 +1286,12 @@ export default function EmployeeEditPage() {
                                 label="Data fine (chiusura)"
                                 InputLabelProps={{ shrink: true }}
                                 size="small"
-                                value={b.to_date || ""}
+                                value={closeDates[b.id] || ""}
                                 onChange={(e) =>
-                                  setCurrentBenefits((prev) =>
-                                    prev.map((x) =>
-                                      x.id === b.id ? { ...x, to_date: e.target.value } : x
-                                    )
-                                  )
+                                  setCloseDates((prev) => ({
+                                    ...prev,
+                                    [b.id]: e.target.value,
+                                  }))
                                 }
                               />
 

@@ -1314,7 +1314,7 @@ export default function EmployeeEditPage() {
 
                                       try {
                                         await api.patch(
-                                          `/employees/${employeeId}/benefits/${benefitKey}`,
+                                          `/api/v1/employees/${employeeId}/benefits/${benefitKey}`,
                                           { to_date: endDate }
                                         );
 

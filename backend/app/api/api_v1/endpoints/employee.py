@@ -26,6 +26,7 @@ from app.schemas.employee import (
     EnacCourseUpdate,
     EnacApprovalCreate,
     EnacApprovalUpdate,
+    BenefitCreate,
     BenefitUpdate,
     EmployerUpdate,
     RoleUpdate,

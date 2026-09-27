@@ -342,7 +342,8 @@ class StatusUpdate(BaseModel):
 class CompanyCarUpdate(BaseModel):
     car_model: Optional[str] = None
     plate: Optional[str] = None
-    from_date: Optional[date] = None     # AGGIUNTO
+    from_date: Optional[date] = None
+    to_date: Optional[date] = None
     note: Optional[str] = None
 
 class EmployerUpdate(BaseModel):

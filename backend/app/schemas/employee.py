@@ -471,7 +471,70 @@ class Employee(EmployeeInDBBase):
 
     # 🔥 STORICO SINDACATO
     union_history: Optional[List[UnionHistory]] = None
+    enac_approvals: Optional[List[EnacApproval]] = None
+    enac_courses: Optional[List[EnacCourse]] = None
 
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# ENAC APPROVALS (SCHEMI)
+# ---------------------------------------------------------
+
+class EnacApproval(BaseModel):
+    id: int
+    employee_id: int
+    request_date: date
+    approval_date: Optional[date] = None
+    is_first_approval: bool = False
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class EnacApprovalCreate(BaseModel):
+    request_date: date
+    approval_date: Optional[date] = None
+    is_first_approval: bool = False
+    note: Optional[str] = None
+
+
+class EnacApprovalUpdate(BaseModel):
+    request_date: Optional[date] = None
+    approval_date: Optional[date] = None
+    is_first_approval: Optional[bool] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------
+# ENAC COURSES (SCHEMI)
+# ---------------------------------------------------------
+
+class EnacCourse(BaseModel):
+    id: int
+    employee_id: int
+    course_date: date
+    expiry_date: date
+    is_first_course: bool = False
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class EnacCourseCreate(BaseModel):
+    course_date: date
+    expiry_date: date
+    is_first_course: bool = False
+    note: Optional[str] = None
+
+
+class EnacCourseUpdate(BaseModel):
+    course_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    is_first_course: Optional[bool] = None
+    note: Optional[str] = None
 
     model_config = {"from_attributes": True}
     

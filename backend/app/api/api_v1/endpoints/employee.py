@@ -2429,7 +2429,12 @@ def close_cost_center(employee_id: int, cc_id: int, payload: CostCenterUpdate, d
 
     if not cc:
         raise HTTPException(status_code=404, detail="Cost center attuale non trovato")
-
+    # 🔥 Controllo data di chiusura
+    if payload.to_date <= cc.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di chiusura non può essere uguale o precedente alla data di inizio del cost center."
+        )
     try:
         cc.to_date = payload.to_date
         db.add(cc)
@@ -2461,7 +2466,12 @@ def close_benefit(employee_id: int, benefit_id: int, payload: BenefitUpdate, db:
 
     if not benefit:
         raise HTTPException(status_code=404, detail="Benefit attuale non trovato")
-
+    # 🔥 Controllo data di chiusura
+    if payload.to_date <= benefit.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di chiusura non può essere uguale o precedente alla data di inizio del benefit."
+        )
     try:
         benefit.to_date = payload.to_date
         db.add(benefit)
@@ -2493,7 +2503,12 @@ def close_employer(employee_id: int, hist_id: int, payload: EmployerUpdate, db: 
 
     if not hist:
         raise HTTPException(status_code=404, detail="Employer attuale non trovato")
-
+    # 🔥 Controllo data di chiusura
+    if payload.to_date <= hist.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di chiusura non può essere uguale o precedente alla data di inizio dell'employer."
+        )
     try:
         hist.to_date = payload.to_date
         db.add(hist)
@@ -2525,7 +2540,12 @@ def close_union(employee_id: int, hist_id: int, payload: UnionUpdate, db: Sessio
 
     if not hist:
         raise HTTPException(status_code=404, detail="Sindacato attuale non trovato")
-
+    # 🔥 Controllo data di chiusura
+    if payload.to_date <= hist.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di chiusura non può essere uguale o precedente alla data di inizio del sindacato."
+        )
     try:
         hist.to_date = payload.to_date
         db.add(hist)

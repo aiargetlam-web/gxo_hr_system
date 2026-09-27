@@ -538,3 +538,20 @@ class EnacCourseUpdate(BaseModel):
 
     model_config = {"from_attributes": True}
     
+# ---------------------------------------------------------
+# ROLE & MANAGER UPDATE (SCHEMI)
+# ---------------------------------------------------------
+
+class RoleUpdate(BaseModel):
+    role_id: Optional[int] = None
+    name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ManagerUpdate(BaseModel):
+    manager_employee_id: Optional[int] = None
+    from_date: Optional[date] = None
+    note: Optional[str] = None
+
+    model_config = {"from_attributes": True}

@@ -1227,164 +1227,203 @@ export default function EmployeeEditPage() {
             {/* ===============================
                 SEZIONE: BENEFIT
                =============================== */}
-            {selectedSection === "benefits" && (
-              <Box>
-                <Typography variant="h5" mb={2}>
-                  Variazione Benefit
-                </Typography>
+            {selectedSection === "benefits" && (() => {
+              // Filtriamo solo i benefit attivi (quelli senza data di fine)
+              const activeBenefits = currentBenefits.filter((b) => !b.to_date);
 
-                {/* BENEFIT ATTUALI */}
-                {currentBenefits.map((b) => (
-                  <Box
-                    key={b.id}
-                    mb={4}
-                    p={2}
-                    border="1px solid #ddd"
-                    borderRadius="8px"
-                  >
-                    <Typography variant="subtitle1">
-                      Benefit attuale
+              return (
+                <Box>
+                  <Typography variant="h5" mb={3}>
+                    Gestione Benefit
+                  </Typography>
+
+                  {/* 1. SEZIONE BENEFIT ATTIVI */}
+                  <Box mb={4}>
+                    <Typography variant="h6" mb={2}>
+                      Benefit Attivi
                     </Typography>
 
-                    <Typography>Tipo: {b.benefit_type_description}</Typography>
-                    <Typography>Data inizio: {b.from_date}</Typography>
+                    {activeBenefits.length === 0 ? (
+                      <Typography color="text.secondary" mb={3}>
+                        Nessun benefit attivo per questo dipendente.
+                      </Typography>
+                    ) : (
+                      activeBenefits.map((b) => {
+                        const typeDescription =
+                          b.benefit_type_description ||
+                          b.benefit_type?.description ||
+                          benefitTypes.find((bt) => Number(bt.id) === Number(b.benefit_type_id))?.description ||
+                          "Benefit";
+
+                        return (
+                          <Box
+                            key={b.id}
+                            mb={2}
+                            p={2}
+                            border="1px solid #ddd"
+                            borderRadius="8px"
+                            bgcolor="#ffffff"
+                          >
+                            <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                              {typeDescription}
+                            </Typography>
+
+                            <Typography variant="body2" mb={1}>
+                              Data inizio: {b.from_date}
+                            </Typography>
+
+                            {b.note && (
+                              <Typography variant="body2" color="text.secondary" mb={2}>
+                                Note: {b.note}
+                              </Typography>
+                            )}
+
+                            {/* Chiusura singolo benefit */}
+                            <Box display="flex" gap={2} alignItems="center" mt={2}>
+                              <TextField
+                                type="date"
+                                label="Data fine (chiusura)"
+                                InputLabelProps={{ shrink: true }}
+                                size="small"
+                                value={b.to_date || ""}
+                                onChange={(e) =>
+                                  setCurrentBenefits((prev) =>
+                                    prev.map((x) =>
+                                      x.id === b.id ? { ...x, to_date: e.target.value } : x
+                                    )
+                                  )
+                                }
+                              />
+
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={async () => {
+                                  if (!b.to_date) {
+                                    alert("Inserisci una data di fine prima di chiudere.");
+                                    return;
+                                  }
+
+                                  try {
+                                    await api.patch(
+                                      `/api/v1/employees/${employeeId}/benefits/${b.id}`,
+                                      { to_date: b.to_date }
+                                    );
+                                    alert("Benefit chiuso con successo.");
+                                    loadCurrentData();
+                                  } catch (err: any) {
+                                    console.error(err);
+                                    alert(
+                                      err.response?.data?.detail ||
+                                        "Errore durante la chiusura del benefit."
+                                    );
+                                  }
+                                }}
+                              >
+                                Chiudi benefit
+                              </Button>
+                            </Box>
+                          </Box>
+                        );
+                      })
+                    )}
+                  </Box>
+
+                  {/* 2. FORM INSERIMENTO NUOVO BENEFIT */}
+                  <Box p={2} border="1px solid #ddd" borderRadius="8px">
+                    <Typography variant="subtitle1" mb={2} fontWeight="bold">
+                      Aggiungi Nuovo Benefit
+                    </Typography>
+
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                      <InputLabel id="benefit-type-label">Tipo benefit</InputLabel>
+                      <Select
+                        labelId="benefit-type-label"
+                        value={newBenefit.benefit_type_id}
+                        label="Tipo benefit"
+                        onChange={(e) =>
+                          setNewBenefit({
+                            ...newBenefit,
+                            benefit_type_id: e.target.value,
+                          })
+                        }
+                      >
+                        {benefitTypes.map((bt) => (
+                          <MenuItem key={bt.id} value={bt.id}>
+                            {bt.description}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
 
                     <TextField
                       fullWidth
                       type="date"
-                      label="Data fine (chiusura)"
+                      label="Data inizio"
                       InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
-                      value={b.to_date || ""}
+                      sx={{ mb: 2 }}
+                      value={newBenefit.from_date}
                       onChange={(e) =>
-                        setCurrentBenefits((prev) =>
-                          prev.map((x) =>
-                            x.id === b.id ? { ...x, to_date: e.target.value } : x
-                          )
-                        )
+                        setNewBenefit({
+                          ...newBenefit,
+                          from_date: e.target.value,
+                        })
+                      }
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Note"
+                      multiline
+                      rows={3}
+                      sx={{ mb: 2 }}
+                      value={newBenefit.note}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          note: e.target.value,
+                        })
                       }
                     />
 
                     <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ mt: 2 }}
+                      variant="contained"
+                      color="primary"
                       onClick={async () => {
-                        if (!b.to_date) {
-                          alert("Inserisci una data di fine.");
+                        if (!newBenefit.benefit_type_id || !newBenefit.from_date) {
+                          alert("Compila tutti i campi obbligatori.");
                           return;
                         }
 
                         try {
-                          await api.patch(
-                            `/api/v1/employees/${employeeId}/benefits/${b.id}`,
-                            { to_date: b.to_date }
-                          );
-                          alert("Benefit chiuso.");
+                          await api.post(`/api/v1/employees/${employeeId}/benefits`, {
+                            benefit_type_id: Number(newBenefit.benefit_type_id),
+                            from_date: newBenefit.from_date,
+                            note: newBenefit.note || "",
+                          });
+
+                          alert("Nuovo benefit aggiunto con successo.");
+                          setNewBenefit({
+                            benefit_type_id: "",
+                            from_date: "",
+                            note: "",
+                          });
                           loadCurrentData();
                         } catch (err: any) {
                           console.error(err);
-                          alert(err.response?.data?.detail ||"Errore durante la chiusura del benefit.");
+                          alert(
+                            err.response?.data?.detail ||
+                              "Errore durante l'aggiunta del benefit."
+                          );
                         }
                       }}
                     >
-                      Chiudi benefit
+                      Aggiungi nuovo benefit
                     </Button>
                   </Box>
-                ))}
-
-                {/* NUOVO BENEFIT */}
-                <Box
-                  p={2}
-                  border="1px solid #ddd"
-                  borderRadius="8px"
-                >
-                  <Typography variant="subtitle1" mb={2}>
-                    Nuovo benefit
-                  </Typography>
-
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="benefit-type-label">Tipo benefit</InputLabel>
-                    <Select
-                      labelId="benefit-type-label"
-                      value={newBenefit.benefit_type_id}
-                      label="Tipo benefit"
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          benefit_type_id: e.target.value,
-                        })
-                      }
-                    >
-                      {benefitTypes.map((bt) => (
-                        <MenuItem key={bt.id} value={bt.id}>
-                          {bt.description}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data inizio"
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                    value={newBenefit.from_date}
-                    onChange={(e) =>
-                      setNewBenefit({
-                        ...newBenefit,
-                        from_date: e.target.value,
-                      })
-                    }
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Note"
-                    multiline
-                    rows={3}
-                    sx={{ mb: 2 }}
-                    value={newBenefit.note}
-                    onChange={(e) =>
-                      setNewBenefit({
-                        ...newBenefit,
-                        note: e.target.value,
-                      })
-                    }
-                  />
-
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      if (!newBenefit.benefit_type_id || !newBenefit.from_date) {
-                        alert("Compila tutti i campi.");
-                        return;
-                      }
-
-                      try {
-                        await api.post(
-                          `/api/v1/employees/${employeeId}/benefits`,
-                          newBenefit
-                        );
-                        alert("Nuovo benefit aggiunto.");
-                        setNewBenefit({
-                          benefit_type_id: "",
-                          from_date: "",
-                          note: "",
-                        });
-                        loadCurrentData();
-                      } catch (err: any) {
-                        console.error(err);
-                        alert(err.response?.data?.detail ||"Errore durante l'aggiunta del benefit.");
-                      }
-                    }}
-                  >
-                    Aggiungi nuovo benefit
-                  </Button>
                 </Box>
-              </Box>
-            )}
+              );
+            })()}
 
             {/* ===============================
                 SEZIONE: ENAC – CORSI

@@ -841,7 +841,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "from_date": b.from_date,
                 "note": b.note
             })
-
+        enac_course = enac_courses[0] if enac_courses else None
         # ============================================================
         # ENAC CORSI
         # ============================================================
@@ -875,7 +875,7 @@ def list_employees(db: Session = Depends(get_db)):
                 "is_first_approval": a.is_first_approval,
                 "note": a.note
             })
-
+        enac_approval = enac_approvals[0] if enac_approvals else None
         # ============================================================
         # COST CENTER ATTUALI
         # ============================================================
@@ -975,7 +975,9 @@ def list_employees(db: Session = Depends(get_db)):
             "company_car": company_car,
             "cost_centers": cost_centers,
             "benefits": benefits,
+            "enac_course": enac_course,
             "enac_courses": enac_courses,
+            "enac_approval": enac_approval,
             "enac_approvals": enac_approvals,
 
             "is_active": emp.is_active,

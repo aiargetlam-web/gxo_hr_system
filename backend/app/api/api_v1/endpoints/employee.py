@@ -2598,4 +2598,44 @@ def get_unions(db: Session = Depends(get_db)):
     unions = db.query(Union).all()
     return [{"id": u.id, "name": u.name} for u in unions]
 
+# ============================================================
+# CHIUSURA AUTO AZIENDALE
+# ============================================================
 
+@router.patch("/{employee_id}/company-cars/{car_id}")
+def close_company_car(
+    employee_id: int, 
+    car_id: int, 
+    payload: CompanyCarUpdate, 
+    db: Session = Depends(get_db)
+):
+    from app.models.employee_company_cars import EmployeeCompanyCar
+
+    car = db.query(EmployeeCompanyCar).filter(
+        EmployeeCompanyCar.id == car_id,
+        EmployeeCompanyCar.employee_id == employee_id,
+        EmployeeCompanyCar.to_date.is_(None)
+    ).first()
+
+    if not car:
+        raise HTTPException(status_code=404, detail="Auto aziendale attiva non trovata")
+
+    # Controlla che la data di chiusura non sia antecedente o uguale all'inizio
+    if payload.to_date and payload.to_date <= car.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di chiusura non può essere uguale o precedente alla data di inizio dell'auto aziendale."
+        )
+
+    try:
+        car.to_date = payload.to_date
+        db.commit()
+        db.refresh(car)
+
+        return {"message": "Auto aziendale chiusa con successo", "company_car": car}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore durante la chiusura dell'auto: {str(e)}")

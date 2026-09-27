@@ -2639,3 +2639,61 @@ def close_company_car(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Errore durante la chiusura dell'auto: {str(e)}")
+
+# ============================================================
+# NUOVO BENEFIT (CON STORICIZZAZIONE PER TIPO)
+# ============================================================
+
+@router.post("/{employee_id}/benefits")
+def add_benefit(employee_id: int, payload: BenefitCreate, db: Session = Depends(get_db)):
+    from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_benefits import EmployeeBenefit
+
+    employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Dipendente non trovato")
+
+    try:
+        # 1) Cerca eventuale benefit attivo (to_date IS NULL) dello STESSO TIPO
+        current_benefit = (
+            db.query(EmployeeBenefit)
+            .filter(
+                EmployeeBenefit.employee_id == employee_id,
+                EmployeeBenefit.benefit_type_id == payload.benefit_type_id,
+                EmployeeBenefit.to_date.is_(None)
+            )
+            .first()
+        )
+
+        # 2) Validazione date
+        if current_benefit and payload.from_date <= current_benefit.from_date:
+            raise HTTPException(
+                status_code=422,
+                detail="La data di inizio del nuovo benefit deve essere successiva a quella del benefit dello stesso tipo attualmente attivo."
+            )
+
+        # 3) Se esiste un benefit attivo dello stesso tipo, chiudilo il giorno prima
+        if current_benefit:
+            current_benefit.to_date = payload.from_date - timedelta(days=1)
+            db.add(current_benefit)
+
+        # 4) Inserisci la nuova riga di benefit
+        new_benefit = EmployeeBenefit(
+            employee_id=employee_id,
+            benefit_type_id=payload.benefit_type_id,
+            has_benefit=payload.has_benefit,
+            from_date=payload.from_date,
+            note=payload.note
+        )
+
+        db.add(new_benefit)
+        db.commit()
+        db.refresh(new_benefit)
+
+        return {"message": "Benefit registrato con successo", "benefit": new_benefit}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento del benefit: {str(e)}")

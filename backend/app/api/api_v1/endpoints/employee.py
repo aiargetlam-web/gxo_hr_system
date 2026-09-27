@@ -1344,7 +1344,7 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "enac_courses": enac_courses,
         "enac_approvals": enac_approvals,
         "unions": unions,
-
+        "employer": employer,
         "is_active": emp.is_active,
         "protected_percentage": emp.protected_percentage,
         "protected_type": emp.protected_type,

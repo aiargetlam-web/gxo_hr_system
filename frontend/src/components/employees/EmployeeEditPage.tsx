@@ -1398,6 +1398,7 @@ export default function EmployeeEditPage() {
                         try {
                           await api.post(`/api/v1/employees/${employeeId}/benefits`, {
                             benefit_type_id: Number(newBenefit.benefit_type_id),
+                            has_benefit: true, // <-- AGGIUNGI QUESTA RIGA
                             from_date: newBenefit.from_date,
                             note: newBenefit.note || "",
                           });

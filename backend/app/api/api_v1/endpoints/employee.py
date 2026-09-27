@@ -841,13 +841,13 @@ def list_employees(db: Session = Depends(get_db)):
                 "from_date": b.from_date,
                 "note": b.note
             })
-        enac_course = enac_courses[0] if enac_courses else None
+       
         # ============================================================
         # ENAC CORSI
         # ============================================================
         enac_courses_hist = db.query(EmployeeEnacCourse).filter(
             EmployeeEnacCourse.employee_id == emp.id,
-        ).all()
+        ).order_by(EmployeeEnacCourse.course_date.desc()).all()
 
         enac_courses = []
         for c in enac_courses_hist:
@@ -859,12 +859,16 @@ def list_employees(db: Session = Depends(get_db)):
                 "note": c.note
             })
 
+        # Corso più recente attuale
+        enac_course = enac_courses[0] if enac_courses else None
+
+
         # ============================================================
         # ENAC APPROVAZIONI
         # ============================================================
         enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
             EmployeeEnacApproval.employee_id == emp.id,
-        ).all()
+        ).order_by(EmployeeEnacApproval.request_date.desc()).all()
 
         enac_approvals = []
         for a in enac_approvals_hist:
@@ -875,6 +879,8 @@ def list_employees(db: Session = Depends(get_db)):
                 "is_first_approval": a.is_first_approval,
                 "note": a.note
             })
+
+        # Approvazione più recente attuale
         enac_approval = enac_approvals[0] if enac_approvals else None
         # ============================================================
         # COST CENTER ATTUALI
@@ -1193,7 +1199,7 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
     # ============================================================
     enac_courses_hist = db.query(EmployeeEnacCourse).filter(
         EmployeeEnacCourse.employee_id == emp.id,
-    ).all()
+    ).order_by(EmployeeEnacCourse.course_date.desc()).all()
 
     enac_courses = []
     for c in enac_courses_hist:
@@ -1205,12 +1211,16 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
             "note": c.note
         })
 
+    # Corso più recente attuale
+    enac_course = enac_courses[0] if enac_courses else None
+
+
     # ============================================================
     # ENAC APPROVAZIONI
     # ============================================================
     enac_approvals_hist = db.query(EmployeeEnacApproval).filter(
         EmployeeEnacApproval.employee_id == emp.id,
-    ).all()
+    ).order_by(EmployeeEnacApproval.request_date.desc()).all()
 
     enac_approvals = []
     for a in enac_approvals_hist:
@@ -1221,6 +1231,9 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
             "is_first_approval": a.is_first_approval,
             "note": a.note
         })
+
+    # Approvazione più recente attuale
+    enac_approval = enac_approvals[0] if enac_approvals else None
 
     # ============================================================
     # COST CENTER ATTUALI

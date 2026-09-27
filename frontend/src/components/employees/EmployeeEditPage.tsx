@@ -365,13 +365,19 @@ export default function EmployeeEditPage() {
         setCurrentUnion(unionData || null);
       }
 
-      // 10. Corsi e Approvazioni ENAC (Nel JSON sono data.enac_courses e data.enac_approvals)
-      const coursesRaw = data.enac_courses || [];
-      setCurrentEnacCourse(coursesRaw[0] || null);
+      // 10. Corsi e Approvazioni ENAC (Inizializzazione con riga vuota di fallback)
+      const coursesRaw = (data.enac_courses && data.enac_courses.length > 0)
+        ? data.enac_courses
+        : [{ id: undefined, course_date: "", expiry_date: "", is_first_course: false, note: "" }];
+
+      setCurrentEnacCourse(coursesRaw[0]);
       setCurrentEnacCourses(coursesRaw);
 
-      const approvalsRaw = data.enac_approvals || [];
-      setCurrentEnacApproval(approvalsRaw[0] || null);
+      const approvalsRaw = (data.enac_approvals && data.enac_approvals.length > 0)
+        ? data.enac_approvals
+        : [{ id: undefined, request_date: "", approval_date: "", is_first_approval: false, note: "" }];
+
+      setCurrentEnacApproval(approvalsRaw[0]);
       setCurrentEnacApprovals(approvalsRaw);
 
     } catch (err: any) {

@@ -222,7 +222,7 @@ def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depend
             .first()
         )
 
-        if current_contract and payload.from_date < current_contract.from_date:
+        if current_contract and payload.from_date <= current_contract.from_date:
             raise HTTPException(
                 status_code=400,
                 detail="La data di inizio del nuovo contratto è precedente al contratto attuale. Devi prima modificare il contratto precedente."
@@ -333,7 +333,7 @@ def update_cost_centers(employee_id: int, payload: CostCenterVariationPayload, d
                 raise HTTPException(404, f"Centro di costo {item.cost_center_id} non trovato")
 
             # Validazione data retroattiva
-            if mod_date < current.from_date:
+            if mod_date <= current.from_date:
                 raise HTTPException(
                     422,
                     f"La data di modifica ({mod_date}) è precedente alla data attuale del centro {current.from_date}"
@@ -361,7 +361,7 @@ def update_cost_centers(employee_id: int, payload: CostCenterVariationPayload, d
                 raise HTTPException(404, f"Centro di costo {item.cost_center_id} non trovato")
 
             # Validazione data retroattiva
-            if mod_date < current.from_date:
+            if mod_date <= current.from_date:
                 raise HTTPException(
                     422,
                     f"La data di chiusura ({mod_date}) è precedente alla data attuale del centro {current.from_date}"
@@ -421,7 +421,7 @@ def add_department(employee_id: int, payload: DepartmentAssignmentCreate, db: Se
             .first()
         )
 
-        if current_dep and payload.from_date < current_dep.from_date:
+        if current_dep and payload.from_date <= current_dep.from_date:
             raise HTTPException(
                 status_code=422,
                 detail="La data di inizio del nuovo reparto è precedente al reparto attuale. Devi prima modificare il reparto precedente."
@@ -476,7 +476,7 @@ def add_salary(employee_id: int, payload: SalaryCreate, db: Session = Depends(ge
             .first()
         )
 
-        if current_salary and payload.from_date < current_salary.from_date:
+        if current_salary and payload.from_date <= current_salary.from_date:
             raise HTTPException(
                 status_code=422,
                 detail="La data di inizio della nuova RAL è precedente alla RAL attuale. Devi prima modificare la RAL precedente."
@@ -530,7 +530,7 @@ def add_company_car(employee_id: int, payload: CompanyCarCreate, db: Session = D
             .first()
         )
 
-        if current_car and payload.from_date < current_car.from_date:
+        if current_car and payload.from_date <= current_car.from_date:
             raise HTTPException(
                 status_code=422,
                 detail="La data di inizio della nuova auto aziendale è precedente all'auto attuale. Devi prima modificare la precedente."
@@ -585,7 +585,7 @@ def change_site(employee_id: int, payload: SiteAssignmentCreate, db: Session = D
             .first()
         )
 
-        if current_site_hist and payload.from_date < current_site_hist.from_date:
+        if current_site_hist and payload.from_date <= current_site_hist.from_date:
             raise HTTPException(
                 status_code=422,
                 detail="La data di inizio del nuovo sito è precedente al sito attuale. Devi prima modificare il sito precedente."
@@ -1262,6 +1262,28 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
 
     if contract is not None:
         contract["employer"] = employer
+
+    # ============================================================
+    # SINDACATO ATTUALE
+    # ============================================================
+    from app.models.employee_union_history import EmployeeUnionHistory
+    from app.models.union import Union
+
+    union_hist = db.query(EmployeeUnionHistory).filter(
+        EmployeeUnionHistory.employee_id == emp.id,
+        EmployeeUnionHistory.to_date.is_(None)
+    ).first()
+
+    unions = None
+    if union_hist:
+        union_obj = db.query(Union).filter(Union.id == union_hist.union_id).first()
+        if union_obj:
+            unions = {
+                "id": union_obj.id,
+                "name": union_obj.name,
+                "from_date": union_hist.from_date,
+                "note": union_hist.note
+            }
     # ============================================================
     # RISPOSTA FINALE
     # ============================================================
@@ -1307,6 +1329,7 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         "benefits": benefits,
         "enac_courses": enac_courses,
         "enac_approvals": enac_approvals,
+        "unions": unions,
 
         "is_active": emp.is_active,
         "protected_percentage": emp.protected_percentage,
@@ -1563,7 +1586,7 @@ def change_status(employee_id: int, payload: StatusUpdate, db: Session = Depends
     )
 
     # 🔥 BLOCCO SE LA NUOVA DATA È PRIMA DELL'ATTUALE
-    if current_status and payload.from_date < current_status.from_date:
+    if current_status and payload.from_date <= current_status.from_date:
         raise HTTPException(
             status_code=422,
             detail="La data di inizio del nuovo stato è precedente allo stato attuale. Devi prima modificare lo stato precedente."
@@ -1635,6 +1658,12 @@ def change_manager(employee_id: int, payload: dict, db: Session = Depends(get_db
                 EmployeeManager.to_date.is_(None))
         .first()
     )
+
+    if current and from_date <= current.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di inizio del nuovo responsabile deve essere successiva a quella attuale."
+        )
 
     if current:
         current.to_date = from_date - timedelta(days=1)
@@ -2253,6 +2282,12 @@ def update_employer(employee_id: int, payload: EmployerUpdate, db: Session = Dep
         EmployeeEmployerHistory.employee_id == employee_id,
         EmployeeEmployerHistory.to_date.is_(None)
     ).first()
+
+    if current and payload.from_date <= current.from_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La data di inizio del nuovo employer deve essere successiva a quella attuale."
+        )
 
     if current:
         current.to_date = payload.from_date - timedelta(days=1)

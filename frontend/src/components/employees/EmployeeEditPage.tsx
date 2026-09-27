@@ -1280,49 +1280,67 @@ export default function EmployeeEditPage() {
                             )}
 
                             {/* Chiusura singolo benefit */}
-                            <Box display="flex" gap={2} alignItems="center" mt={2}>
-                              <TextField
-                                type="date"
-                                label="Data fine (chiusura)"
-                                InputLabelProps={{ shrink: true }}
-                                size="small"
-                                value={closeDates[b.id] || ""}
-                                onChange={(e) =>
-                                  setCloseDates((prev) => ({
-                                    ...prev,
-                                    [b.id]: e.target.value,
-                                  }))
-                                }
-                              />
+                            {(() => {
+                              const benefitKey = b.id ?? b.employee_benefit_id ?? b.benefit_type_id;
+                              const currentDateValue = closeDates[benefitKey] || "";
 
-                              <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={async () => {
-                                  if (!b.to_date) {
-                                    alert("Inserisci una data di fine prima di chiudere.");
-                                    return;
-                                  }
+                              return (
+                                <Box display="flex" gap={2} alignItems="center" mt={2}>
+                                  <TextField
+                                    type="date"
+                                    label="Data fine (chiusura)"
+                                    InputLabelProps={{ shrink: true }}
+                                    size="small"
+                                    value={currentDateValue}
+                                    onChange={(e) => {
+                                      const newValue = e.target.value;
+                                      setCloseDates((prev) => ({
+                                        ...prev,
+                                        [benefitKey]: newValue,
+                                      }));
+                                    }}
+                                  />
 
-                                  try {
-                                    await api.patch(
-                                      `/api/v1/employees/${employeeId}/benefits/${b.id}`,
-                                      { to_date: b.to_date }
-                                    );
-                                    alert("Benefit chiuso con successo.");
-                                    loadCurrentData();
-                                  } catch (err: any) {
-                                    console.error(err);
-                                    alert(
-                                      err.response?.data?.detail ||
-                                        "Errore durante la chiusura del benefit."
-                                    );
-                                  }
-                                }}
-                              >
-                                Chiudi benefit
-                              </Button>
-                            </Box>
+                                  <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={async () => {
+                                      const endDate = closeDates[benefitKey];
+
+                                      if (!endDate) {
+                                        alert(`Inserisci una data di fine prima di proseguire. (ID Benefit: ${benefitKey})`);
+                                        return;
+                                      }
+
+                                      try {
+                                        await api.patch(
+                                          `/employees/${employeeId}/benefits/${benefitKey}`,
+                                          { to_date: endDate }
+                                        );
+
+                                        alert("Benefit chiuso con successo.");
+
+                                        setCloseDates((prev) => {
+                                          const updated = { ...prev };
+                                          delete updated[benefitKey];
+                                          return updated;
+                                        });
+
+                                        loadCurrentData();
+                                      } catch (err: any) {
+                                        console.error(err);
+                                        alert(
+                                          err.response?.data?.detail ||
+                                            "Errore durante la chiusura del benefit."
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Chiudi benefit
+                                  </Button>
+                                </Box>
+                              );
+                            })()}
                           </Box>
                         );
                       })

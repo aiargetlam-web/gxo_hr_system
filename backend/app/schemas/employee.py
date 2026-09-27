@@ -465,7 +465,7 @@ class Employee(EmployeeInDBBase):
     status_history: Optional[List[StatusHistory]] = None
         # 🔥 LEGGE 104 (TIPO)
     law_104_type: Optional[Law104Type] = None
-
+    employer: Optional[Employer] = None
     # 🔥 STORICO DATORE DI LAVORO
     employer_history: Optional[List[EmployerHistory]] = None
 

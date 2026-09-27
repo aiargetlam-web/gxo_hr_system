@@ -1396,13 +1396,15 @@ export default function EmployeeEditPage() {
                 </Typography>
 
                 {/* CORSO ENAC ATTUALE (SOLO INFORMAZIONE) */}
-                {currentEnacCourse && (
+                {currentEnacCourse && currentEnacCourse.id && (
                   <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
                     <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                       Corso ENAC attuale
                     </Typography>
-                    <Typography>Corso: {currentEnacCourse.course_name || currentEnacCourse.name}</Typography>
-                    <Typography>Data conseguimento / Inizio: {currentEnacCourse.from_date}</Typography>
+                    <Typography>Data corso: {currentEnacCourse.course_date}</Typography>
+                    <Typography>Scadenza: {currentEnacCourse.expiry_date || "Nessuna"}</Typography>
+                    <Typography>Primo corso: {currentEnacCourse.is_first_course ? "Sì" : "No"}</Typography>
+                    {currentEnacCourse.note && <Typography>Note: {currentEnacCourse.note}</Typography>}
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       Nota: Il rinnovo o l'inserimento di un nuovo corso ENAC viene registrato tramite il modulo sottostante.
                     </Typography>
@@ -1522,13 +1524,15 @@ export default function EmployeeEditPage() {
                 </Typography>
 
                 {/* APPROVAZIONE ENAC ATTUALE (SOLO INFORMAZIONE) */}
-                {currentEnacApproval && (
+                {currentEnacApproval && currentEnacApproval.id && (
                   <Box mb={4} p={2} border="1px solid #ddd" borderRadius="8px" bgcolor="#fafafa">
                     <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                       Approvazione ENAC attuale
                     </Typography>
-                    <Typography>Approvazione: {currentEnacApproval.approval_name || currentEnacApproval.name}</Typography>
-                    <Typography>Data inizio: {currentEnacApproval.from_date}</Typography>
+                    <Typography>Data richiesta: {currentEnacApproval.request_date}</Typography>
+                    <Typography>Data approvazione: {currentEnacApproval.approval_date || "In attesa"}</Typography>
+                    <Typography>Prima approvazione: {currentEnacApproval.is_first_approval ? "Sì" : "No"}</Typography>
+                    {currentEnacApproval.note && <Typography>Note: {currentEnacApproval.note}</Typography>}
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       Nota: L'aggiornamento dell'approvazione ENAC si effettua inserendo una nuova voce sottostante.
                     </Typography>

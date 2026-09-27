@@ -1279,8 +1279,10 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
         union_obj = db.query(Union).filter(Union.id == union_hist.union_id).first()
         if union_obj:
             unions = {
-                "id": union_obj.id,
-                "name": union_obj.name,
+                "id": union_hist.id,          # ID della riga di storico (fondamentale per la PATCH di chiusura)
+                "union_id": union_obj.id,     # ID del tipo di sindacato
+                "name": union_obj.name,       
+                "union_name": union_obj.name, # Mappato per sicurezza sul frontend
                 "from_date": union_hist.from_date,
                 "note": union_hist.note
             }

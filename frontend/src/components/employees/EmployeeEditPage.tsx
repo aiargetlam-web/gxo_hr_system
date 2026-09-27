@@ -1964,7 +1964,7 @@ export default function EmployeeEditPage() {
                         }
 
                         try {
-                          await api.put(
+                          await api.patch(
                             `/api/v1/employees/${employeeId}/company-cars/${currentCompanyCar.id}`,
                             { to_date: currentCompanyCar.to_date }
                           );

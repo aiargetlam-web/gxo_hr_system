@@ -1806,7 +1806,7 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Dep
 # ============================================================
 # Post Enac corsi
 # ============================================================
-@router.post("/employees/{employee_id}/enac-courses")
+@router.post("/{employee_id}/enac-courses")
 def add_enac_course(employee_id: int, payload: EnacCourseCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_enac_courses import EmployeeEnacCourse
@@ -1839,7 +1839,7 @@ def add_enac_course(employee_id: int, payload: EnacCourseCreate, db: Session = D
 # ============================================================
 # Post Enac approvazioni
 # ============================================================
-@router.post("/employees/{employee_id}/enac-approvals")
+@router.post("/{employee_id}/enac-approvals")
 def add_enac_approval(employee_id: int, payload: EnacApprovalCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_enac_approvals import EmployeeEnacApproval

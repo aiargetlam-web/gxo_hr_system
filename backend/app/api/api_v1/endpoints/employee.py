@@ -22,6 +22,16 @@ from app.schemas.employee import (
     SiteUpdate,
     StatusUpdate,
     CompanyCarUpdate,
+    EnacCourseCreate,
+    EnacCourseUpdate,
+    EnacApprovalCreate,
+    EnacApprovalUpdate,
+    BenefitUpdate,
+    EmployerUpdate,
+    RoleUpdate,
+    ManagerUpdate,
+    UnionUpdate,
+    CostCenterVariationPayload,
 )
 from app.schemas.employee import CostCenterVariationPayload
 
@@ -34,6 +44,7 @@ router = APIRouter(tags=["Employees"])
 @router.post("/")
 def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.contract_nature import ContractNature
     from app.models.employee_contracts import EmployeeContract
     from app.models.employee_cost_centers import EmployeeCostCenter
     from app.models.employee_departments import EmployeeDepartment
@@ -206,6 +217,7 @@ def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
 @router.post("/{employee_id}/contracts")
 def add_contract(employee_id: int, payload: ContractCreate, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.contract_nature import ContractNature
     from app.models.employee_contracts import EmployeeContract
 
     employee = db.query(EmployeeModel).filter(EmployeeModel.id == employee_id).first()
@@ -1695,6 +1707,7 @@ def change_manager(employee_id: int, payload: dict, db: Session = Depends(get_db
 @router.get("/{employee_id}/manager")
 def get_current_manager(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_manager import EmployeeManager
 
     current = (
         db.query(EmployeeManager)
@@ -1723,6 +1736,7 @@ def get_current_manager(employee_id: int, db: Session = Depends(get_db)):
 @router.get("/{employee_id}/manager-history")
 def get_manager_history(employee_id: int, db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
+    from app.models.employee_manager import EmployeeManager
 
     history = (
         db.query(EmployeeManager)
@@ -2137,10 +2151,10 @@ def update_enac_approval(employee_id: int, approval_id: int, payload: EnacApprov
 
         # 🔥 Aggiorna manualmente le date
         if "request_date" in data:
-            approval.request_date = data["request_date"]
+            appr.request_date = data["request_date"]
 
         if "approval_date" in data:
-            approval.approval_date = data["approval_date"]
+            appr.approval_date = data["approval_date"]
 
         # 🔥 Aggiorna gli altri campi
         for field, value in data.items():

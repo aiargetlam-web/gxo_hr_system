@@ -267,8 +267,8 @@ class SiteAssignmentCreate(BaseModel):
 
 
 class BenefitCreate(BaseModel):
-    benefit_type_id: Optional[int] = None
-    has_benefit: bool
+    benefit_type_id: int
+    has_benefit: bool = True
     from_date: date
     note: Optional[str] = None
 

@@ -1,5 +1,5 @@
 from datetime import timedelta, date
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from passlib.hash import bcrypt
@@ -2645,7 +2645,7 @@ def close_company_car(
 # ============================================================
 
 @router.post("/{employee_id}/benefits")
-def add_benefit(employee_id: int, payload: BenefitCreate, db: Session = Depends(get_db)):
+def add_benefit(employee_id: int, payload: BenefitCreate = Body(...), db: Session = Depends(get_db)):
     from app.models.employee import Employee as EmployeeModel
     from app.models.employee_benefits import EmployeeBenefit
 
